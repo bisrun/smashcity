@@ -10,6 +10,7 @@ extends Node3D
 
 ## 강가 나무가 서는 높이
 const SLAB_HEIGHT := 1.0
+const ModelLibraryScript := preload("res://src/render/model_library.gd")
 const FLOOR_HEIGHT := 3.2
 const LANDMARK_HEIGHT := 555.0
 ## 이 높이를 넘는 부분은 눌러 그린다. 높은 건물이 통로를 가리지 않게 하려는 것.
@@ -274,6 +275,42 @@ func cell_color(cell: int) -> Color:
 	return GRASS[cell % GRASS.size()] if _kind[cell] == KIND_PARK else _roof_tint[cell]
 
 
+## 번개. 하늘에서 그 자리로 꺾이며 내려꽂힌다.
+func show_bolt(map_pos: Vector2) -> void:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var foot := _at(map_pos, 6.0)
+	var seed := _hash(int(map_pos.x), int(map_pos.y), 9)
+	var prev := foot
+	var top := 1100.0
+	var steps := 7
+	for k in range(1, steps + 1):
+		var jag := Vector3(((seed >> (k * 3)) % 90) - 45.0, 0.0, 0.0) if k < steps else Vector3.ZERO
+		var next := foot + Vector3(0, top * k / steps, 0) + jag
+		var half := Vector3(lerpf(9.0, 20.0, float(k) / steps), 0, 0)
+		for v: Vector3 in [prev - half, prev + half, next + half, prev - half, next + half, next - half]:
+			st.add_vertex(v)
+		prev = next
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color("FFF7B0")
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.no_depth_test = true
+	var bolt := MeshInstance3D.new()
+	bolt.mesh = st.commit()
+	bolt.material_override = mat
+	bolt.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(bolt)
+	var flash := _prim(self, _sphere(46.0), Color("FFFDE0"), foot + Vector3(0, 24, 0), true)
+	flash.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var tween := bolt.create_tween()
+	tween.tween_property(mat, "albedo_color:a", 0.0, 0.28).set_ease(Tween.EASE_IN)
+	tween.parallel().tween_property(flash, "scale", Vector3.ONE * 2.2, 0.2)
+	tween.tween_callback(bolt.queue_free)
+	tween.tween_callback(flash.queue_free)
+
+
 ## 부서지는 조각. 셀이 부서질 때 그 자리에서 튀어 오른다.
 func show_debris(map_pos: Vector2, color: Color, big: bool) -> void:
 	var bits := CPUParticles3D.new()
@@ -328,8 +365,8 @@ func show_popup(map_pos: Vector2, text: String, color: Color) -> void:
 
 ## 떨어지는 아이템 하나의 모습. 종류마다 색과 글자가 다르다.
 static func make_item_node(type: String, radius: float) -> Node3D:
-	var colors := {"multi": Color("6FB8FF"), "wide": Color("7CD992"), "fire": Color("FF8A5B"), "life": Color("FF6FA3")}
-	var marks := {"multi": "x3", "wide": "<>", "fire": "火", "life": "+1"}
+	var colors := {"multi": Color("6FB8FF"), "wide": Color("7CD992"), "fire": Color("FF8A5B"), "life": Color("FF6FA3"), "bolt": Color("FFD23F")}
+	var marks := {"multi": "x3", "wide": "<>", "fire": "火", "life": "+1", "bolt": "⚡"}
 	var node := Node3D.new()
 	var body := MeshInstance3D.new()
 	var mesh := SphereMesh.new()
@@ -478,6 +515,15 @@ func _furnish(st: SurfaceTool, ci: int, cell: Dictionary, lawn: PackedVector2Arr
 					_add_tree(st, {"at": at, "round": round_tree, "size": 1.5 + ((t >> 14) % 5) * 0.12, "base": 0.0,
 						"color": (BLOSSOM if lakeside else (LEAF if round_tree else PINE))[(t >> 17) % 3]})
 					planted += 1
+					var extra := at + axis * 15.0 + side * 11.0
+					if _tree_fits(extra, lawn):
+						var kind := (t >> 20) % 4
+						if kind == 0:
+							_add_prop(st, ModelLibraryScript.BUSHES, extra, 0.0, 10.0, t)
+						elif kind == 1:
+							_add_prop(st, ModelLibraryScript.FLOWERS, extra, 0.0, 8.0, t)
+						elif kind == 2:
+							_add_prop(st, ModelLibraryScript.ROCKS, extra, 0.0, 8.0, t)
 			if planted == 0 and Geometry2D.is_point_in_polygon(spot, lawn):
 				_add_tree(st, {"at": spot, "round": true, "size": 1.2, "base": 0.0, "color": LEAF[h % 3]})
 		KIND_HOUSE:
@@ -519,9 +565,20 @@ func _furnish(st: SurfaceTool, ci: int, cell: Dictionary, lawn: PackedVector2Arr
 			var tank := spot - axis * 28.0 + side * 6.0
 			if _tree_fits(tank, lawn):
 				_add_lathe(st, tank, [Vector2(5.5, 3.6), Vector2(5.5, 12.0), Vector2(0.0, 14.5)], 8, [STONE, STONE.lightened(0.15)])
-			for off: Vector2 in [side * 24.0, side * -24.0 + axis * 10.0]:
-				if _tree_fits(spot + off, lawn):
-					_add_tree(st, {"at": spot + off, "round": true, "size": 0.75, "base": 3.6, "color": LEAF[(h >> 6) % 3]})
+			# 옥상 소품: 파라솔, 덤불, 꽃. 가져온 모델을 쓴다.
+			var decor: Array[Vector2] = [side * 26.0, side * -26.0 + axis * 8.0, side * 22.0 + axis * 24.0, side * -24.0 - axis * 18.0, axis * -44.0, axis * 46.0 + side * 10.0]
+			for k in decor.size():
+				var place := spot + decor[k]
+				if not _tree_fits(place, lawn):
+					continue
+				var pick := _hash(ci, k, 41)
+				if k % 3 == 0:
+					if not _add_prop(st, ModelLibraryScript.PARASOLS, place, 3.6, 15.0, pick):
+						_add_tree(st, {"at": place, "round": true, "size": 0.75, "base": 3.6, "color": LEAF[pick % 3]})
+				elif k % 3 == 1:
+					_add_prop(st, ModelLibraryScript.BUSHES, place, 3.6, 9.0, pick)
+				else:
+					_add_prop(st, ModelLibraryScript.FLOWERS, place, 3.6, 7.0, pick)
 			_label_at[ci] = Vector3(spot.x, 24.0, spot.y)
 			object_count += 1
 
@@ -647,12 +704,19 @@ func _add_box(st: SurfaceTool, at: Vector2, axis: Vector2, side: Vector2, half_w
 	_add_prism(st, _rect(at, axis, side, half_w, half_d), y0, y1, top, wall, apex)
 
 
-## 나무 한 그루. 줄기 위에 잎 덩어리를 두 겹 얹는다. 둥근 나무는 도톰하게, 뾰족한 나무는 원뿔로.
+## 나무 한 그루. 가져온 모델을 쓰고, 모델을 읽지 못하면 직접 만든 모양으로 대신한다.
+## 잎은 t["color"] 로 물들인다.
 func _add_tree(st: SurfaceTool, t: Dictionary) -> void:
 	var at: Vector2 = t["at"]
 	var s: float = t["size"]
 	var base: float = t.get("base", SLAB_HEIGHT)
 	var leaf: Color = t["color"]
+	var seed := _hash(int(at.x), int(at.y), 3)
+	var model := ModelLibraryScript.pick(ModelLibraryScript.ROUND_TREES if t["round"] else ModelLibraryScript.POINTED_TREES, seed)
+	if not model.is_empty():
+		# 가져온 나무의 잎은 민트색이라 이 판의 풀빛과 어긋난다. 잎을 이 판의 색으로 물들인다.
+		_add_model(st, model, at, base, (42.0 if t["round"] else 46.0) * s, seed, leaf)
+		return
 	_add_lathe(st, at, [Vector2(2.3 * s, base), Vector2(2.0 * s, base + 8.0 * s)], 5, [TRUNK])
 	if t["round"]:
 		_add_lathe(st, at, [Vector2(0.0, base + 5.0 * s), Vector2(10.5 * s, base + 14.0 * s), Vector2(7.5 * s, base + 22.0 * s), Vector2(0.0, base + 26.0 * s)],
@@ -660,6 +724,34 @@ func _add_tree(st: SurfaceTool, t: Dictionary) -> void:
 	else:
 		_add_lathe(st, at, [Vector2(9.5 * s, base + 4.0 * s), Vector2(0.0, base + 22.0 * s)], 6, [leaf])
 		_add_lathe(st, at, [Vector2(6.5 * s, base + 14.0 * s), Vector2(0.0, base + 30.0 * s)], 6, [leaf.lightened(0.12)])
+
+
+## 가져온 모델 하나를 메시에 구워 넣는다. height 는 세웠을 때의 높이(m), seed 는 돌려 놓는 각도를 정한다.
+## leaf_tint 를 주면 초록 잎 부분을 그 색으로 바꾼다.
+func _add_model(st: SurfaceTool, model: Dictionary, at: Vector2, base: float, height: float, seed: int, leaf_tint: Color = Color.TRANSPARENT) -> void:
+	var points: PackedVector3Array = model["points"]
+	var colors: PackedColorArray = model["colors"]
+	var origin := _at(at, base)
+	var yaw := float(seed % 628) / 100.0
+	var cy := cos(yaw)
+	var sy := sin(yaw)
+	for i in points.size():
+		var c := colors[i]
+		# 초록이나 청록인 부분이 잎이다. 줄기는 붉은 기가 더 세다.
+		if leaf_tint.a > 0.0 and c.g > c.r * 1.15:
+			c = leaf_tint.darkened(clampf(0.8 - c.g, 0.0, 0.22))
+		st.set_color(c)
+		var v := points[i] * height
+		st.add_vertex(origin + Vector3(v.x * cy - v.z * sy, v.y, v.x * sy + v.z * cy))
+
+
+## 가져온 모델 중 하나를 골라 놓는다. 읽을 수 있는 모델이 없으면 아무것도 하지 않고 false 를 돌려준다.
+func _add_prop(st: SurfaceTool, names: Array[String], at: Vector2, base: float, height: float, seed: int) -> bool:
+	var model := ModelLibraryScript.pick(names, seed)
+	if model.is_empty():
+		return false
+	_add_model(st, model, at, base, height, seed)
+	return true
 
 
 ## 상상으로 더한 구조물. 지도에는 없는 것들이다(docs/05_items.md 의 상상 아이템).

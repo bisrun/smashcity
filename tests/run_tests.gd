@@ -23,7 +23,8 @@ func _init() -> void:
 		_test_paddle_sends_ball_up, _test_missed_ball_costs_a_life, _test_water_tosses_ball_out,
 		_test_landmark_clears_stage, _test_item_drops_and_is_caught, _test_multiball, _test_wide_fire_life,
 		_test_extra_balls_do_not_cost_a_life, _test_speed_grows_with_progress, _test_idle_ball_is_pulled_to_a_cell,
-		_test_fever_chains_to_neighbors, _test_wall_blocks_but_gap_lets_through, _test_sim_is_deterministic, _test_jamsil_plays,
+		_test_fever_chains_to_neighbors, _test_wall_blocks_but_gap_lets_through, _test_bolt_finishes_the_last_cells,
+		_test_models_load, _test_sim_is_deterministic, _test_jamsil_plays,
 	]:
 		t.call()
 	print("%d개 확인, 실패 %d개" % [_checks, _failures])
@@ -261,6 +262,7 @@ func _test_landmark_clears_stage() -> void:
 ## 아이템 하나가 든 셀 하나짜리 판.
 func _item_stage(type: String) -> Sim:
 	var cfg := _no_gravity()
+	cfg["finale_cells"] = -1  # 마무리 단계의 번개가 끼어들지 않게 한다
 	var sim: Sim = SimScript.new(_stage({"cells": [_square(400, 1000, 200, 1)]}), cfg, {"items": [{"at": [500, 1100], "type": type}]})
 	return sim
 
@@ -410,6 +412,61 @@ func _test_wall_blocks_but_gap_lets_through() -> void:
 	_place(through, Vector2(500, 800), Vector2(0, 1))
 	_run(through, 0.4)
 	_check(through.cell_hp[0] == 2, "구멍으로 들어간 공은 안쪽 셀을 맞힌다")
+
+
+func _test_bolt_finishes_the_last_cells() -> void:
+	var cfg := _no_gravity()
+	cfg["finale_cells"] = 3
+	cfg["homing_after"] = 999.0
+	cfg["finale_turn_deg"] = 0.0
+	var cells := [_square(400, 1000, 200, 1), _square(100, 1700, 100, 3), _square(800, 1700, 100, 2), _square(450, 1500, 100, 4, 1)]
+	var sim: Sim = SimScript.new(_stage({"cells": cells}), cfg)
+	_check(not sim.finale and sim.items.is_empty(), "처음에는 번개가 없다")
+	_place(sim, Vector2(500, 900), Vector2(0, 1))
+	_run(sim, 0.2)
+	_check(sim.finale and sim.items.size() == 1 and sim.items[0]["type"] == "bolt", "셀이 몇 개 안 남으면 번개가 내려온다")
+	for i in 3000:
+		if sim.items.is_empty():
+			break
+		sim.set_paddle(900)
+		sim.step()
+	_check(sim.items.is_empty() and sim.destroyed == 1, "놓친 번개는 아무 일도 일으키지 않는다")
+	_run(sim, float(cfg["bolt_retry"]) + 0.1)
+	_check(sim.items.size() == 1, "놓친 번개는 잠시 뒤 다시 내려온다")
+	for i in 3000:
+		if sim.items.is_empty():
+			break
+		sim.set_paddle(sim.items[0]["pos"].x)
+		sim.step()
+	var seen := sim.take_events()
+	_check(seen.any(func(e: Dictionary) -> bool: return e["type"] == "item_caught"), "번개를 받는다")
+	_run(sim, 1.0)
+	seen.append_array(sim.take_events())
+	_check(sim.destroyed == 4, "받으면 남은 셀을 모두 내리친다 (부순 수 %d)" % sim.destroyed)
+	_check(sim.cleared, "랜드마크까지 내리쳐 판이 끝난다")
+	_check(seen.filter(func(e: Dictionary) -> bool: return e["type"] == "bolt").size() == 3, "내리칠 때마다 번개 사건이 생긴다")
+
+
+func _test_models_load() -> void:
+	var Lib = load("res://src/render/model_library.gd")
+	var loaded := 0
+	var total := 0
+	for group: Array in [Lib.ROUND_TREES, Lib.POINTED_TREES, Lib.BUSHES, Lib.FLOWERS, Lib.ROCKS, Lib.PARASOLS]:
+		for name: String in group:
+			total += 1
+			var m: Dictionary = Lib.get_model(name)
+			if m.is_empty():
+				printerr("  읽지 못한 모델: " + name)
+				continue
+			loaded += 1
+			var pts: PackedVector3Array = m["points"]
+			var top := 0.0
+			for p in pts:
+				top = maxf(top, p.y)
+			if pts.size() % 3 != 0 or pts.size() != m["colors"].size() or not is_equal_approx(top, 1.0):
+				printerr("  모양이 이상한 모델: " + name)
+				loaded -= 1
+	_check(loaded == total, "가져온 모델을 모두 읽는다 (%d/%d)" % [loaded, total])
 
 
 func _play(seconds: float) -> Sim:

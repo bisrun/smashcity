@@ -19,6 +19,8 @@ const ITEM_MULTI := "multi"
 const ITEM_WIDE := "wide"
 const ITEM_FIRE := "fire"
 const ITEM_LIFE := "life"
+## 마무리 단계에 하늘에서 내려오는 번개. 받으면 남은 셀을 차례로 내리친다.
+const ITEM_BOLT := "bolt"
 
 
 class Ball:
@@ -95,6 +97,12 @@ var _rng := RandomNumberGenerator.new()
 var _next_id := 1
 ## 셀 번호 → 그 셀에 든 아이템의 종류
 var _item_in_cell := {}
+## 번개가 내리칠 셀의 차례와 다음 번개까지 남은 시간
+var _strikes: Array[int] = []
+var _strike_wait := 0.0
+## 놓친 번개가 다시 내려오기까지 남은 시간. 0 이하면 기다리는 번개가 없다.
+var _bolt_retry := 0.0
+var _sky := Ball.new()
 ## 깨지지 않는 벽의 조각들. 공은 튕기기만 한다. 각 원소는 얇은 사각형이다.
 var walls: Array[PackedVector2Array] = []
 ## 벽에 난 구멍의 양 끝. 각 원소: [Vector2, Vector2]
@@ -149,7 +157,7 @@ func paddle_width() -> float:
 ## 지난 take_events() 뒤에 일어난 일을 돌려주고 비운다.
 ## 종류: hit{cell,hp,max_hp}, destroyed{cell,landmark}, paddle, launch, splash{pos}, emerge{pos},
 ##       ball_lost{ball}, lost, over, cleared, item_spawn{id,type_of,pos}, item_caught{id,type_of}, item_gone{id},
-##       fever, finale, wall{pos}
+##       fever, finale, wall{pos}, bolt{cell,pos}
 ## destroyed 에는 points(얻은 점수)와 chained(연쇄로 부서졌는지)가 함께 온다.
 func take_events() -> Array[Dictionary]:
 	var out := _events
@@ -219,6 +227,22 @@ func step() -> void:
 		if cleared:
 			return
 	_step_items()
+	if cleared:
+		return
+	if _bolt_retry > 0.0:
+		_bolt_retry -= STEP
+		if _bolt_retry <= 0.0:
+			_drop_bolt()
+	if not _strikes.is_empty():
+		_strike_wait -= STEP
+		while _strike_wait <= 0.0 and not _strikes.is_empty() and not cleared:
+			var cell: int = _strikes.pop_front()
+			if cell_hp[cell] > 0:
+				_events.append({"type": "bolt", "cell": cell, "pos": _centers[cell]})
+				_strike(_sky, cell, cell_hp[cell], true)
+				_strike_wait += float(cfg["bolt_interval"])
+		if cleared:
+			return
 	if balls.is_empty():
 		_lose_life()
 
@@ -574,6 +598,7 @@ func _strike(b: Ball, idx: int, amount: int, chained: bool) -> bool:
 	if not finale and not cleared and cell_hp.size() - destroyed <= int(cfg["finale_cells"]):
 		finale = true
 		_events.append({"type": "finale"})
+		_drop_bolt()
 	return true
 
 
@@ -593,6 +618,8 @@ func _step_items() -> void:
 		elif pos.y < float(cfg["paddle_y"]) - float(cfg["fall_margin"]):
 			items.erase(it)
 			_events.append({"type": "item_gone", "id": it["id"]})
+			if it["type"] == ITEM_BOLT:
+				_bolt_retry = float(cfg["bolt_retry"])  # 놓친 번개는 잠시 뒤 다시 내려온다
 
 
 func _apply_item(type: String) -> void:
@@ -621,6 +648,23 @@ func _apply_item(type: String) -> void:
 			fire_left = float(cfg["fire_seconds"])
 		ITEM_LIFE:
 			lives += 1
+		ITEM_BOLT:
+			# 남은 셀을 위에서부터 차례로 내리친다
+			_strikes.clear()
+			for i in cell_hp.size():
+				if cell_hp[i] > 0:
+					_strikes.append(i)
+			_strikes.sort_custom(func(a: int, b: int) -> bool:
+				return _centers[a].y > _centers[b].y if _centers[a].y != _centers[b].y else a < b)
+			_strike_wait = 0.0
+
+
+## 번개 아이템을 판 가운데에서 내려보낸다.
+func _drop_bolt() -> void:
+	var item := {"id": _next_id, "type": ITEM_BOLT, "pos": Vector2(stage.width / 2.0, float(cfg["bolt_drop_height"]))}
+	_next_id += 1
+	items.append(item)
+	_events.append({"type": "item_spawn", "id": item["id"], "type_of": ITEM_BOLT, "pos": item["pos"]})
 
 
 func _multiplier(combo_count: int) -> float:

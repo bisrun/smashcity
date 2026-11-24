@@ -86,13 +86,26 @@ HP는 건물의 높이와 지붕 위의 숫자 표지로 읽힌다.
 | [KayKit City Builder Bits](https://kaylousberg.itch.io/city-builder-bits) | 도시 건설용 건물과 소품 | CC0 |
 | [Quaternius LowPoly Buildings](https://opengameart.org/content/lowpoly-buildings-pack) | 건물 외관 | CC0 |
 
-CC0는 출처 표기 없이 상업적으로 써도 되는 조건이다. 파일 형식이 Godot이 바로 읽는 glTF인지는 검색으로 확인하지 못했다. 내려받아 열어 봐야 안다.
+CC0는 출처 표기 없이 상업적으로 써도 되는 조건이다.
 
-쓰임새에는 한계가 있다. 이 묶음들의 건물은 정해진 네모 바닥을 가진 완성품이라, 구획의 윤곽이 그대로 건물이 되는 지금 방식에는 통째로 올릴 수 없다. 맞는 쓰임은 셋이다.
+Kenney의 Nature Kit과 City Kit (Commercial)을 내려받아 확인했다. 둘 다 Godot이 바로 읽는 GLB 파일이 들어 있고, 이용 조건 파일에 CC0라고 적혀 있다.
 
-- 나무와 바위: 직접 만든 나무를 바꿔 넣는다.
-- 옥상 소품: 물탱크, 실외기, 안테나, 간판 같은 것을 평지붕 위에 올린다.
-- 네모에 가까운 구획: 윤곽이 네모에 가까운 구획에 한해 건물을 통째로 올린다.
+지금 쓰는 것은 다음과 같다. 파일은 `assets/models/kenney/` 아래에 이용 조건 파일과 함께 있다.
+
+| 쓰임 | 모델 | 묶음 |
+|---|---|---|
+| 둥근 나무 | tree_default, tree_oak, tree_fat, tree_detailed | Nature Kit |
+| 뾰족한 나무 | tree_cone, tree_pineRoundA, tree_pineRoundC | Nature Kit |
+| 덤불, 꽃, 바위 | plant_bush, plant_bushLarge, flower 3종, rock_largeA | Nature Kit |
+| 옥상의 파라솔 | detail-parasol-a, detail-parasol-b | City Kit (Commercial) |
+
+가져온 모델을 노드로 하나하나 세우지 않는다. 삼각형과 색을 꺼내 블록의 메시에 함께 구워 넣는다(`src/render/model_library.gd`). 그래야 블록이 주저앉거나 부서질 때 함께 움직이고 그리는 횟수가 늘지 않는다.
+
+Nature Kit의 나무는 잎이 민트색이라 이 판의 풀빛과 어긋났다. 잎 부분만 이 판의 초록과 벚꽃색으로 물들여 쓴다.
+
+City Kit (Commercial)에는 옥상 소품이 파라솔과 차양뿐이었다. 물탱크, 실외기, 안테나 같은 것은 없어서 옥탑과 물탱크는 직접 만든 모양을 그대로 쓴다.
+
+건물 모델은 쓰지 않았다. 이 묶음들의 건물은 정해진 네모 바닥을 가진 완성품이라, 구획의 윤곽이 그대로 건물이 되는 지금 방식에는 통째로 올릴 수 없다. 윤곽이 네모에 가까운 구획에 한해 통째로 올리는 것은 해 볼 수 있다.
 
 ## 판을 둘러싼 풍경
 

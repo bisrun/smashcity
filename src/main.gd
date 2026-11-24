@@ -22,7 +22,7 @@ const INK := Color("14213D")
 const FIRE := Color("FF7A3C")
 ## 끌기의 민감도. 1이면 손가락이 움직인 만큼 패들이 움직인다.
 const DRAG_GAIN := 1.25
-const ITEM_NAMES := {"multi": "멀티볼", "wide": "넓은 패들", "fire": "불공", "life": "공 +1"}
+const ITEM_NAMES := {"multi": "멀티볼", "wide": "넓은 패들", "fire": "불공", "life": "공 +1", "bolt": "번개!"}
 
 var _stage: StageData
 var _cfg: Dictionary
@@ -105,7 +105,10 @@ func _process(delta: float) -> void:
 			"fever":
 				_say("피버! 연쇄 폭발")
 			"finale":
-				_say("마무리! 공이 건물을 쫓아간다")
+				_say("마무리! 번개를 받아라")
+			"bolt":
+				_board.show_bolt(e["pos"])
+				_shake = maxf(_shake, 20.0)
 			"lost":
 				_shake = maxf(_shake, 26.0)
 				Input.vibrate_handheld(120)
