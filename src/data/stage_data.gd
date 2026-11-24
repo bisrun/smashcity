@@ -19,6 +19,10 @@ var roads: Array[Dictionary] = []
 var lakes: Array[Dictionary] = []
 ## 각 원소: {position: Vector2, kind: String, name: String}
 var pois: Array[Dictionary] = []
+## 공원의 윤곽
+var parks: Array[PackedVector2Array] = []
+## 통로 면의 바깥 윤곽. 물 위를 지나는 통로(다리)를 가릴 때 쓴다
+var corridors: Array[PackedVector2Array] = []
 
 
 static func load_file(path: String) -> StageData:
@@ -58,6 +62,10 @@ static func from_dict(d: Dictionary) -> StageData:
 		})
 	for l: Dictionary in d.get("lake", []):
 		s.lakes.append({"points": _points(l["p"])})
+	for ring: Array in d.get("parks", []):
+		s.parks.append(_points(ring))
+	for c: Dictionary in d.get("corridors", []):
+		s.corridors.append(_points(c["p"]))
 	for p: Dictionary in d.get("pois", []):
 		s.pois.append({
 			"position": Vector2(float(p["x"]), float(p["y"])),
@@ -80,6 +88,24 @@ func nearest_road_point(classes: PackedStringArray, target: Vector2) -> Vector2:
 				best_d = d
 				best = pt
 	return best
+
+
+## nearest_road_point 와 같되, 그 지점에서 도로가 뻗는 방향도 함께 돌려준다. [지점, 방향]
+func nearest_road_segment(classes: PackedStringArray, target: Vector2) -> Array:
+	var best := target
+	var dir := Vector2.UP
+	var best_d := INF
+	for r in roads:
+		if not classes.has(r["road_class"]):
+			continue
+		var pts: PackedVector2Array = r["points"]
+		for i in pts.size() - 1:
+			var d := pts[i].distance_squared_to(target)
+			if d < best_d and pts[i] != pts[i + 1]:
+				best_d = d
+				best = pts[i]
+				dir = (pts[i + 1] - pts[i]).normalized()
+	return [best, dir]
 
 
 static func _points(flat: Array) -> PackedVector2Array:

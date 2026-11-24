@@ -7,7 +7,7 @@ Godot 4로 만들며 안드로이드를 먼저 내고 이후 아이폰을 지원
 
 ## 지금 상태
 
-잠실 판을 2.5D로 그리는 첫 장면이 있다. 패들이 손가락을 따라 움직이고 프레임 수가 표시된다. 공은 아직 움직이지 않는다.
+잠실 한 판을 플레이할 수 있다. 공이 통로를 따라 튀며 벽돌(작은 길로 둘러싸인 구획)을 부수고, 롯데월드타워가 선 벽돌을 부수면 클리어다. 공은 잃지 않고, 빠지면 패들로 돌아온다. 아이템과 터짐은 아직 없다.
 
 ## 폴더 구조
 
@@ -31,6 +31,7 @@ smashcity/
 │  └─ ui/                   화면과 HUD
 ├─ assets/
 │  ├─ stages/<city>/<stage>/  map.json (OSM 가공) + design.json (수작업 기획과 상상)
+│  ├─ balance.json          속도, 폭, 점수 같은 밸런스 값
 │  ├─ models/  textures/  audio/  fonts/
 ├─ tests/
 │  └─ run_tests.gd          화면 없이 도는 테스트
@@ -48,7 +49,8 @@ smashcity/
 ## 실행
 
 ```
-godot --path .                                     # PC에서 실행
+godot --path .                                     # PC에서 실행. 마우스를 누른 채 움직이면 패들이 따라온다
+SMASHCITY_AUTOPLAY=1 godot --path .                # 패들이 공을 따라다니는 자동 플레이
 godot --headless --path . -s tests/run_tests.gd    # 테스트
 ```
 

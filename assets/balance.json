@@ -1,0 +1,19 @@
+{
+  "ball_speed": 720,
+  "gravity": 90,
+  "min_angle_deg": 15,
+  "paddle_width": 280,
+  "paddle_thickness": 42,
+  "paddle_y": -600,
+  "paddle_max_angle_deg": 60,
+  "river_width": 760,
+  "fall_margin": 90,
+  "launch_delay": 1.0,
+  "launch_angle_deg": 10,
+  "respawn_delay": 1.5,
+  "landmark_hp": 12,
+  "score_hit": 10,
+  "score_destroy_per_hp": 100,
+  "combo_step": 0.1,
+  "combo_max": 5.0
+}
