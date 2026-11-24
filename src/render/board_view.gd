@@ -11,6 +11,7 @@ extends Node3D
 ## 강가 나무가 서는 높이
 const SLAB_HEIGHT := 1.0
 const ModelLibraryScript := preload("res://src/render/model_library.gd")
+const SimScript := preload("res://src/sim/sim.gd")
 const FLOOR_HEIGHT := 3.2
 const LANDMARK_HEIGHT := 555.0
 ## 이 높이를 넘는 부분은 눌러 그린다. 높은 건물이 통로를 가리지 않게 하려는 것.
@@ -24,12 +25,32 @@ const RIM := 6.0
 ## 한 단을 높게 잡아, 맞을 때마다 건물이 눈에 띄게 줄어든다.
 const BODY_BASE := 8.0
 const BODY_FLOOR := 26.0
-const PARK_HEIGHT := 9.0
+## 남은 숫자(1~4)에 따른 건물의 높이. 차이가 눈에 띄도록 고르게 올리지 않고 위로 갈수록 크게 벌린다.
+const TIER_HEIGHTS: Array[float] = [26.0, 58.0, 100.0, 150.0]
+const PARK_HEIGHT := 12.0
+## 숲을 두른 짙은 수풀 띠의 폭, 올록볼록한 혹 하나의 길이와 깊이
+const HEDGE := 5.0
+const LOBE := 26.0
+const LOBE_DEPTH := 6.0
 const KIND_PARK := "park"
 const KIND_HOUSE := "house"
 const KIND_TIERED := "tiered"
 const KIND_FLAT := "flat"
 const KIND_LANDMARK := "landmark"
+## 가져온 건물 모델을 통째로 올리는 구획. 네모에 가까운 구획만 해당한다.
+const KIND_MODEL := "model"
+## 이것을 켜면 네모에 가까운 구획에 가져온 건물 모델을 올린다.
+## 잠실에서 해 보니 277개 중 20개만 해당해, 나머지와 섞여 따로 놀아 보였다. 그래서 꺼 두었다.
+const USE_MODEL_BUILDINGS := false
+## 모델 건물을 올릴 만큼 네모에 가까운지의 기준: 감싸는 네모를 채우는 비율, 가로세로 비, 넓이
+const FIT_FILL := 0.84
+const FIT_ASPECT := 2.6
+const FIT_AREA := 2400.0
+const PLINTH := 3.0
+const MODEL_HEIGHTS: Array[float] = [40.0, 64.0, 90.0, 118.0]
+## 창문 하나의 폭 (m), 밑동 그늘이 건물 밖으로 나오는 폭 (m)
+const WINDOW_PITCH := 12.0
+const SKIRT := 5.0
 const BADGE_RADIUS := 15.0
 ## 실제 윤곽을 그대로 쓰는 건물의 최소 넓이 (㎡)
 const KEEP_REAL_AREA := 1200.0
@@ -45,12 +66,22 @@ const SHORE_SPACING := 40.0
 const ROAD := Color("F7ECD8")
 const WATER := Color("63CFE0")
 ## 건물 벽과 지붕의 색. 블록마다 하나씩 고른다.
-const WALL_TINTS: Array[Color] = [Color("FFF4E3"), Color("FFE3E0"), Color("E3F4EA"), Color("E2EEFB"), Color("FFF3C9"), Color("EEE4F8")]
+const WALL_TINTS: Array[Color] = [Color("FFF4E3"), Color("FFE3E0"), Color("E3F4EA"), Color("E2EEFB"), Color("FFF3C9"), Color("EEE4F8"),
+	Color("F3C9AE"), Color("EDB8A0"), Color("CFE6D8"), Color("C9DDF2"), Color("FFFFFF"), Color("F6DDB6")]
 const ROOF_TINTS: Array[Color] = [Color("E8785A"), Color("F2A65A"), Color("4FB0A5"), Color("E56B8C"), Color("5E8FD6"), Color("8A78D6")]
 const WINDOW := Color("8CCBF2")
+## 건물마다 고르는 창의 색, 불이 켜진 창의 색
+const WINDOWS: Array[Color] = [Color("8CCBF2"), Color("7FD6D8"), Color("9DB8F2"), Color("6FB3E8"), Color("A9D9F5")]
+const LIT := Color("FFE9A8")
 const STONE := Color("D8D2C4")
+## 숲을 두른 돌 테두리의 색, 많이 맞은 숲의 풀빛, 많이 맞은 숲의 나무에 입히는 색
+const CURB := Color("F5EFE2")
+const AUTUMN := Color("E0B45C")
+const AUTUMN_TINT := Color(1.0, 0.72, 0.42)
 ## 부서진 자리에 남는 터의 색. 길보다 조금 어둡다.
 const TRACE_EDGE := Color("E6D4B4")
+## 건물 밑동에 깔리는 그늘의 색
+const SHADE := Color("D9C7A6")
 ## 찻길과 차선의 색, 찻길을 바닥에서 띄우는 높이(호수 위 다리에서도 보이게)
 const ASPHALT := Color("D9D4DE")
 const LANE := Color("FFFFFF")
@@ -108,6 +139,8 @@ var _lawn: Array[PackedVector2Array] = []
 var _is_landmark: Array[bool] = []
 var _plinths: Array[MeshInstance3D] = []
 var _kind: Array[String] = []
+## 셀마다 남은 HP의 비율 (1이면 멀쩡). 숲의 색을 정한다.
+var _health: Array[float] = []
 var _wall_tint: Array[Color] = []
 var _roof_tint: Array[Color] = []
 var _badges: Array[Dictionary] = []
@@ -121,8 +154,12 @@ var _boxes: Array[Rect2] = []
 var _design := {}
 var _car_roads: Array[Dictionary] = []
 var _cars: Array[Dictionary] = []
-var _car_bodies: MultiMeshInstance3D
-var _car_cabins: MultiMeshInstance3D
+var _car_batches: Array[MultiMeshInstance3D] = []
+## 네모에 가까운 구획에 올릴 건물 모델의 자리. 셀 번호 → {center, along, across, half_long, half_short}
+var _fit := {}
+## 모델 건물이 한 번 맞을 때마다 내려앉는 깊이와, 처음의 단계
+var _sink: Array[float] = []
+var _max_tier: Array[int] = []
 
 
 ## near_bank_y 는 화면 아래쪽 강가가 시작되는 y다. 공을 잃는 선과 맞춘다.
@@ -161,12 +198,27 @@ func build(stage: StageData, river_width: float, near_bank_y: float, design: Dic
 		var node := Node3D.new()
 		add_child(node)
 		cell_nodes.append(node)
-		_kind.append(_classify(cell, real[ci], _area(outline)))
+		var kind := _classify(cell, real[ci], _area(outline))
+		if kind == KIND_PARK:
+			# 숲은 각진 구획 그대로가 아니라 수풀처럼 올록볼록한 윤곽으로 그린다
+			outline = _blob(outline, ci)
+			lawn = _inset(outline, HEDGE)
+			_outline[ci] = outline
+			_lawn[ci] = lawn
+		if USE_MODEL_BUILDINGS and kind != KIND_PARK and kind != KIND_LANDMARK:
+			var fit := _model_fit(outline)
+			if not fit.is_empty():
+				_fit[ci] = fit
+				kind = KIND_MODEL
+		_kind.append(kind)
+		_health.append(1.0)
 		var pick := _hash(ci, 5, 23)
 		_wall_tint.append(GOLD_WALL if cell["landmark"] else WALL_TINTS[pick % WALL_TINTS.size()])
 		_roof_tint.append(GOLD if cell["landmark"] else ROOF_TINTS[(pick >> 4) % ROOF_TINTS.size()])
 		var start_hp: int = hp[ci] if ci < hp.size() else int(cell["hp"])
 		var tier := _tier(start_hp, start_hp, cell["landmark"])
+		_max_tier.append(tier)
+		_sink.append(MODEL_HEIGHTS[clampi(int(cell["hp"]) - 1, 0, 3)] / tier)
 		var plinth := MeshInstance3D.new()
 		plinth.material_override = _material
 		node.add_child(plinth)
@@ -176,10 +228,13 @@ func build(stage: StageData, river_width: float, near_bank_y: float, design: Dic
 		_label_at.append(Vector3.INF)
 		_furnish(st, ci, cell, lawn, real[ci], stage)
 		var tops := _mesh_child(node, st, true)
+		if _kind[ci] == KIND_PARK:
+			tops.material_override = _material.duplicate()
 		tops.position.y = _body_height(ci, tier)
 		_tops.append(tops)
 		_badges.append(_add_badge(ci, tops, start_hp))
 	_add_props(stage)
+	_build_lake_decor(stage)
 
 
 ## 셀이 맞았을 때. 건물이 한 단 낮아지고 숫자가 준다.
@@ -189,13 +244,35 @@ func show_hit(cell: int, hp: int, max_hp: int) -> void:
 		return
 	_set_badge(_badges[cell], hp)
 	var tier := _tier(hp, max_hp, _is_landmark[cell])
+	_health[cell] = float(hp) / float(max_hp)
 	_plinths[cell].mesh = _body_mesh(cell, tier)
+	if _kind[cell] == KIND_PARK:
+		# 숲은 낮아지지 않는다. 출렁이고 잎이 흩날리며, 맞을수록 가을빛으로 물든다.
+		var tint := Color.WHITE.lerp(AUTUMN_TINT, 1.0 - _health[cell])
+		((_tops[cell] as MeshInstance3D).material_override as StandardMaterial3D).albedo_color = tint
+		var sway := node.create_tween()
+		sway.tween_property(node, "scale", Vector3(1.03, 0.88, 1.03), 0.06)
+		sway.tween_property(node, "scale", Vector3(0.99, 1.06, 0.99), 0.08)
+		sway.tween_property(node, "scale", Vector3.ONE, 0.08)
+		return
 	var tween := node.create_tween()
 	# 쿵 하고 눌렸다가 한 단 낮아진 높이로 튀어 오른다
 	tween.tween_property(_tops[cell], "position:y", _body_height(cell, tier), 0.12).set_ease(Tween.EASE_IN)
 	tween.parallel().tween_property(node, "scale:y", 0.72, 0.06)
 	tween.tween_property(node, "scale:y", 1.06, 0.08)
 	tween.tween_property(node, "scale:y", 1.0, 0.08)
+
+
+## 숲에 공이 튕겼을 때. 숲이 출렁이고 잎이 흩날린다. 숲은 부서지지 않는다.
+func show_thud(cell: int, map_pos: Vector2) -> void:
+	var node := cell_nodes[cell]
+	if node == null:
+		return
+	var tween := node.create_tween()
+	tween.tween_property(node, "scale", Vector3(1.03, 0.9, 1.03), 0.06)
+	tween.tween_property(node, "scale", Vector3(0.99, 1.05, 0.99), 0.08)
+	tween.tween_property(node, "scale", Vector3.ONE, 0.08)
+	show_debris(map_pos, LEAF[cell % LEAF.size()], false, 7)
 
 
 ## 셀이 부서졌을 때. 납작하게 꺼뜨린 뒤 없앤다.
@@ -338,6 +415,29 @@ func show_bolt(map_pos: Vector2) -> void:
 	tween.tween_callback(flash.queue_free)
 
 
+## 바닥을 따라 퍼지는 충격파 고리.
+func show_shockwave(map_pos: Vector2, reach: float, color: Color) -> void:
+	var ring := MeshInstance3D.new()
+	var torus := TorusMesh.new()
+	torus.inner_radius = 22.0
+	torus.outer_radius = 30.0
+	ring.mesh = torus
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = color
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.no_depth_test = true
+	ring.material_override = mat
+	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(ring)
+	ring.position = _at(map_pos, 8.0)
+	var grow := reach / 26.0
+	var tween := ring.create_tween()
+	tween.tween_property(ring, "scale", Vector3(grow, 1.0, grow), 0.5).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.5)
+	tween.tween_callback(ring.queue_free)
+
+
 ## 부서지는 조각. 셀이 부서질 때 그 자리에서 튀어 오른다.
 func show_debris(map_pos: Vector2, color: Color, big: bool, count: int = 0) -> void:
 	var bits := CPUParticles3D.new()
@@ -478,6 +578,17 @@ func _build_roads(stage: StageData) -> void:
 			if at.x > 12.0 and at.x < _w - 12.0 and at.y > 12.0 and at.y < _h - 12.0 and _cell_at(stage, _boxes, at) < 0 and not _on_water(stage, at):
 				_add_tree(trees, {"at": at, "round": true, "size": 0.62 + (h >> 3) % 4 * 0.05, "base": 0.0, "color": LEAF[(h >> 6) % 3]})
 			d += 84.0
+		# 가로등: 가로수 사이사이에
+		d = 82.0 + float(_hash(ri, 3, 9) % 40)
+		while d < total - 20.0:
+			var p0 := _along(pts, lengths, d)
+			var p1 := _along(pts, lengths, d + 4.0)
+			var dir := (p1 - p0).normalized()
+			var h := _hash(ri, int(d), 53)
+			var at := p0 + Vector2(-dir.y, dir.x) * (half + 6.0) * (1.0 if h % 2 == 0 else -1.0)
+			if at.x > 12.0 and at.x < _w - 12.0 and at.y > 12.0 and at.y < _h - 12.0 and _cell_at(stage, _boxes, at) < 0 and not _on_water(stage, at):
+				_add_prop(trees, ModelLibraryScript.LIGHTS, at, 0.0, 30.0, h)
+			d += 168.0
 		if total > 160.0:
 			_car_roads.append({"points": pts, "lengths": lengths, "total": total, "lane": half * 0.5})
 	_add_mesh(st, false)
@@ -499,74 +610,6 @@ static func _along(pts: PackedVector2Array, lengths: PackedFloat32Array, d: floa
 		i += 1
 	var seg := lengths[i + 1] - lengths[i]
 	return pts[i].lerp(pts[i + 1], clampf((d - lengths[i]) / maxf(seg, 0.001), 0.0, 1.0))
-
-
-## 차를 길 위에 흩어 놓는다. 몸통과 지붕을 한 번에 그리는 두 묶음으로 만든다.
-func _spawn_cars() -> void:
-	_cars.clear()
-	if _car_roads.is_empty():
-		return
-	var colors: Array[Color] = [Color("F0645A"), Color("FFD23F"), Color("6FB8FF"), Color("FFFFFF"), Color("7CD992"), Color("B58CF0"), Color("FF9F68")]
-	for i in CAR_COUNT:
-		var h := _hash(i, 71, 5)
-		var road: Dictionary = _car_roads[h % _car_roads.size()]
-		_cars.append({"road": road, "d": float((h >> 4) % 1000) / 1000.0 * road["total"], "speed": 55.0 + (h >> 9) % 60,
-			"way": 1.0 if (h >> 15) % 2 == 0 else -1.0, "color": colors[(h >> 17) % colors.size()]})
-	var body := BoxMesh.new()
-	body.size = Vector3(9.0, 5.0, 17.0)
-	var cabin := BoxMesh.new()
-	cabin.size = Vector3(8.0, 4.0, 9.0)
-	_car_bodies = _car_batch(body, true)
-	_car_cabins = _car_batch(cabin, false)
-	for i in _cars.size():
-		_car_bodies.multimesh.set_instance_color(i, _cars[i]["color"])
-		_car_cabins.multimesh.set_instance_color(i, Color("EAF6FF"))
-	_move_cars(0.0)
-
-
-func _car_batch(mesh: Mesh, shadows: bool) -> MultiMeshInstance3D:
-	var mm := MultiMesh.new()
-	mm.transform_format = MultiMesh.TRANSFORM_3D
-	mm.use_colors = true
-	mm.mesh = mesh
-	mm.instance_count = _cars.size()
-	var mat := StandardMaterial3D.new()
-	mat.vertex_color_use_as_albedo = true
-	mat.roughness = 1.0
-	var node := MultiMeshInstance3D.new()
-	node.multimesh = mm
-	node.material_override = mat
-	node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if shadows else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(node)
-	return node
-
-
-func _process(delta: float) -> void:
-	if not _cars.is_empty():
-		_move_cars(delta)
-
-
-## 차를 길을 따라 움직인다. 끝에 닿으면 반대 차선으로 돌아온다.
-func _move_cars(delta: float) -> void:
-	for i in _cars.size():
-		var car: Dictionary = _cars[i]
-		var road: Dictionary = car["road"]
-		var d: float = car["d"] + car["speed"] * car["way"] * delta
-		if d > road["total"] - 6.0 or d < 6.0:
-			car["way"] = -car["way"]
-			d = clampf(d, 6.0, road["total"] - 6.0)
-		car["d"] = d
-		var p := _along(road["points"], road["lengths"], d)
-		var q := _along(road["points"], road["lengths"], d + 3.0 * car["way"])
-		var dir := (q - p).normalized()
-		if dir == Vector2.ZERO:
-			continue
-		var at: Vector2 = p + Vector2(dir.y, -dir.x) * float(road["lane"])
-		# 지도 좌표의 방향을 장면 좌표로 옮긴다. 차의 앞은 -Z 쪽이다.
-		var forward := Vector3(dir.x, 0.0, -dir.y)
-		var basis := Basis.looking_at(forward, Vector3.UP)
-		_car_bodies.multimesh.set_instance_transform(i, Transform3D(basis, _at(at, ROAD_LIFT + 3.2)))
-		_car_cabins.multimesh.set_instance_transform(i, Transform3D(basis, _at(at, ROAD_LIFT + 7.4)))
 
 
 ## 부서진 자리에 터를 남긴다. 건물이 있던 윤곽이 바닥에 옅게 남아, 판이 휑해 보이지 않고 어디가 뚫렸는지도 읽힌다.
@@ -591,9 +634,9 @@ static func display_height(levels: int, landmark: bool) -> float:
 	return maxf(9.0, h)
 
 
-## 남은 HP를 1~4단계로 옮긴다. 보통 셀은 HP가 곧 단계이고, HP가 큰 랜드마크는 4단계로 나눈다.
-static func _tier(hp: int, max_hp: int, landmark: bool) -> int:
-	if landmark and max_hp > 4:
+## 남은 HP를 1~4단계로 옮긴다. 보통 셀은 HP가 곧 단계이고, HP가 큰 랜드마크와 숲은 4단계로 나눈다.
+static func _tier(hp: int, max_hp: int, _landmark: bool) -> int:
+	if max_hp > 4:
 		return clampi(ceili(hp * 4.0 / max_hp), 1, 4)
 	return clampi(hp, 1, 4)
 
@@ -602,19 +645,51 @@ static func _tier(hp: int, max_hp: int, landmark: bool) -> int:
 func _body_height(ci: int, tier: int) -> float:
 	if _kind[ci] == KIND_PARK:
 		return PARK_HEIGHT
-	return BODY_BASE + tier * BODY_FLOOR
+	if _kind[ci] == KIND_MODEL:
+		# 모델 건물은 받침 위에 서 있다가, 맞을 때마다 땅속으로 한 단씩 내려앉는다
+		return PLINTH - (_max_tier[ci] - tier) * _sink[ci]
+	# 숫자가 클수록 훌쩍 높다. 같은 숫자라도 건물마다 조금씩 다르다.
+	return TIER_HEIGHTS[clampi(tier, 1, 4) - 1] * (0.86 + 0.28 * float(_hash(ci, 5, 9) % 100) / 100.0)
 
 
 ## 블록 몸통. 블록의 윤곽이 그대로 건물의 벽이 된다. 층마다 창문 띠를 두른다.
 func _body_mesh(ci: int, tier: int) -> ArrayMesh:
 	var st := _begin()
 	if _kind[ci] == KIND_PARK:
-		_add_prism(st, _outline[ci], 0.0, PARK_HEIGHT, GRASS[ci % GRASS.size()], STONE, 0.0)
+		# 숲: 짙은 수풀 띠가 올록볼록하게 둘러 숲의 경계를 보여 준다. 맞을수록 풀빛이 가을빛으로 바뀐다.
+		_add_skirt(st, _outline[ci])
+		var grass := GRASS[ci % GRASS.size()].lerp(AUTUMN, 1.0 - _health[ci])
+		_add_prism(st, _outline[ci], 0.0, PARK_HEIGHT, grass.darkened(0.3), grass.darkened(0.42), 0.0)
+		_add_prism(st, _lawn[ci], PARK_HEIGHT, PARK_HEIGHT + 2.0, grass, grass.darkened(0.3), 0.0)
+	elif _kind[ci] == KIND_MODEL:
+		# 받침은 그대로 남고 건물만 내려앉는다
+		_add_skirt(st, _outline[ci])
+		_add_prism(st, _outline[ci], 0.0, PLINTH, DECK, STONE, 0.0)
 	else:
 		var wall := _wall_tint[ci]
-		_add_bands(st, _outline[ci], 0.0, _body_height(ci, tier), tier * 3, wall, WINDOW, wall.darkened(0.06), 1.0)
+		_add_skirt(st, _outline[ci])
+		_add_facade(st, _outline[ci], 0.0, _body_height(ci, tier), tier * 3, wall, _roof_tint[ci], wall.darkened(0.06), _hash(ci, 11, 3))
 	st.generate_normals()
 	return st.commit()
+
+
+## 구획이 네모에 가까우면 건물 모델을 올릴 자리를 돌려준다. 아니면 빈 사전.
+func _model_fit(outline: PackedVector2Array) -> Dictionary:
+	if ModelLibraryScript.pick(ModelLibraryScript.BUILDINGS, 0).is_empty():
+		return {}
+	var rect := _bounding_rect(outline)
+	if rect.is_empty() or rect["fill"] < FIT_FILL or _area(outline) < FIT_AREA:
+		return {}
+	if rect["half_long"] / maxf(1.0, rect["half_short"]) > FIT_ASPECT:
+		return {}
+	# 건물이 구획 밖으로 나가지 않을 때까지 줄여 본다
+	for shrink: float in [0.9, 0.82, 0.74]:
+		var corners := _rect(rect["center"], rect["along"], rect["across"], rect["half_long"] * shrink, rect["half_short"] * shrink)
+		if _rect_fits(corners, outline):
+			rect["half_long"] *= shrink
+			rect["half_short"] *= shrink
+			return rect
+	return {}
 
 
 ## 블록의 종류를 정한다. 건물이 없던 낮은 구획은 공원, 나머지는 블록 전체가 건물 한 채다.
@@ -622,7 +697,8 @@ static func _classify(cell: Dictionary, real: Array, area: float) -> String:
 	if cell["landmark"]:
 		return KIND_LANDMARK
 	var hp: int = cell["hp"]
-	if real.is_empty() and hp <= 1:
+	# 판정이 부서지지 않는 숲으로 치는 셀과 같은 기준이어야 한다
+	if SimScript.is_park(cell):
 		return KIND_PARK
 	if hp >= 3:
 		return KIND_FLAT
@@ -632,6 +708,60 @@ static func _classify(cell: Dictionary, real: Array, area: float) -> String:
 
 
 ## 윤곽을 안으로 들인다. 들일 수 없을 만큼 좁으면 그대로 돌려준다.
+## 구획의 윤곽을 수풀처럼 바꾼다. 모서리를 둥글리고 가장자리를 올록볼록하게 판다.
+## 안쪽으로만 파므로 판정에 쓰는 구획 밖으로 나가지 않는다. 모양을 못 만들면 원래 윤곽을 돌려준다.
+static func _blob(pts: PackedVector2Array, seed: int) -> PackedVector2Array:
+	var ring := pts.duplicate()
+	if Geometry2D.is_polygon_clockwise(ring):
+		ring.reverse()
+	# 모서리 둥글리기: 안으로 줄였다가 둥글게 다시 키운다
+	var round := minf(16.0, sqrt(_area(ring)) * 0.16)
+	var shrunk := Geometry2D.offset_polygon(ring, -round, Geometry2D.JOIN_ROUND)
+	if shrunk.is_empty():
+		return pts
+	var core: PackedVector2Array = shrunk[0]
+	for c: PackedVector2Array in shrunk:
+		if _area(c) > _area(core):
+			core = c
+	var grown := Geometry2D.offset_polygon(core, round, Geometry2D.JOIN_ROUND)
+	if grown.is_empty() or grown[0].size() < 3:
+		return pts
+	var smooth: PackedVector2Array = grown[0]
+	var n := smooth.size()
+	var total := 0.0
+	for i in n:
+		total += smooth[i].distance_to(smooth[(i + 1) % n])
+	if total < LOBE * 3.0:
+		return smooth
+	# 둘레를 따라 걸으며 혹과 혹 사이를 안으로 판다
+	var lobes := maxi(5, int(round(total / LOBE)))
+	var samples := lobes * 6
+	var out := PackedVector2Array()
+	var seg := 0
+	var seg_start := 0.0
+	var seg_len := smooth[0].distance_to(smooth[1 % n])
+	var center := Vector2.ZERO
+	for q in smooth:
+		center += q / n
+	for k in samples:
+		var d := total * k / samples
+		while d > seg_start + seg_len and seg < n - 1:
+			seg_start += seg_len
+			seg += 1
+			seg_len = smooth[seg].distance_to(smooth[(seg + 1) % n])
+		var a := smooth[seg]
+		var b := smooth[(seg + 1) % n]
+		var at := a.lerp(b, clampf((d - seg_start) / maxf(0.001, seg_len), 0.0, 1.0))
+		var lobe := k / 6
+		var depth := LOBE_DEPTH * (0.6 + 0.8 * float(_hash(seed, lobe, 77) % 100) / 100.0)
+		var dip := 1.0 - absf(sin(PI * float(k % 6) / 6.0 + PI / 12.0))
+		var inward := (center - at).normalized()
+		out.append(at + inward * depth * dip)
+	if Geometry2D.triangulate_polygon(out).is_empty():
+		return smooth
+	return out
+
+
 static func _inset(pts: PackedVector2Array, by: float) -> PackedVector2Array:
 	var ring := pts.duplicate()
 	if Geometry2D.is_polygon_clockwise(ring):
@@ -686,9 +816,21 @@ func _furnish(st: SurfaceTool, ci: int, cell: Dictionary, lawn: PackedVector2Arr
 				var top := display_height(tower["levels"], true)
 				_add_bands(st, tower["points"], 2.5, top, 18, GLASS_FRAME, GLASS_DEEP, GOLD, 0.36)
 				_label_at[ci] = Vector3(tower["center"].x, top + 66.0, tower["center"].y)
+		KIND_MODEL:
+			# 네모에 가까운 구획에 건물 모델을 통째로 올린다
+			var fit: Dictionary = _fit[ci]
+			var tall := MODEL_HEIGHTS[clampi(int(cell["hp"]) - 1, 0, 3)]
+			var names := ModelLibraryScript.TOWERS if int(cell["hp"]) >= 4 else ModelLibraryScript.BUILDINGS
+			var model := ModelLibraryScript.pick_by_shape(names, fit["half_long"] / maxf(1.0, fit["half_short"]), h)
+			if not model.is_empty():
+				_add_model_fit(st, model, fit["center"], fit["along"], fit["across"], fit["half_long"], fit["half_short"], tall, wall, roof)
+			_label_at[ci] = Vector3(fit["center"].x, tall + 16.0, fit["center"].y)
+			object_count += 1
 		KIND_PARK:
 			var spot := _roomiest_point(lawn)
 			_label_at[ci] = Vector3(spot.x, 44.0, spot.y)
+			# 공원 몇 곳에는 조각상을 세운다
+			var statued := h % 4 == 0 and _add_prop(st, ModelLibraryScript.STATUES, spot, 0.0, 26.0, h)
 			var box := _bounds(lawn)
 			var origin := box.get_center()
 			var reach := int(ceil(box.size.length() / 2.0 / TREE_SPACING))
@@ -697,7 +839,7 @@ func _furnish(st: SurfaceTool, ci: int, cell: Dictionary, lawn: PackedVector2Arr
 				for iy in range(-reach, reach + 1):
 					var t := _hash(ci, ix * 31 + 7, iy)
 					var at := origin + axis * (ix * TREE_SPACING) + side * (iy * TREE_SPACING) + Vector2((t >> 4) % 13 - 6.0, (t >> 8) % 13 - 6.0)
-					if not _tree_fits(at, lawn):
+					if not _tree_fits(at, lawn) or (statued and at.distance_to(spot) < 22.0):
 						continue
 					var lakeside := false
 					for lake in stage.lakes:
@@ -836,7 +978,8 @@ static func _rect(at: Vector2, axis: Vector2, side: Vector2, half_w: float, half
 
 
 ## 층마다 벽 띠와 유리 띠를 번갈아 두른 기둥. taper가 1보다 작으면 위로 갈수록 그 비율까지 좁아진다.
-func _add_bands(st: SurfaceTool, pts: PackedVector2Array, y0: float, y1: float, floors: int, wall: Color, glass: Color, roof: Color, taper: float) -> void:
+## grid 를 켜면 유리 띠를 세로 기둥으로 끊어 창문이 격자로 보이게 한다.
+func _add_bands(st: SurfaceTool, pts: PackedVector2Array, y0: float, y1: float, floors: int, wall: Color, glass: Color, roof: Color, taper: float, grid: bool = false) -> void:
 	var n := pts.size()
 	if n < 3:
 		return
@@ -849,27 +992,323 @@ func _add_bands(st: SurfaceTool, pts: PackedVector2Array, y0: float, y1: float, 
 	for i in levels.size() - 1:
 		var s0 := lerpf(1.0, taper, (levels[i] - y0) / (y1 - y0))
 		var s1 := lerpf(1.0, taper, (levels[i + 1] - y0) / (y1 - y0))
-		var color := wall if i % 2 == 0 else glass
+		var is_glass := i % 2 == 1
+		var color := glass if is_glass else wall
 		if i == 0:
-			color = wall.darkened(0.1)  # 바닥에 닿는 띠는 살짝 어둡게
-		st.set_color(color)
+			color = wall.darkened(0.14)  # 바닥에 닿는 띠는 어둡게 해 건물이 땅에 붙어 보이게 한다
 		for k in n:
 			var a := center + (pts[k] - center) * s0
 			var b := center + (pts[(k + 1) % n] - center) * s0
 			var a_up := center + (pts[k] - center) * s1
 			var b_up := center + (pts[(k + 1) % n] - center) * s1
-			st.add_vertex(_at(a, levels[i]))
-			st.add_vertex(_at(b, levels[i]))
-			st.add_vertex(_at(b_up, levels[i + 1]))
-			st.add_vertex(_at(a, levels[i]))
-			st.add_vertex(_at(b_up, levels[i + 1]))
-			st.add_vertex(_at(a_up, levels[i + 1]))
+			var length := a.distance_to(b)
+			if not (grid and is_glass) or length < WINDOW_PITCH * 1.2:
+				_wall_quad(st, a, b, a_up, b_up, levels[i], levels[i + 1], 0.0, 1.0, color)
+				continue
+			# 창 하나마다 양옆에 벽 기둥을 세운다
+			var count := maxi(1, int(length / WINDOW_PITCH))
+			for w in count:
+				var t0 := float(w) / count
+				var t1 := float(w + 1) / count
+				var gap := (t1 - t0) * 0.19
+				_wall_quad(st, a, b, a_up, b_up, levels[i], levels[i + 1], t0, t0 + gap, wall)
+				_wall_quad(st, a, b, a_up, b_up, levels[i], levels[i + 1], t0 + gap, t1 - gap, glass)
+				_wall_quad(st, a, b, a_up, b_up, levels[i], levels[i + 1], t1 - gap, t1, wall)
 	st.set_color(roof)
 	var top := PackedVector2Array()
 	for p in pts:
 		top.append(center + (p - center) * taper)
 	for idx in Geometry2D.triangulate_polygon(top):
 		st.add_vertex(_at(top[idx], y1))
+
+
+## 건물의 벽. 건물마다 다른 생김새를 고르고, 1층은 가게처럼 꾸미고, 창문 몇 개에는 불을 켠다.
+##
+## 생김새는 다섯 가지다. 0 격자 창, 1 가로로 이어진 띠 창, 2 세로 기둥 사이의 통유리, 3 작은 창이 띄엄띄엄 난 주택 벽, 4 엇갈린 창.
+## 층마다 벽의 밝기를 조금씩 달리해 줄무늬가 지게 하고, 맨 아래는 어둡게 해 건물이 땅에 붙어 보이게 한다.
+func _add_facade(st: SurfaceTool, pts: PackedVector2Array, y0: float, y1: float, floors: int, wall: Color, accent: Color, roof: Color, seed: int) -> void:
+	var n := pts.size()
+	if n < 3:
+		return
+	var style := seed % 5
+	# 창이 시작하고 끝나는 높이(층 높이에 대한 비율), 창 하나의 폭, 창 양옆 벽의 비율
+	var sill: float = [0.34, 0.42, 0.1, 0.4, 0.34][style]
+	var head: float = [0.9, 0.9, 0.95, 0.8, 0.9][style]
+	var pitch: float = [12.0, 0.0, 9.0, 13.0, 12.0][style]
+	var pier: float = [0.19, 0.0, 0.12, 0.3, 0.19][style]
+	var floor_h := (y1 - y0) / floors
+	var glass := WINDOWS[(seed >> 3) % WINDOWS.size()]
+	for f in floors:
+		var base := y0 + f * floor_h
+		var shade := wall if f % 2 == 0 else wall.darkened(0.045)
+		var lo := sill
+		var hi := head
+		var gap := pier
+		var step := pitch
+		var pane := glass
+		if f == 0:
+			# 1층: 큰 진열창과 그 위의 차양
+			lo = 0.12
+			hi = 0.66
+			gap = 0.1
+			step = 14.0
+			pane = glass.darkened(0.28)
+		for k in n:
+			var a := pts[k]
+			var b := pts[(k + 1) % n]
+			var length := a.distance_to(b)
+			_wall_quad(st, a, b, a, b, base, base + floor_h * lo, 0.0, 1.0, shade.darkened(0.16) if f == 0 else shade)
+			if f == 0:
+				_wall_quad(st, a, b, a, b, base + floor_h * hi, base + floor_h * 0.84, 0.0, 1.0, accent)
+				_wall_quad(st, a, b, a, b, base + floor_h * 0.84, base + floor_h, 0.0, 1.0, shade)
+			elif hi < 1.0:
+				_wall_quad(st, a, b, a, b, base + floor_h * hi, base + floor_h, 0.0, 1.0, shade)
+			var w0 := base + floor_h * lo
+			var w1 := base + floor_h * hi
+			if step <= 0.0:
+				# 띠 창: 모서리만 남기고 가로로 이어진다
+				var edge := minf(0.12, 3.0 / maxf(1.0, length))
+				_wall_quad(st, a, b, a, b, w0, w1, 0.0, edge, shade)
+				_wall_quad(st, a, b, a, b, w0, w1, edge, 1.0 - edge, pane)
+				_wall_quad(st, a, b, a, b, w0, w1, 1.0 - edge, 1.0, shade)
+				continue
+			if length < step * 0.9:
+				_wall_quad(st, a, b, a, b, w0, w1, 0.0, 1.0, shade)
+				continue
+			var count := maxi(1, int(length / step))
+			for w in count:
+				var t0 := float(w) / count
+				var t1 := float(w + 1) / count
+				var side := (t1 - t0) * gap
+				var h := _hash(seed + f * 31, k * 17 + w, 91)
+				var open := not (style == 4 and f > 0 and (w + f) % 2 == 1)
+				if not open:
+					_wall_quad(st, a, b, a, b, w0, w1, t0, t1, shade)
+					continue
+				var color := pane
+				if f > 0:
+					# 창 몇 개에는 불이 켜져 있고, 몇 개는 커튼이 쳐져 있다
+					if h % 9 == 0:
+						color = LIT
+					elif h % 7 == 0:
+						color = pane.darkened(0.2)
+				_wall_quad(st, a, b, a, b, w0, w1, t0, t0 + side, shade)
+				_wall_quad(st, a, b, a, b, w0, w1, t0 + side, t1 - side, color)
+				_wall_quad(st, a, b, a, b, w0, w1, t1 - side, t1, shade)
+	st.set_color(roof)
+	for idx in Geometry2D.triangulate_polygon(pts):
+		st.add_vertex(_at(pts[idx], y1))
+
+
+## 벽의 한 변에서 t0~t1 구간만큼의 네모.
+func _wall_quad(st: SurfaceTool, a: Vector2, b: Vector2, a_up: Vector2, b_up: Vector2, y0: float, y1: float, t0: float, t1: float, color: Color) -> void:
+	st.set_color(color)
+	var p0 := _at(a.lerp(b, t0), y0)
+	var p1 := _at(a.lerp(b, t1), y0)
+	var q0 := _at(a_up.lerp(b_up, t0), y1)
+	var q1 := _at(a_up.lerp(b_up, t1), y1)
+	st.add_vertex(p0)
+	st.add_vertex(p1)
+	st.add_vertex(q1)
+	st.add_vertex(p0)
+	st.add_vertex(q1)
+	st.add_vertex(q0)
+
+
+## 건물 밑동의 그늘. 윤곽을 조금 넓힌 어두운 띠를 바닥에 깔아 건물이 땅에 붙어 보이게 한다.
+func _add_skirt(st: SurfaceTool, outline: PackedVector2Array) -> void:
+	var ring := outline.duplicate()
+	if Geometry2D.is_polygon_clockwise(ring):
+		ring.reverse()
+	for grown: PackedVector2Array in Geometry2D.offset_polygon(ring, SKIRT, Geometry2D.JOIN_ROUND):
+		if grown.size() >= 3 and not Geometry2D.is_polygon_clockwise(grown):
+			_add_prism(st, grown, 0.0, 0.32, SHADE, SHADE, 0.0)
+
+
+## 구획을 감싸는 가장 작은 네모와, 구획이 그 네모를 얼마나 채우는지를 구한다.
+## {center, along, across, half_long, half_short, fill}
+static func _bounding_rect(pts: PackedVector2Array) -> Dictionary:
+	var hull := Geometry2D.convex_hull(pts)
+	var best := {}
+	var best_area := INF
+	for i in hull.size() - 1:
+		var dir := (hull[i + 1] - hull[i]).normalized()
+		if dir == Vector2.ZERO:
+			continue
+		var side := Vector2(-dir.y, dir.x)
+		var lo := Vector2(INF, INF)
+		var hi := Vector2(-INF, -INF)
+		for p in hull:
+			var u := p.dot(dir)
+			var v := p.dot(side)
+			lo = Vector2(minf(lo.x, u), minf(lo.y, v))
+			hi = Vector2(maxf(hi.x, u), maxf(hi.y, v))
+		var size := hi - lo
+		if size.x * size.y < best_area:
+			best_area = size.x * size.y
+			var mid := (lo + hi) / 2.0
+			var long_first := size.x >= size.y
+			best = {"center": dir * mid.x + side * mid.y, "along": dir if long_first else side, "across": side if long_first else dir,
+				"half_long": maxf(size.x, size.y) / 2.0, "half_short": minf(size.x, size.y) / 2.0}
+	if best.is_empty():
+		return {}
+	best["fill"] = _area(pts) / maxf(1.0, best_area)
+	return best
+
+
+## 가져온 건물 모델을 네모에 맞춰 올린다. 모델의 긴 쪽이 네모의 긴 쪽을 따르도록 바닥을 늘린다.
+##
+## 이 건물들은 벽과 지붕이 모두 어두운 청회색이라 이 판의 밝은 색과 어긋난다.
+## 회색 계열인 면만 골라, 위를 보는 면은 지붕 색으로, 옆을 보는 면은 벽 색으로 물들인다. 밝기의 차이는 살려 창과 띠가 그대로 읽히게 한다.
+## 차양이나 문처럼 원래 색이 있는 면은 그대로 둔다.
+func _add_model_fit(st: SurfaceTool, model: Dictionary, at: Vector2, along: Vector2, across: Vector2, half_long: float, half_short: float, height: float, wall: Color, roof: Color) -> void:
+	var points: PackedVector3Array = model["points"]
+	var colors: PackedColorArray = model["colors"]
+	var half: Vector2 = model["half"]
+	var long_is_x := half.x >= half.y
+	var sx := (half_long if long_is_x else half_short) / maxf(0.0001, half.x)
+	var sz := (half_short if long_is_x else half_long) / maxf(0.0001, half.y)
+	var ax := along if long_is_x else across
+	var az := across if long_is_x else along
+	# 지도 좌표의 방향을 장면 좌표로 옮긴다
+	var x3 := Vector3(ax.x, 0.0, -ax.y)
+	var z3 := Vector3(az.x, 0.0, -az.y)
+	var origin := _at(at, 0.0)
+	for t in range(0, points.size() - 2, 3):
+		var up := absf((points[t + 1] - points[t]).cross(points[t + 2] - points[t]).normalized().y) > 0.7
+		for k in 3:
+			var c := colors[t + k]
+			if c.s < 0.32:
+				var shade := lerpf(0.82, 1.08, clampf((c.v - 0.35) / 0.65, 0.0, 1.0))
+				var base := roof if up else wall
+				c = Color(base.r * shade, base.g * shade, base.b * shade)
+			st.set_color(c)
+			var v := points[t + k]
+			st.add_vertex(origin + x3 * (v.x * sx) + z3 * (v.z * sz) + Vector3(0.0, v.y * height, 0.0))
+
+
+## 가져온 모델을 가로 크기에 맞춰 놓는다. 수련이나 카누처럼 납작한 것은 높이가 아니라 너비로 크기를 정한다.
+func _add_model_wide(st: SurfaceTool, model: Dictionary, at: Vector2, base: float, width: float, seed: int) -> void:
+	var half: Vector2 = model["half"]
+	_add_model(st, model, at, base, width / maxf(0.0001, 2.0 * maxf(half.x, half.y)), seed)
+
+
+## 호수를 꾸민다. 물가 가까이에 수련을 띄우고 물 한가운데에 카누를 몇 척 둔다. 통로가 지나는 자리는 비운다.
+func _build_lake_decor(stage: StageData) -> void:
+	var st := _begin()
+	var lily := 0
+	var canoe := 0
+	for li in stage.lakes.size():
+		var ring: PackedVector2Array = stage.lakes[li]["points"]
+		var box := _bounds(ring)
+		for i in 900:
+			var h := _hash(li * 977 + i, 13, 57)
+			var at := box.position + Vector2(float(h % 1000) / 1000.0, float((h >> 10) % 1000) / 1000.0) * box.size
+			if not Geometry2D.is_point_in_polygon(at, ring) or _cell_at(stage, _boxes, at) >= 0:
+				continue
+			var on_road := false
+			for c in stage.corridors:
+				if Geometry2D.is_point_in_polygon(at, c):
+					on_road = true
+			if on_road:
+				continue
+			var shore := _closest_on_ring(ring, at).distance_to(at)
+			if shore > 14.0 and shore < 46.0 and lily < 46:
+				var model := ModelLibraryScript.pick(ModelLibraryScript.LILIES, h >> 5)
+				if not model.is_empty():
+					_add_model_wide(st, model, at, 0.7, 13.0 + (h >> 7) % 8, h)
+					lily += 1
+			elif shore > 60.0 and canoe < 5 and (h >> 3) % 9 == 0:
+				var model := ModelLibraryScript.pick(ModelLibraryScript.CANOES, h)
+				if not model.is_empty():
+					_add_model_wide(st, model, at, 0.7, 34.0, h)
+					canoe += 1
+	_add_mesh(st, true)
+
+
+## 차 모델을 한 번에 여러 대 그릴 수 있는 메시로 바꾼다. 길이가 length 가 되게 하고 앞뒤가 Z축을 따르게 한다.
+func _car_mesh(model: Dictionary, length: float) -> ArrayMesh:
+	var points: PackedVector3Array = model["points"]
+	var colors: PackedColorArray = model["colors"]
+	var half: Vector2 = model["half"]
+	var turn := half.x > half.y  # 길이가 X축을 따르는 모델은 돌려 놓는다
+	var scale := length / maxf(0.0001, 2.0 * maxf(half.x, half.y))
+	var st := _begin()
+	for i in points.size():
+		st.set_color(colors[i])
+		var v := points[i] * scale
+		st.add_vertex(Vector3(-v.z, v.y, v.x) if turn else v)
+	st.generate_normals()
+	return st.commit()
+
+
+## 차를 길 위에 흩어 놓는다. 차 모델마다 한 묶음으로 만들어 한 번에 그린다.
+func _spawn_cars() -> void:
+	_cars.clear()
+	_car_batches.clear()
+	if _car_roads.is_empty():
+		return
+	var meshes: Array[Mesh] = []
+	for name in ModelLibraryScript.CARS:
+		var model := ModelLibraryScript.get_model(name)
+		if not model.is_empty():
+			meshes.append(_car_mesh(model, 21.0))
+	if meshes.is_empty():
+		# 모델을 읽지 못하면 상자로 대신한다
+		var box := BoxMesh.new()
+		box.size = Vector3(9.0, 6.0, 17.0)
+		meshes.append(box)
+	var counts := PackedInt32Array()
+	counts.resize(meshes.size())
+	for i in CAR_COUNT:
+		var h := _hash(i, 71, 5)
+		var road: Dictionary = _car_roads[h % _car_roads.size()]
+		var kind := (h >> 19) % meshes.size()
+		_cars.append({"road": road, "d": float((h >> 4) % 1000) / 1000.0 * road["total"], "speed": 55.0 + (h >> 9) % 60,
+			"way": 1.0 if (h >> 15) % 2 == 0 else -1.0, "kind": kind, "slot": counts[kind]})
+		counts[kind] += 1
+	for k in meshes.size():
+		var mm := MultiMesh.new()
+		mm.transform_format = MultiMesh.TRANSFORM_3D
+		mm.mesh = meshes[k]
+		mm.instance_count = counts[k]
+		var mat := StandardMaterial3D.new()
+		mat.vertex_color_use_as_albedo = true
+		mat.vertex_color_is_srgb = true
+		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+		mat.roughness = 1.0
+		var node := MultiMeshInstance3D.new()
+		node.multimesh = mm
+		node.material_override = mat
+		add_child(node)
+		_car_batches.append(node)
+	_move_cars(0.0)
+
+
+func _process(delta: float) -> void:
+	if not _cars.is_empty():
+		_move_cars(delta)
+
+
+## 차를 길을 따라 움직인다. 끝에 닿으면 반대 차선으로 돌아온다.
+func _move_cars(delta: float) -> void:
+	for car in _cars:
+		var road: Dictionary = car["road"]
+		var d: float = car["d"] + car["speed"] * car["way"] * delta
+		if d > road["total"] - 6.0 or d < 6.0:
+			car["way"] = -car["way"]
+			d = clampf(d, 6.0, road["total"] - 6.0)
+		car["d"] = d
+		var p := _along(road["points"], road["lengths"], d)
+		var q := _along(road["points"], road["lengths"], d + 3.0 * car["way"])
+		var dir := (q - p).normalized()
+		if dir == Vector2.ZERO:
+			continue
+		var at: Vector2 = p + Vector2(dir.y, -dir.x) * float(road["lane"])
+		# 지도 좌표의 방향을 장면 좌표로 옮긴다
+		var forward := Vector3(dir.x, 0.0, -dir.y)
+		var basis := Basis.looking_at(forward, Vector3.UP)
+		_car_batches[car["kind"]].multimesh.set_instance_transform(car["slot"], Transform3D(basis, _at(at, ROAD_LIFT + 0.4)))
 
 
 ## 둥근 단면을 쌓아 올린 모양. profile의 각 점은 (반지름, 높이)다. 구간마다 colors를 차례로 쓴다.

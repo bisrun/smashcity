@@ -58,6 +58,8 @@ var cfg: Dictionary
 
 var cell_hp := PackedInt32Array()
 var cell_max_hp := PackedInt32Array()
+## 부서지지 않는 셀인지. 지금은 그런 셀이 없다. 숲은 여러 번 맞아야 부서지는 보통 셀이다.
+var cell_solid := PackedByteArray()
 var balls: Array[Ball] = []
 ## 떨어지고 있는 아이템. 각 원소: {id: int, type: String, pos: Vector2}
 var items: Array[Dictionary] = []
@@ -140,9 +142,13 @@ func _init(p_stage: StageData, p_cfg: Dictionary, design: Dictionary = {}) -> vo
 	ball_radius = stage.ball_diameter / 2.0
 	cell_hp.resize(stage.cells.size())
 	cell_max_hp.resize(stage.cells.size())
+	cell_solid.resize(stage.cells.size())
 	for i in stage.cells.size():
 		var c := stage.cells[i]
+		cell_solid[i] = 0
 		var hp: int = int(cfg["landmark_hp"]) if c["landmark"] else c["hp"]
+		if is_park(c):
+			hp = int(cfg["forest_hp"])  # 숲은 오래 버틴다
 		cell_hp[i] = hp
 		cell_max_hp[i] = hp
 		if c["landmark"]:
@@ -184,7 +190,8 @@ func paddle_width() -> float:
 ## 지난 take_events() 뒤에 일어난 일을 돌려주고 비운다.
 ## 종류: hit{cell,hp,max_hp}, destroyed{cell,landmark}, paddle, launch, splash{pos}, emerge{pos},
 ##       ball_lost{ball}, lost, over, cleared, item_spawn{id,type_of,pos}, item_caught{id,type_of}, item_gone{id},
-##       fever, finale, wall{pos}, bolt{cell,pos}, speed_up{tier}, rush, ball_split{ball,pos}, ball_faded{ball,pos}
+##       fever, finale, wall{pos}, bolt{cell,pos}, speed_up{tier}, rush, ball_split{ball,pos}, ball_faded{ball,pos},
+##       thud{cell,pos}
 ## destroyed 에는 points(얻은 점수)와 chained(연쇄로 부서졌는지)가 함께 온다.
 func take_events() -> Array[Dictionary]:
 	var out := _events
@@ -200,13 +207,24 @@ func combo_multiplier() -> float:
 	return _multiplier(best)
 
 
+## 부술 수 있는 셀의 수. 숲과 공원은 세지 않는다.
 func breakable_count() -> int:
-	return cell_hp.size()
+	var n := 0
+	for i in cell_solid.size():
+		if cell_solid[i] == 0:
+			n += 1
+	return n
+
+
+## 숲이나 공원인 셀인지. 실제로 건물이 없던 낮은 구획이 그렇다. 화면도 같은 기준으로 그린다.
+## 숲은 여러 번 맞아야 부서진다.
+static func is_park(cell: Dictionary) -> bool:
+	return bool(cell.get("empty", false)) and int(cell.get("hp", 1)) <= 1 and not bool(cell.get("landmark", false))
 
 
 ## 지금의 공 속도. 셀을 부술수록, 그리고 시간이 흐를수록 빨라진다.
 func ball_speed() -> float:
-	var progress := float(destroyed) / maxf(1.0, float(cell_hp.size()))
+	var progress := float(destroyed) / maxf(1.0, float(breakable_count()))
 	return float(cfg["ball_speed"]) * (1.0 + float(cfg["speed_gain"]) * progress) * (1.0 + float(cfg["time_speed_gain"]) * speed_tier)
 
 
@@ -378,7 +396,7 @@ func _steer(b: Ball) -> void:
 		b.target = -1
 		var best := INF
 		for i in cell_hp.size():
-			if cell_hp[i] <= 0:
+			if cell_hp[i] <= 0 or cell_solid[i] == 1:
 				continue
 			var d := _centers[i].distance_squared_to(b.pos)
 			if d < best:
@@ -641,8 +659,8 @@ func _collide_cells(b: Ball) -> void:
 			best = idx
 	if best < 0:
 		return
-	# 불공은 보통 셀을 한 번에 부수고 그대로 지나간다. 랜드마크에서는 보통 공처럼 튕긴다.
-	if fire_left > 0.0 and not stage.cells[best]["landmark"]:
+	# 불공은 보통 셀을 한 번에 부수고 그대로 지나간다. 랜드마크와 숲에서는 보통 공처럼 튕긴다.
+	if fire_left > 0.0 and not stage.cells[best]["landmark"] and cell_solid[best] == 0 and not is_park(stage.cells[best]):
 		_damage(b, best, cell_hp[best])
 		return
 	b.pos += best_n * best_depth
@@ -654,6 +672,10 @@ func _collide_cells(b: Ball) -> void:
 
 
 func _damage(b: Ball, idx: int, amount: int) -> void:
+	if cell_solid[idx] == 1:
+		# 숲은 부서지지 않는다. 공이 튕겨 나올 뿐이다.
+		_events.append({"type": "thud", "cell": idx, "pos": b.pos})
+		return
 	b.idle = 0.0
 	# 달아오른 공이 부순 셀은 맞닿은 셀을 한 번씩 깎고, 그렇게 부서진 셀도 다시 이웃을 깎는다
 	var queue: Array[int] = [idx]
@@ -674,7 +696,7 @@ func _damage(b: Ball, idx: int, amount: int) -> void:
 			_events.append({"type": "fever"})
 		if is_fever(b):
 			for n in _neighbors[cell]:
-				if cell_hp[n] > 0 and not amounts.has(n):
+				if cell_hp[n] > 0 and cell_solid[n] == 0 and not amounts.has(n):
 					amounts[n] = 1
 					queue.append(n)
 
@@ -703,7 +725,7 @@ func _strike(b: Ball, idx: int, amount: int, chained: bool) -> bool:
 		if _landmarks_left <= 0:
 			cleared = true
 			_events.append({"type": "cleared"})
-	if not finale and not cleared and cell_hp.size() - destroyed <= int(cfg["finale_cells"]):
+	if not finale and not cleared and breakable_count() - destroyed <= int(cfg["finale_cells"]):
 		finale = true
 		_events.append({"type": "finale"})
 		_drop_bolt()
@@ -765,7 +787,7 @@ func _apply_item(type: String) -> void:
 			# 남은 셀을 위에서부터 차례로 내리친다
 			_strikes.clear()
 			for i in cell_hp.size():
-				if cell_hp[i] > 0:
+				if cell_hp[i] > 0 and cell_solid[i] == 0:
 					_strikes.append(i)
 			_strikes.sort_custom(func(a: int, b: int) -> bool:
 				return _centers[a].y > _centers[b].y if _centers[a].y != _centers[b].y else a < b)

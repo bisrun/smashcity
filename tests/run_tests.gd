@@ -20,7 +20,7 @@ func _init() -> void:
 	for t: Callable in [
 		_test_jamsil_loads, _test_jamsil_shapes_are_valid, _test_nearest_road_point, _test_display_height,
 		_test_board_view_builds, _test_ball_launches_and_bounces_off_walls, _test_ball_breaks_a_cell,
-		_test_paddle_sends_ball_up, _test_missed_ball_costs_a_life, _test_water_splits_ball_in_two,
+		_test_forest_lasts_several_hits, _test_paddle_sends_ball_up, _test_missed_ball_costs_a_life, _test_water_splits_ball_in_two,
 		_test_extra_ball_fades_after_bounces, _test_extra_ball_splits_too, _test_sounds_are_built,
 		_test_landmark_clears_stage, _test_item_drops_and_is_caught, _test_multiball, _test_wide_fire_life,
 		_test_extra_balls_do_not_cost_a_life, _test_speed_grows_with_progress, _test_idle_ball_is_pulled_to_a_cell,
@@ -172,6 +172,28 @@ func _test_ball_breaks_a_cell() -> void:
 	_place(sim, Vector2(500, 900), Vector2(0, 1))
 	_run(sim, 0.4)
 	_check(sim.ball_pos.y > 1100.0, "부서진 자리는 공이 지나간다")
+
+
+func _test_forest_lasts_several_hits() -> void:
+	var forest := _square(400, 1000, 200, 1)
+	forest["e"] = 1
+	var sim: Sim = SimScript.new(_stage({"cells": [forest, _square(100, 1700, 100, 2)]}), _no_gravity())
+	var tough := int(sim.cfg["forest_hp"])
+	_check(tough == 5 and sim.cell_hp[0] == tough, "건물이 없던 낮은 구획은 숲이고, 다섯 번 맞아야 부서진다")
+	_check(sim.breakable_count() == 2, "숲도 부술 셀로 센다")
+	for i in tough - 1:
+		_place(sim, Vector2(500, 900), Vector2(0, 1))
+		_run(sim, 0.3)
+	_check(sim.cell_hp[0] == 1 and sim.destroyed == 0, "마지막 한 번 전까지는 서 있다 (남은 HP %d)" % sim.cell_hp[0])
+	_check(sim.ball_vel.y < 0.0, "공은 숲에서 튕겨 나온다")
+	_place(sim, Vector2(500, 900), Vector2(0, 1))
+	_run(sim, 0.3)
+	_check(sim.cell_hp[0] == 0 and sim.destroyed == 1, "마지막 한 번에 부서진다")
+	var fire: Sim = SimScript.new(_stage({"cells": [forest, _square(100, 1700, 100, 2)]}), _no_gravity())
+	fire.fire_left = 5.0
+	_place(fire, Vector2(500, 900), Vector2(0, 1))
+	_run(fire, 0.3)
+	_check(fire.cell_hp[0] == tough - 1 and fire.ball_vel.y < 0.0, "불공도 숲은 한 번에 뚫지 못한다")
 
 
 func _test_paddle_sends_ball_up() -> void:
@@ -664,4 +686,4 @@ func _test_jamsil_plays() -> void:
 			sane = false
 	_check(sane, "공이 판 밖으로 나가거나 위치가 깨지지 않는다")
 	_check(sim.destroyed >= 10, "2분 동안 벽돌이 10개 이상 부서진다 (실제 %d)" % sim.destroyed)
-	print("  잠실 2분: 부순 벽돌 %d/%d, 호수에 빠짐 %d회, 남은 목숨 %d, %d점%s%s" % [sim.destroyed, sim.breakable_count(), sim.falls, sim.lives, sim.score, ", 클리어" if sim.cleared else "", ", 게임 오버" if sim.over else ""])
+	print("  잠실 자동 플레이 %d초: 부순 벽돌 %d/%d, 호수에 빠짐 %d회, 남은 목숨 %d, %d점%s%s" % [int(sim.elapsed), sim.destroyed, sim.breakable_count(), sim.falls, sim.lives, sim.score, ", 클리어" if sim.cleared else "", ", 게임 오버" if sim.over else ""])
