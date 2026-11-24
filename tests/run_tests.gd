@@ -21,7 +21,8 @@ func _init() -> void:
 		_test_jamsil_loads, _test_jamsil_shapes_are_valid, _test_nearest_road_point, _test_display_height,
 		_test_board_view_builds, _test_ball_launches_and_bounces_off_walls, _test_ball_breaks_a_cell,
 		_test_paddle_sends_ball_up, _test_missed_ball_costs_a_life, _test_water_tosses_ball_out,
-		_test_landmark_clears_stage, _test_sim_is_deterministic, _test_jamsil_plays,
+		_test_landmark_clears_stage, _test_item_drops_and_is_caught, _test_multiball, _test_wide_fire_life,
+		_test_extra_balls_do_not_cost_a_life, _test_sim_is_deterministic, _test_jamsil_plays,
 	]:
 		t.call()
 	print("%d개 확인, 실패 %d개" % [_checks, _failures])
@@ -126,8 +127,8 @@ func _test_board_view_builds() -> void:
 	var second: BoardView = BoardViewScript.new()
 	second.build(s, 760.0, -690.0)
 	_check(first.cell_nodes.size() == s.cells.size(), "셀마다 블록이 하나씩 있다")
-	_check(first.object_count >= s.cells.size() * 0.8, "블록 대부분에 큼직한 것이 하나 이상 올라간다 (블록 %d, 올린 것 %d)" % [s.cells.size(), first.object_count])
-	_check(first.object_count < s.buildings.size(), "지도의 건물 수보다 적게 올린다 (실제 %d)" % first.object_count)
+	_check(first.object_count >= s.cells.size() * 0.8, "블록 대부분에 건물이 올라간다 (블록 %d, 건물 %d)" % [s.cells.size(), first.object_count])
+	_check(first.object_count <= s.cells.size() * 1.3, "블록 하나에 건물은 하나꼴이다 (블록 %d, 건물 %d)" % [s.cells.size(), first.object_count])
 	_check(first.object_count == second.object_count, "같은 스테이지는 늘 같게 꾸며진다")
 	first.free()
 	second.free()
@@ -233,7 +234,7 @@ func _test_water_tosses_ball_out() -> void:
 			_place(s2, Vector2(300, 700), Vector2(0, 1))
 			_run(s2, 0.2)
 			_run(s2, float(s2.cfg["splash_delay"]) + 0.01)
-			s2._skipping = false
+			s2.balls[0].skipping = false
 		dirs[snappedf(s2.ball_vel.angle(), 0.01)] = true
 	_check(dirs.size() >= 4, "튀어 오르는 방향은 그때그때 다르다 (서로 다른 방향 %d가지)" % dirs.size())
 
@@ -256,10 +257,120 @@ func _test_landmark_clears_stage() -> void:
 	_check(sim.elapsed == before, "클리어 뒤에는 판정이 멈춘다")
 
 
+## 아이템 하나가 든 셀 하나짜리 판.
+func _item_stage(type: String) -> Sim:
+	var cfg := _no_gravity()
+	var sim: Sim = SimScript.new(_stage({"cells": [_square(400, 1000, 200, 1)]}), cfg, {"items": [{"at": [500, 1100], "type": type}]})
+	return sim
+
+
+## 셀을 부숴 아이템을 떨어뜨리고, 패들을 그 아래에 두어 받는다.
+func _catch_item(sim: Sim) -> void:
+	_place(sim, Vector2(500, 900), Vector2(0, 1))
+	_run(sim, 0.2)
+	sim.set_paddle(500)
+	for i in 2000:
+		if sim.items.is_empty():
+			break
+		sim.set_paddle(500)
+		sim.step()
+
+
+func _test_item_drops_and_is_caught() -> void:
+	var sim := _item_stage("wide")
+	_check(sim.item_in_cell(0) == "wide", "기획 파일의 자리에 있는 셀에 아이템이 들어간다")
+	_place(sim, Vector2(500, 900), Vector2(0, 1))
+	_run(sim, 0.2)
+	_check(sim.items.size() == 1 and sim.items[0]["type"] == "wide", "셀이 부서지면 아이템이 나온다")
+	_check(sim.take_events().any(func(e: Dictionary) -> bool: return e["type"] == "item_spawn"), "아이템이 나왔다는 사건이 생긴다")
+	var y0: float = sim.items[0]["pos"].y
+	_run(sim, 0.5)
+	_check(sim.items[0]["pos"].y < y0, "아이템은 패들 쪽으로 내려온다")
+	var before := sim.score
+	_catch_item(sim)
+	_check(sim.items.is_empty() and sim.wide_left > 0.0, "패들로 받으면 발동한다")
+	_check(sim.score >= before + int(sim.cfg["score_item"]), "받으면 점수를 얻는다")
+
+	var missed := _item_stage("wide")
+	_place(missed, Vector2(500, 900), Vector2(0, 1))
+	_run(missed, 0.2)
+	for i in 2000:
+		if missed.items.is_empty():
+			break
+		missed.set_paddle(900)
+		missed.step()
+	_check(missed.items.is_empty() and missed.wide_left == 0.0, "놓친 아이템은 사라지고 발동하지 않는다")
+
+
+func _test_multiball() -> void:
+	var sim := _item_stage("multi")
+	_catch_item(sim)
+	var flying := sim.balls.filter(func(b: Sim.Ball) -> bool: return b.state == Sim.BallState.FLYING).size()
+	_check(flying == 3, "멀티볼을 받으면 공이 셋이 된다 (실제 %d)" % flying)
+	var dirs := {}
+	for b in sim.balls:
+		dirs[snappedf(b.vel.angle(), 0.01)] = true
+	_check(dirs.size() == 3, "세 공은 서로 다른 방향으로 간다")
+	var many := _item_stage("multi")
+	many.cfg["max_balls"] = 2
+	_catch_item(many)
+	_check(many.balls.size() <= 2, "공의 수는 한도를 넘지 않는다")
+
+
+func _test_wide_fire_life() -> void:
+	var wide := _item_stage("wide")
+	var normal := wide.paddle_width()
+	_catch_item(wide)
+	_check(wide.paddle_width() > normal, "넓은 패들을 받으면 패들이 넓어진다")
+	_run(wide, float(wide.cfg["wide_seconds"]) + 0.1)
+	_check(is_equal_approx(wide.paddle_width(), normal), "시간이 지나면 원래대로 돌아온다")
+
+	var life := _item_stage("life")
+	var start := life.lives
+	_catch_item(life)
+	_check(life.lives == start + 1, "공 +1을 받으면 남은 공이 하나 는다")
+
+	var cfg := _no_gravity()
+	var fire: Sim = SimScript.new(_stage({"cells": [_square(400, 1000, 200, 3), _square(400, 1300, 200, 4)]}), cfg)
+	fire.fire_left = 5.0
+	_place(fire, Vector2(500, 900), Vector2(0, 1))
+	_run(fire, 0.7)
+	_check(fire.destroyed == 2, "불공은 HP와 상관없이 셀을 부수며 지나간다 (부순 수 %d)" % fire.destroyed)
+	_check(fire.ball_vel.y > 0.0 or fire.ball_pos.y > 1500.0, "불공은 셀에 튕기지 않는다")
+	var boss_cfg := _no_gravity()
+	var boss: Sim = SimScript.new(_stage({"cells": [_square(400, 1000, 200, 4, 1)]}), boss_cfg)
+	boss.fire_left = 5.0
+	_place(boss, Vector2(500, 900), Vector2(0, 1))
+	_run(boss, 0.3)
+	_check(boss.cell_hp[0] == int(boss.cfg["landmark_hp"]) - 1 and boss.ball_vel.y < 0.0, "랜드마크는 불공으로도 한 번에 못 부수고 튕긴다")
+
+
+func _test_extra_balls_do_not_cost_a_life() -> void:
+	var sim := _item_stage("multi")
+	_catch_item(sim)
+	var start := sim.lives
+	var count := sim.balls.size()
+	sim.set_paddle(100)
+	sim.balls[0].pos = Vector2(800, -500)
+	sim.balls[0].vel = Vector2(0, -1) * float(sim.cfg["ball_speed"])
+	_run(sim, 0.4)
+	_check(sim.balls.size() == count - 1 and sim.lives == start, "공이 남아 있으면 하나를 놓쳐도 목숨은 그대로다")
+
+
 func _play(seconds: float) -> Sim:
-	var sim: Sim = SimScript.new(StageDataScript.load_file(JAMSIL), BalanceScript.load_file())
+	var dir := JAMSIL.get_base_dir()
+	var sim: Sim = SimScript.new(StageDataScript.load_file(JAMSIL), BalanceScript.load_file(), BalanceScript.load_file(dir + "/design.json"))
 	for i in int(seconds / Sim.STEP):
-		sim.set_paddle(sim.ball_pos.x + sin(i * 0.013) * 90.0)
+		var target := sim.paddle_x
+		var lowest := INF
+		for b in sim.balls:
+			if b.state == Sim.BallState.FLYING and b.vel.y < 0.0 and b.pos.y < lowest:
+				lowest = b.pos.y
+				target = b.pos.x
+		for it in sim.items:
+			if lowest > 400.0:
+				target = it["pos"].x
+		sim.set_paddle(target + sin(i * 0.013) * 90.0)
 		sim.step()
 	return sim
 
@@ -267,14 +378,17 @@ func _play(seconds: float) -> Sim:
 func _test_sim_is_deterministic() -> void:
 	var a := _play(20.0)
 	var b := _play(20.0)
-	_check(a.ball_pos == b.ball_pos and a.score == b.score and a.destroyed == b.destroyed, "같은 입력이면 같은 결과가 나온다")
+	_check(a.ball_pos == b.ball_pos and a.score == b.score and a.destroyed == b.destroyed and a.balls.size() == b.balls.size(), "같은 입력이면 같은 결과가 나온다")
 
 
 ## 공을 늘 받아 내는 패들로 잠실을 2분 돌려 본다. 판이 굴러가는지 보는 것이지 밸런스를 보는 것이 아니다.
 func _test_jamsil_plays() -> void:
 	var sim := _play(120.0)
-	var p := sim.ball_pos
-	_check(not is_nan(p.x) and not is_nan(p.y), "공 위치가 깨지지 않는다")
-	_check(p.x >= 0.0 and p.x <= sim.stage.width and p.y <= sim.stage.height, "공이 판 밖으로 나가지 않는다")
+	var sane := true
+	for ball in sim.balls:
+		var p := ball.pos
+		if is_nan(p.x) or is_nan(p.y) or p.x < 0.0 or p.x > sim.stage.width or p.y > sim.stage.height:
+			sane = false
+	_check(sane, "공이 판 밖으로 나가거나 위치가 깨지지 않는다")
 	_check(sim.destroyed >= 10, "2분 동안 벽돌이 10개 이상 부서진다 (실제 %d)" % sim.destroyed)
-	print("  잠실 2분: 부순 벽돌 %d/%d, 호수에 빠짐 %d회, 남은 공 %d, %d점%s%s" % [sim.destroyed, sim.breakable_count(), sim.falls, sim.lives, sim.score, ", 클리어" if sim.cleared else "", ", 게임 오버" if sim.over else ""])
+	print("  잠실 2분: 부순 벽돌 %d/%d, 호수에 빠짐 %d회, 남은 목숨 %d, %d점%s%s" % [sim.destroyed, sim.breakable_count(), sim.falls, sim.lives, sim.score, ", 클리어" if sim.cleared else "", ", 게임 오버" if sim.over else ""])

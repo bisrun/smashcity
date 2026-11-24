@@ -2,14 +2,14 @@ extends Node3D
 ## 잠실 한 판을 플레이하는 장면.
 ##
 ## 판정은 Sim 이 하고, 이 스크립트는 입력을 넘기고 결과를 화면에 옮긴다.
-## 아이템, 터짐, 결과 화면은 아직 없다(docs/14_roadmap.md).
+## 터짐, 워프, 결과 화면은 아직 없다(docs/14_roadmap.md).
 
 const StageDataScript := preload("res://src/data/stage_data.gd")
 const BalanceScript := preload("res://src/data/balance.gd")
 const SimScript := preload("res://src/sim/sim.gd")
 const BoardViewScript := preload("res://src/render/board_view.gd")
 
-const STAGE_PATH := "res://assets/stages/seoul/jamsil/map.json"
+const STAGE_DIR := "res://assets/stages/seoul/jamsil/"
 ## 카메라가 내려다보는 각도
 const ELEVATION_DEG := 58.0
 const CAMERA_DISTANCE := 4200.0
@@ -19,16 +19,25 @@ const HUD_SHARE := 0.1
 const MAX_STEPS_PER_FRAME := 8
 const SKY := Color("BFE6F2")
 const INK := Color("14213D")
+const FIRE := Color("FF7A3C")
+const ITEM_NAMES := {"multi": "멀티볼", "wide": "넓은 패들", "fire": "불공", "life": "공 +1"}
 
 var _stage: StageData
 var _cfg: Dictionary
 var _sim: Sim
 var _board: BoardView
 var _camera: Camera3D
-var _paddle: MeshInstance3D
-var _ball: MeshInstance3D
+var _paddle: Node3D
+var _ball_nodes := {}
+var _item_nodes := {}
+var _ball_mesh: SphereMesh
+var _outline_mesh: SphereMesh
+var _ball_mat: StandardMaterial3D
+var _outline_mat: StandardMaterial3D
 var _info: Label
 var _banner: Label
+var _toast: Label
+var _toast_left := 0.0
 var _river := 0.0
 var _acc := 0.0
 var _paddle_target := 0.0
@@ -36,17 +45,18 @@ var _info_timer := 0.0
 
 
 func _ready() -> void:
-	_stage = StageDataScript.load_file(STAGE_PATH)
+	_stage = StageDataScript.load_file(STAGE_DIR + "map.json")
 	_cfg = BalanceScript.load_file()
 	if _stage == null or _cfg.is_empty():
 		return
+	var design: Dictionary = BalanceScript.load_file(STAGE_DIR + "design.json")
 	_river = float(_cfg["river_width"])
-	_sim = SimScript.new(_stage, _cfg)
+	_sim = SimScript.new(_stage, _cfg, design)
 	_paddle_target = _sim.paddle_x
 	_setup_light()
 	_board = BoardViewScript.new()
 	add_child(_board)
-	_board.build(_stage, _river, float(_cfg["paddle_y"]) - float(_cfg["fall_margin"]))
+	_board.build(_stage, _river, float(_cfg["paddle_y"]) - float(_cfg["fall_margin"]), design, _sim.cell_max_hp)
 	_setup_camera()
 	_setup_paddle_and_ball()
 	_setup_hud()
@@ -62,7 +72,7 @@ func _process(delta: float) -> void:
 	while _acc >= Sim.STEP:
 		_acc -= Sim.STEP
 		if OS.has_environment("SMASHCITY_AUTOPLAY"):
-			_paddle_target = _sim.ball_pos.x
+			_paddle_target = _lowest_ball_x()
 		_sim.set_paddle(_paddle_target)
 		_sim.step()
 	for e in _sim.take_events():
@@ -75,19 +85,31 @@ func _process(delta: float) -> void:
 				_board.show_splash(e["pos"], false)
 			"emerge":
 				_board.show_splash(e["pos"], true)
+			"item_caught":
+				_toast.text = ITEM_NAMES.get(e["type_of"], "")
+				_toast.visible = true
+				_toast_left = 1.4
 			"cleared":
 				_banner.text = "클리어\n%d점  남은 공 %d  %d초\n화면을 누르면 다시 시작" % [_sim.score, _sim.lives, int(_sim.elapsed)]
 				_banner.visible = true
 			"over":
 				_banner.text = "게임 오버\n%d점  부순 벽돌 %d\n화면을 누르면 다시 시작" % [_sim.score, _sim.destroyed]
 				_banner.visible = true
-	_paddle.position.x = _sim.paddle_x - _stage.width / 2.0
-	_ball.position = Vector3(_sim.ball_pos.x - _stage.width / 2.0, _sim.ball_radius, _stage.height / 2.0 - _sim.ball_pos.y)
-	_ball.visible = _sim.ball_state != Sim.BallState.SUNK and not _sim.over
+	_sync_paddle()
+	_sync_balls()
+	_sync_items()
+	_toast_left -= delta
+	if _toast_left <= 0.0:
+		_toast.visible = false
 	_info_timer -= delta
 	if _info_timer <= 0.0:
 		_info_timer = 0.2
-		_info.text = "%d점   x%.1f   공 %d\n부순 벽돌 %d/%d   %dfps" % [_sim.score, _sim.combo_multiplier(), _sim.lives,
+		var effects := ""
+		if _sim.fire_left > 0.0:
+			effects += "   불공 %d초" % ceili(_sim.fire_left)
+		if _sim.wide_left > 0.0:
+			effects += "   넓은 패들 %d초" % ceili(_sim.wide_left)
+		_info.text = "%d점   x%.1f   남은 공 %d%s\n부순 벽돌 %d/%d   %dfps" % [_sim.score, _sim.combo_multiplier(), _sim.lives, effects,
 			_sim.destroyed, _sim.breakable_count(), Engine.get_frames_per_second()]
 
 
@@ -111,6 +133,66 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	var view_w := get_viewport().get_visible_rect().size.x
 	_paddle_target = (x / view_w - 0.5) * _camera.size + _stage.width / 2.0
+
+
+## 자동 플레이용: 패들에 가장 먼저 닿을 공의 x.
+func _lowest_ball_x() -> float:
+	var best := _sim.paddle_x
+	var best_y := INF
+	for b in _sim.balls:
+		if b.state == Sim.BallState.FLYING and b.vel.y < 0.0 and b.pos.y < best_y:
+			best_y = b.pos.y
+			best = b.pos.x
+	return best
+
+
+func _to_scene(p: Vector2, height: float) -> Vector3:
+	return Vector3(p.x - _stage.width / 2.0, height, _stage.height / 2.0 - p.y)
+
+
+func _sync_paddle() -> void:
+	_paddle.position.x = _sim.paddle_x - _stage.width / 2.0
+	_paddle.scale.x = _sim.paddle_width() / float(_cfg["paddle_width"])
+
+
+func _sync_balls() -> void:
+	_ball_mat.albedo_color = FIRE if _sim.fire_left > 0.0 else Color.WHITE
+	var seen := {}
+	for b in _sim.balls:
+		seen[b.id] = true
+		var node: Node3D = _ball_nodes.get(b.id)
+		if node == null:
+			node = MeshInstance3D.new()
+			node.mesh = _outline_mesh
+			node.material_override = _outline_mat
+			var core := MeshInstance3D.new()
+			core.mesh = _ball_mesh
+			core.material_override = _ball_mat
+			node.add_child(core)
+			add_child(node)
+			_ball_nodes[b.id] = node
+		node.position = _to_scene(b.pos, _sim.ball_radius)
+		node.visible = b.state != Sim.BallState.SUNK
+	for id: int in _ball_nodes.keys():
+		if not seen.has(id):
+			_ball_nodes[id].queue_free()
+			_ball_nodes.erase(id)
+
+
+func _sync_items() -> void:
+	var seen := {}
+	for it in _sim.items:
+		seen[it["id"]] = true
+		var node: Node3D = _item_nodes.get(it["id"])
+		if node == null:
+			node = BoardViewScript.make_item_node(it["type"], _sim.ball_radius * 1.5)
+			add_child(node)
+			_item_nodes[it["id"]] = node
+		node.position = _to_scene(it["pos"], _sim.ball_radius * 2.6)
+	for id: int in _item_nodes.keys():
+		if not seen.has(id):
+			_item_nodes[id].queue_free()
+			_item_nodes.erase(id)
 
 
 func _setup_light() -> void:
@@ -168,45 +250,33 @@ func _frame_camera() -> void:
 func _setup_paddle_and_ball() -> void:
 	var width := float(_cfg["paddle_width"])
 	var thick := float(_cfg["paddle_thickness"])
-	var hull := BoxMesh.new()
-	hull.size = Vector3(width, 22.0, thick)
-	_paddle = MeshInstance3D.new()
-	_paddle.mesh = hull
-	_paddle.material_override = _flat(INK, false)
-	_paddle.position = Vector3(0.0, 11.0, _stage.height / 2.0 - float(_cfg["paddle_y"]))
+	_paddle = Node3D.new()
+	_paddle.position = Vector3(0.0, 0.0, _stage.height / 2.0 - float(_cfg["paddle_y"]))
 	add_child(_paddle)
-	var deck := BoxMesh.new()
-	deck.size = Vector3(width - 14.0, 4.0, thick - 14.0)
-	var deck_mi := MeshInstance3D.new()
-	deck_mi.mesh = deck
-	deck_mi.material_override = _flat(Color.WHITE, true)
-	deck_mi.position = Vector3(0.0, 13.0, 0.0)
-	_paddle.add_child(deck_mi)
-	var cabin := BoxMesh.new()
-	cabin.size = Vector3(46.0, 20.0, thick - 20.0)
-	var cabin_mi := MeshInstance3D.new()
-	cabin_mi.mesh = cabin
-	cabin_mi.material_override = _flat(Color("F0645A"), false)
-	cabin_mi.position = Vector3(0.0, 25.0, 0.0)
-	_paddle.add_child(cabin_mi)
+	_add_box(_paddle, Vector3(width, 22.0, thick), Vector3(0, 11, 0), INK, false)
+	_add_box(_paddle, Vector3(width - 14.0, 4.0, thick - 14.0), Vector3(0, 24, 0), Color.WHITE, true)
+	_add_box(_paddle, Vector3(46.0, 20.0, thick - 20.0), Vector3(0, 36, 0), Color("F0645A"), false)
 
 	var r := _sim.ball_radius
-	var outline := SphereMesh.new()
-	outline.radius = r + 5.0
-	outline.height = (r + 5.0) * 2.0
-	_ball = MeshInstance3D.new()
-	_ball.mesh = outline
-	var outline_mat := _flat(INK, true)
-	outline_mat.cull_mode = BaseMaterial3D.CULL_FRONT
-	_ball.material_override = outline_mat
-	add_child(_ball)
-	var core := SphereMesh.new()
-	core.radius = r
-	core.height = r * 2.0
-	var core_mi := MeshInstance3D.new()
-	core_mi.mesh = core
-	core_mi.material_override = _flat(Color.WHITE, true)
-	_ball.add_child(core_mi)
+	_outline_mesh = SphereMesh.new()
+	_outline_mesh.radius = r + 5.0
+	_outline_mesh.height = (r + 5.0) * 2.0
+	_outline_mat = _flat(INK, true)
+	_outline_mat.cull_mode = BaseMaterial3D.CULL_FRONT
+	_ball_mesh = SphereMesh.new()
+	_ball_mesh.radius = r
+	_ball_mesh.height = r * 2.0
+	_ball_mat = _flat(Color.WHITE, true)
+
+
+func _add_box(parent: Node3D, size: Vector3, at: Vector3, color: Color, unshaded: bool) -> void:
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	var mi := MeshInstance3D.new()
+	mi.mesh = mesh
+	mi.material_override = _flat(color, unshaded)
+	mi.position = at
+	parent.add_child(mi)
 
 
 func _setup_hud() -> void:
@@ -217,16 +287,27 @@ func _setup_hud() -> void:
 	_info.add_theme_font_size_override("font_size", 30)
 	_info.add_theme_color_override("font_color", INK)
 	layer.add_child(_info)
-	_banner = Label.new()
+	_banner = _centered_label(52, 0.0)
 	_banner.visible = false
-	_banner.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_banner.add_theme_font_size_override("font_size", 52)
-	_banner.add_theme_color_override("font_color", INK)
-	_banner.add_theme_color_override("font_outline_color", Color.WHITE)
-	_banner.add_theme_constant_override("outline_size", 14)
 	layer.add_child(_banner)
+	_toast = _centered_label(44, 0.28)
+	_toast.visible = false
+	layer.add_child(_toast)
+
+
+## 화면 가운데에 놓이는 글자. shift 는 화면 높이에 대한 비율로, 양수면 아래로 내린다.
+func _centered_label(font_size: int, shift: float) -> Label:
+	var label := Label.new()
+	label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	label.anchor_top = shift
+	label.anchor_bottom = 1.0 + shift
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", INK)
+	label.add_theme_color_override("font_outline_color", Color.WHITE)
+	label.add_theme_constant_override("outline_size", 14)
+	return label
 
 
 func _flat(color: Color, unshaded: bool) -> StandardMaterial3D:

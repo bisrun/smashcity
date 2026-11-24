@@ -60,7 +60,7 @@ OSM 추출 → 변환 (stage_baker) → map.json ─┐
 | `physics` | 중력(0~1) |
 | `goal` | 목표 유형과 값 |
 | `landmark` | 대상 셀, HP, 약점 방향 |
-| `items` | 셀 ID와 아이템 종류 |
+| `items` | 아이템의 자리(지도 좌표)와 종류. 그 자리의 셀에 아이템이 들어간다 |
 | `core` | 코어 영역, 충전량, 터짐 범위, 공 개수 |
 | `domino` | 대상 셀, 쓰러지는 방향 조건 |
 | `overrides` | 셀별 HP 덮어쓰기, 파괴 불가 지정 |

@@ -1,6 +1,6 @@
 class_name Sim
 extends RefCounted
-## 한 판의 판정. 공, 패들, 셀의 상태를 고정 간격으로 진행시킨다.
+## 한 판의 판정. 공, 패들, 셀, 아이템의 상태를 고정 간격으로 진행시킨다.
 ##
 ## 장면에 의존하지 않는다. 같은 스테이지와 밸런스 값에 같은 패들 입력을 주면 늘 같은 결과가 나온다.
 ## 좌표는 지도 좌표다. x는 0에서 판 가로까지, y는 기준선 쪽이 0이고 화면 위쪽으로 커진다.
@@ -14,19 +14,37 @@ const GRID := 160.0
 
 enum BallState { WAITING, FLYING, SUNK }
 
+## 아이템의 종류. design.json 의 type 값이다.
+const ITEM_MULTI := "multi"
+const ITEM_WIDE := "wide"
+const ITEM_FIRE := "fire"
+const ITEM_LIFE := "life"
+
+
+class Ball:
+	extends RefCounted
+	var id := 0
+	var pos := Vector2.ZERO
+	var vel := Vector2.ZERO
+	var state: int = BallState.WAITING
+	var wait := 0.0
+	## 물에서 막 튀어 오른 공인지. 그 물을 벗어날 때까지는 다시 빠지지 않는다.
+	var skipping := false
+	## 패들에 닿지 않고 연속으로 부순 셀의 수
+	var combo := 0
+
+
 var stage: StageData
 var cfg: Dictionary
 
 var cell_hp := PackedInt32Array()
 var cell_max_hp := PackedInt32Array()
-var ball_pos := Vector2.ZERO
-var ball_vel := Vector2.ZERO
-var ball_state: int = BallState.WAITING
+var balls: Array[Ball] = []
+## 떨어지고 있는 아이템. 각 원소: {id: int, type: String, pos: Vector2}
+var items: Array[Dictionary] = []
 var ball_radius := 0.0
 var paddle_x := 0.0
 var score := 0
-## 패들에 닿지 않고 연속으로 부순 셀의 수
-var combo := 0
 ## 호수에 빠진 횟수
 var falls := 0
 var lives := 0
@@ -35,19 +53,45 @@ var over := false
 var destroyed := 0
 var elapsed := 0.0
 var cleared := false
+## 넓은 패들과 불공의 남은 시간 (초)
+var wide_left := 0.0
+var fire_left := 0.0
 
-var _wait_left := 0.0
-## 물에서 막 튀어 오른 공인지. 그 물을 벗어날 때까지는 다시 빠지지 않는다.
-var _skipping := false
-var _rng := RandomNumberGenerator.new()
+## 첫 번째 공을 가리키는 지름길. 공이 하나뿐인 상황과 테스트에서 쓴다.
+var ball_pos: Vector2:
+	get:
+		return balls[0].pos if not balls.is_empty() else Vector2.ZERO
+	set(v):
+		if not balls.is_empty():
+			balls[0].pos = v
+var ball_vel: Vector2:
+	get:
+		return balls[0].vel if not balls.is_empty() else Vector2.ZERO
+	set(v):
+		if not balls.is_empty():
+			balls[0].vel = v
+var ball_state: int:
+	get:
+		return balls[0].state if not balls.is_empty() else BallState.WAITING
+var combo: int:
+	get:
+		return balls[0].combo if not balls.is_empty() else 0
+	set(v):
+		if not balls.is_empty():
+			balls[0].combo = v
+
 var _landmarks_left := 0
 var _events: Array[Dictionary] = []
 var _grid := {}
-var _cols := 1
 var _lake_boxes: Array[Rect2] = []
+var _rng := RandomNumberGenerator.new()
+var _next_id := 1
+## 셀 번호 → 그 셀에 든 아이템의 종류
+var _item_in_cell := {}
 
 
-func _init(p_stage: StageData, p_cfg: Dictionary) -> void:
+## design 은 스테이지의 수작업 기획(design.json)이다. 없으면 아이템 없이 돈다.
+func _init(p_stage: StageData, p_cfg: Dictionary, design: Dictionary = {}) -> void:
 	stage = p_stage
 	cfg = p_cfg
 	ball_radius = stage.ball_diameter / 2.0
@@ -62,162 +106,203 @@ func _init(p_stage: StageData, p_cfg: Dictionary) -> void:
 			_landmarks_left += 1
 	_build_grid()
 	for lake in stage.lakes:
-		var box := _bounds(lake["points"])
-		_lake_boxes.append(box)
+		_lake_boxes.append(_bounds(lake["points"]))
+	for it: Dictionary in design.get("items", []):
+		var cell := cell_at(Vector2(float(it["at"][0]), float(it["at"][1])))
+		if cell >= 0 and not stage.cells[cell]["landmark"]:
+			_item_in_cell[cell] = String(it["type"])
 	lives = int(cfg["lives"])
 	_rng.seed = int(cfg["seed"])
 	paddle_x = stage.width / 2.0
-	_hold(float(cfg["launch_delay"]))
+	_add_waiting_ball(float(cfg["launch_delay"]))
 
 
 ## 패들의 가운데 x를 정한다. 판 밖으로 나가지 않게 잘린다.
 func set_paddle(x: float) -> void:
-	var half := float(cfg["paddle_width"]) / 2.0
+	var half := paddle_width() / 2.0
 	paddle_x = clampf(x, half, stage.width - half)
 
 
+## 지금의 패들 폭. 넓은 패들 아이템이 켜져 있으면 넓다.
+func paddle_width() -> float:
+	return float(cfg["paddle_width"]) * (float(cfg["wide_factor"]) if wide_left > 0.0 else 1.0)
+
+
 ## 지난 take_events() 뒤에 일어난 일을 돌려주고 비운다.
-## 종류: hit{cell,hp,max_hp}, destroyed{cell,landmark}, paddle, launch, splash{pos}, emerge{pos}, lost, over, cleared
+## 종류: hit{cell,hp,max_hp}, destroyed{cell,landmark}, paddle, launch, splash{pos}, emerge{pos},
+##       ball_lost{ball}, lost, over, cleared, item_spawn{id,type,pos}, item_caught{id,type}, item_gone{id}
 func take_events() -> Array[Dictionary]:
 	var out := _events
 	_events = []
 	return out
 
 
+## 화면에 보여 줄 콤보 배율. 공이 여럿이면 가장 높은 것.
 func combo_multiplier() -> float:
-	return minf(1.0 + combo * float(cfg["combo_step"]), float(cfg["combo_max"]))
+	var best := 0
+	for b in balls:
+		best = maxi(best, b.combo)
+	return _multiplier(best)
 
 
 func breakable_count() -> int:
 	return cell_hp.size()
 
 
+## 셀에 든 아이템의 종류. 없으면 빈 문자열.
+func item_in_cell(cell: int) -> String:
+	return _item_in_cell.get(cell, "")
+
+
+## 그 자리의 셀 번호. 어느 셀 안도 아니면 가장 가까운 셀.
+func cell_at(p: Vector2) -> int:
+	var nearest := -1
+	var nearest_d := INF
+	for i in stage.cells.size():
+		var pts: PackedVector2Array = stage.cells[i]["points"]
+		if Geometry2D.is_point_in_polygon(p, pts):
+			return i
+		var d := _closest_on_outline(pts, p).distance_squared_to(p)
+		if d < nearest_d:
+			nearest_d = d
+			nearest = i
+	return nearest
+
+
 func step() -> void:
 	if cleared or over:
 		return
 	elapsed += STEP
+	wide_left = maxf(0.0, wide_left - STEP)
+	fire_left = maxf(0.0, fire_left - STEP)
+	for b: Ball in balls.duplicate():
+		_step_ball(b)
+		if cleared:
+			return
+	_step_items()
+	if balls.is_empty():
+		_lose_life()
+
+
+func _step_ball(b: Ball) -> void:
 	var paddle_y := float(cfg["paddle_y"])
-	if ball_state == BallState.SUNK:
-		_wait_left -= STEP
-		if _wait_left <= 0.0:
-			_emerge()
+	if b.state == BallState.WAITING:
+		b.pos = _hold_position()
+		b.wait -= STEP
+		if b.wait <= 0.0:
+			var a := deg_to_rad(float(cfg["launch_angle_deg"])) * (1.0 if lives % 2 == 1 else -1.0)
+			b.vel = Vector2(sin(a), cos(a)) * float(cfg["ball_speed"])
+			b.state = BallState.FLYING
+			_events.append({"type": "launch"})
 		return
-	if ball_state == BallState.WAITING:
-		ball_pos = Vector2(paddle_x, paddle_y + float(cfg["paddle_thickness"]) / 2.0 + ball_radius + 2.0)
-		_wait_left -= STEP
-		if _wait_left <= 0.0:
-			_launch()
+	if b.state == BallState.SUNK:
+		b.wait -= STEP
+		if b.wait <= 0.0:
+			# 가라앉았던 자리에서 아무 방향으로나 튀어 오른다. 방향은 판마다 정해진 난수열을 따른다.
+			b.vel = Vector2.from_angle(_rng.randf() * TAU) * float(cfg["ball_speed"])
+			_keep_min_angle(b)
+			b.state = BallState.FLYING
+			b.skipping = true
+			_events.append({"type": "emerge", "pos": b.pos})
 		return
 
 	var speed := float(cfg["ball_speed"])
-	ball_vel.y -= float(cfg["gravity"]) * STEP
-	ball_vel = ball_vel.normalized() * speed
+	b.vel.y -= float(cfg["gravity"]) * STEP
+	b.vel = b.vel.normalized() * speed
 	var subs := maxi(1, ceili(speed * STEP / (ball_radius * 0.5)))
 	var dt := STEP / subs
 	for i in subs:
-		ball_pos += ball_vel * dt
-		_collide_walls()
-		_collide_paddle()
-		_collide_cells()
+		b.pos += b.vel * dt
+		_collide_walls(b)
+		_collide_paddle(b)
+		_collide_cells(b)
 		if cleared:
 			return
-	if ball_pos.y < paddle_y - float(cfg["fall_margin"]):
-		_lose()
+	if b.pos.y < paddle_y - float(cfg["fall_margin"]):
+		# 패들을 지나쳐 뒤로 넘어갔다
+		balls.erase(b)
+		_events.append({"type": "ball_lost", "ball": b.id})
 		return
-	if _lake_at(ball_pos) < 0:
-		_skipping = false
-	elif not _skipping:
-		_sink()
+	if _lake_at(b.pos) < 0:
+		b.skipping = false
+	elif not b.skipping:
+		falls += 1
+		b.combo = 0
+		b.state = BallState.SUNK
+		b.vel = Vector2.ZERO
+		b.wait = float(cfg["splash_delay"])
+		_events.append({"type": "splash", "pos": b.pos})
 
 
-func _hold(seconds: float) -> void:
-	ball_state = BallState.WAITING
-	ball_vel = Vector2.ZERO
-	_wait_left = seconds
-	ball_pos = Vector2(paddle_x, float(cfg["paddle_y"]) + float(cfg["paddle_thickness"]) / 2.0 + ball_radius + 2.0)
+func _hold_position() -> Vector2:
+	return Vector2(paddle_x, float(cfg["paddle_y"]) + float(cfg["paddle_thickness"]) / 2.0 + ball_radius + 2.0)
 
 
-func _launch() -> void:
-	var a := deg_to_rad(float(cfg["launch_angle_deg"])) * (1.0 if falls % 2 == 0 else -1.0)
-	ball_vel = Vector2(sin(a), cos(a)) * float(cfg["ball_speed"])
-	ball_state = BallState.FLYING
-	_events.append({"type": "launch"})
+func _add_waiting_ball(seconds: float) -> Ball:
+	var b := Ball.new()
+	b.id = _next_id
+	_next_id += 1
+	b.state = BallState.WAITING
+	b.wait = seconds
+	b.pos = _hold_position()
+	balls.append(b)
+	return b
 
 
-## 패들을 지나쳐 뒤로 넘어갔다. 공 하나를 잃는다.
-func _lose() -> void:
+## 판 위의 공이 하나도 남지 않았다. 목숨 하나를 잃는다.
+func _lose_life() -> void:
 	lives -= 1
-	combo = 0
+	wide_left = 0.0
+	fire_left = 0.0
 	_events.append({"type": "lost"})
 	if lives <= 0:
 		over = true
-		ball_state = BallState.WAITING
-		ball_vel = Vector2.ZERO
 		_events.append({"type": "over"})
 		return
-	_hold(float(cfg["respawn_delay"]))
+	_add_waiting_ball(float(cfg["respawn_delay"]))
 
 
-## 물에 빠졌다. 공은 잠깐 가라앉는다.
-func _sink() -> void:
-	falls += 1
-	combo = 0
-	ball_state = BallState.SUNK
-	ball_vel = Vector2.ZERO
-	_wait_left = float(cfg["splash_delay"])
-	_events.append({"type": "splash", "pos": ball_pos})
-
-
-## 가라앉았던 자리에서 아무 방향으로나 튀어 오른다. 방향은 판마다 정해진 난수열을 따른다.
-func _emerge() -> void:
-	ball_vel = Vector2.from_angle(_rng.randf() * TAU) * float(cfg["ball_speed"])
-	_keep_min_angle()
-	ball_state = BallState.FLYING
-	_skipping = true
-	_events.append({"type": "emerge", "pos": ball_pos})
-
-
-func _collide_walls() -> void:
+func _collide_walls(b: Ball) -> void:
 	var hit := false
-	if ball_pos.x < ball_radius:
-		ball_pos.x = ball_radius
-		ball_vel.x = absf(ball_vel.x)
+	if b.pos.x < ball_radius:
+		b.pos.x = ball_radius
+		b.vel.x = absf(b.vel.x)
 		hit = true
-	elif ball_pos.x > stage.width - ball_radius:
-		ball_pos.x = stage.width - ball_radius
-		ball_vel.x = -absf(ball_vel.x)
+	elif b.pos.x > stage.width - ball_radius:
+		b.pos.x = stage.width - ball_radius
+		b.vel.x = -absf(b.vel.x)
 		hit = true
-	if ball_pos.y > stage.height - ball_radius:
-		ball_pos.y = stage.height - ball_radius
-		ball_vel.y = -absf(ball_vel.y)
+	if b.pos.y > stage.height - ball_radius:
+		b.pos.y = stage.height - ball_radius
+		b.vel.y = -absf(b.vel.y)
 		hit = true
 	if hit:
-		_keep_min_angle()
+		_keep_min_angle(b)
 
 
-func _collide_paddle() -> void:
-	if ball_vel.y >= 0.0:
+func _collide_paddle(b: Ball) -> void:
+	if b.vel.y >= 0.0:
 		return
-	var half := float(cfg["paddle_width"]) / 2.0
+	var half := paddle_width() / 2.0
 	var thick := float(cfg["paddle_thickness"])
 	var top := float(cfg["paddle_y"]) + thick / 2.0
-	if ball_pos.y - ball_radius > top or ball_pos.y < top - thick:
+	if b.pos.y - ball_radius > top or b.pos.y < top - thick:
 		return
-	var off := ball_pos.x - paddle_x
+	var off := b.pos.x - paddle_x
 	if absf(off) > half + ball_radius * 0.6:
 		return
 	# 맞은 자리가 가운데에서 멀수록 옆으로 눕는다
 	var a := clampf(off / half, -1.0, 1.0) * deg_to_rad(float(cfg["paddle_max_angle_deg"]))
-	ball_vel = Vector2(sin(a), cos(a)) * float(cfg["ball_speed"])
-	ball_pos.y = top + ball_radius
-	combo = 0
+	b.vel = Vector2(sin(a), cos(a)) * float(cfg["ball_speed"])
+	b.pos.y = top + ball_radius
+	b.combo = 0
 	_events.append({"type": "paddle"})
 
 
-func _collide_cells() -> void:
-	if ball_pos.y < -ball_radius or ball_pos.y > stage.height + ball_radius:
+func _collide_cells(b: Ball) -> void:
+	if b.pos.y < -ball_radius or b.pos.y > stage.height + ball_radius:
 		return
-	var bucket: PackedInt32Array = _grid.get(_key(ball_pos), PackedInt32Array())
+	var bucket: PackedInt32Array = _grid.get(_key(b.pos), PackedInt32Array())
 	var best := -1
 	var best_depth := 0.0
 	var best_n := Vector2.ZERO
@@ -225,42 +310,52 @@ func _collide_cells() -> void:
 		if cell_hp[idx] <= 0:
 			continue
 		var pts: PackedVector2Array = stage.cells[idx]["points"]
-		var q := _closest_on_outline(pts, ball_pos)
-		var d := q.distance_to(ball_pos)
+		var q := _closest_on_outline(pts, b.pos)
+		var d := q.distance_to(b.pos)
 		if d < 0.0001:
 			continue
 		var depth := 0.0
 		var n := Vector2.ZERO
-		if Geometry2D.is_point_in_polygon(ball_pos, pts):
+		if Geometry2D.is_point_in_polygon(b.pos, pts):
 			depth = ball_radius + d
-			n = (q - ball_pos) / d
+			n = (q - b.pos) / d
 		elif d < ball_radius:
 			depth = ball_radius - d
-			n = (ball_pos - q) / d
+			n = (b.pos - q) / d
 		if depth > best_depth:
 			best_depth = depth
 			best_n = n
 			best = idx
 	if best < 0:
 		return
-	ball_pos += best_n * best_depth
-	if ball_vel.dot(best_n) < 0.0:
-		ball_vel = ball_vel.bounce(best_n)
-		_keep_min_angle()
-	_damage(best)
+	# 불공은 보통 셀을 한 번에 부수고 그대로 지나간다. 랜드마크에서는 보통 공처럼 튕긴다.
+	if fire_left > 0.0 and not stage.cells[best]["landmark"]:
+		_damage(b, best, cell_hp[best])
+		return
+	b.pos += best_n * best_depth
+	if b.vel.dot(best_n) < 0.0:
+		b.vel = b.vel.bounce(best_n)
+		_keep_min_angle(b)
+	_damage(b, best, 1)
 
 
-func _damage(idx: int) -> void:
-	cell_hp[idx] -= 1
+func _damage(b: Ball, idx: int, amount: int) -> void:
+	cell_hp[idx] = maxi(0, cell_hp[idx] - amount)
 	score += int(cfg["score_hit"])
 	_events.append({"type": "hit", "cell": idx, "hp": cell_hp[idx], "max_hp": cell_max_hp[idx]})
 	if cell_hp[idx] > 0:
 		return
 	destroyed += 1
-	score += int(round(float(cfg["score_destroy_per_hp"]) * cell_max_hp[idx] * combo_multiplier()))
-	combo += 1
+	score += int(round(float(cfg["score_destroy_per_hp"]) * cell_max_hp[idx] * _multiplier(b.combo)))
+	b.combo += 1
 	var landmark: bool = stage.cells[idx]["landmark"]
 	_events.append({"type": "destroyed", "cell": idx, "landmark": landmark})
+	if _item_in_cell.has(idx):
+		var item := {"id": _next_id, "type": _item_in_cell[idx], "pos": _center(stage.cells[idx]["points"])}
+		_next_id += 1
+		_item_in_cell.erase(idx)
+		items.append(item)
+		_events.append({"type": "item_spawn", "id": item["id"], "type_of": item["type"], "pos": item["pos"]})
 	if landmark:
 		_landmarks_left -= 1
 		if _landmarks_left <= 0:
@@ -268,17 +363,67 @@ func _damage(idx: int) -> void:
 			_events.append({"type": "cleared"})
 
 
+## 아이템은 곧게 패들 쪽으로 내려온다. 패들로 받으면 발동하고, 놓치면 사라진다.
+func _step_items() -> void:
+	var half := paddle_width() / 2.0
+	var top := float(cfg["paddle_y"]) + float(cfg["paddle_thickness"]) / 2.0
+	for it: Dictionary in items.duplicate():
+		var pos: Vector2 = it["pos"]
+		pos.y -= float(cfg["item_speed"]) * STEP
+		it["pos"] = pos
+		if pos.y <= top + 20.0 and pos.y >= top - float(cfg["paddle_thickness"]) - 20.0 and absf(pos.x - paddle_x) <= half + 24.0:
+			items.erase(it)
+			score += int(cfg["score_item"])
+			_events.append({"type": "item_caught", "id": it["id"], "type_of": it["type"]})
+			_apply_item(it["type"])
+		elif pos.y < float(cfg["paddle_y"]) - float(cfg["fall_margin"]):
+			items.erase(it)
+			_events.append({"type": "item_gone", "id": it["id"]})
+
+
+func _apply_item(type: String) -> void:
+	match type:
+		ITEM_MULTI:
+			# 날고 있는 공마다 양옆으로 하나씩 더 나온다
+			var spread := deg_to_rad(float(cfg["multiball_spread_deg"]))
+			for b: Ball in balls.duplicate():
+				if b.state != BallState.FLYING:
+					continue
+				for sign_: float in [-1.0, 1.0]:
+					if balls.size() >= int(cfg["max_balls"]):
+						return
+					var extra := Ball.new()
+					extra.id = _next_id
+					_next_id += 1
+					extra.state = BallState.FLYING
+					extra.pos = b.pos
+					extra.vel = b.vel.rotated(spread * sign_)
+					extra.skipping = b.skipping
+					_keep_min_angle(extra)
+					balls.append(extra)
+		ITEM_WIDE:
+			wide_left = float(cfg["wide_seconds"])
+		ITEM_FIRE:
+			fire_left = float(cfg["fire_seconds"])
+		ITEM_LIFE:
+			lives += 1
+
+
+func _multiplier(combo_count: int) -> float:
+	return minf(1.0 + combo_count * float(cfg["combo_step"]), float(cfg["combo_max"]))
+
+
 ## 공이 거의 옆으로만 가는 상태를 막는다.
-func _keep_min_angle() -> void:
-	var speed := ball_vel.length()
+func _keep_min_angle(b: Ball) -> void:
+	var speed := b.vel.length()
 	if speed <= 0.0:
 		return
 	var min_vy := speed * sin(deg_to_rad(float(cfg["min_angle_deg"])))
-	if absf(ball_vel.y) >= min_vy:
+	if absf(b.vel.y) >= min_vy:
 		return
-	var sy := -1.0 if ball_vel.y < 0.0 else 1.0
-	var sx := -1.0 if ball_vel.x < 0.0 else 1.0
-	ball_vel = Vector2(sx * sqrt(speed * speed - min_vy * min_vy), sy * min_vy)
+	var sy := -1.0 if b.vel.y < 0.0 else 1.0
+	var sx := -1.0 if b.vel.x < 0.0 else 1.0
+	b.vel = Vector2(sx * sqrt(speed * speed - min_vy * min_vy), sy * min_vy)
 
 
 ## 그 자리가 몇 번째 호수의 물 위인지. 물이 아니면 -1. 물 위를 지나는 통로(다리)는 물이 아니다.
@@ -296,7 +441,6 @@ func _lake_at(p: Vector2) -> int:
 
 
 func _build_grid() -> void:
-	_cols = maxi(1, ceili(stage.width / GRID))
 	var pad := ball_radius + 8.0
 	for i in stage.cells.size():
 		var box := _bounds(stage.cells[i]["points"]).grow(pad)
@@ -326,6 +470,13 @@ static func _closest_on_outline(pts: PackedVector2Array, p: Vector2) -> Vector2:
 			best_d = d
 			best = q
 	return best
+
+
+static func _center(pts: PackedVector2Array) -> Vector2:
+	var c := Vector2.ZERO
+	for p in pts:
+		c += p
+	return c / pts.size()
 
 
 static func _bounds(pts: PackedVector2Array) -> Rect2:
