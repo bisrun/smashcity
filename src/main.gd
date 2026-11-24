@@ -28,7 +28,8 @@ const END_PAUSE := 1.6
 const SKY := Color("BFE6F2")
 const INK := Color("14213D")
 const FIRE := Color("FF7A3C")
-const ITEM_NAMES := {"multi": "멀티볼", "wide": "넓은 패들", "fire": "불공", "life": "공 +1", "bolt": "번개!"}
+## 순간의 효과를 알리는 말은 영어로 쓴다.
+const ITEM_NAMES := {"multi": "MULTI BALL!", "wide": "WIDE PADDLE!", "fire": "FIRE BALL!", "life": "1 UP!", "bolt": "LIGHTNING!"}
 
 ## 방금 끝난 판의 결과. 장면을 다시 불러도 남아 있어 스테이지 지도에 보여 준다.
 static var last_result := {}
@@ -85,6 +86,8 @@ func _ready() -> void:
 			_landmark = i
 	_setup_light()
 	_board = BoardViewScript.new()
+	if OS.has_environment("SMASHCITY_BADGE"):
+		_board.badge_style = OS.get_environment("SMASHCITY_BADGE")  # 비교용: rim, plain, none
 	add_child(_board)
 	_board.build(_stage, _river, float(_cfg["paddle_y"]) - float(_cfg["fall_margin"]), design, _sim.cell_max_hp)
 	_board.add_walls(_sim.walls, _sim.gates)
@@ -149,20 +152,21 @@ func _process(delta: float) -> void:
 				_hud.say(ITEM_NAMES.get(e["type_of"], ""))
 				Input.vibrate_handheld(30)
 			"fever":
-				_hud.say("피버! 연쇄 폭발")
+				_hud.say("FEVER!")
 			"finale":
-				_hud.say("마무리! 번개를 받아라")
+				_hud.say("FINALE!")
 			"bolt":
 				_board.show_bolt(e["pos"])
 				_shake = maxf(_shake, 20.0)
 			"lost":
+				_hud.say("MISS!")
 				_shake = maxf(_shake, 26.0)
 				Input.vibrate_handheld(120)
 			"cleared":
-				_hud.say("클리어!")
+				_hud.say("CLEAR!")
 				_finish(true)
 			"over":
-				_hud.say("게임 오버")
+				_hud.say("GAME OVER")
 				_finish(false)
 	# 화면 흔들림
 	_shake = maxf(0.0, _shake - delta * 60.0)
@@ -303,16 +307,16 @@ func _sync_items() -> void:
 func _sync_hud(delta: float) -> void:
 	var effects: Array = []
 	if _sim.fire_left > 0.0:
-		effects.append(["불공", _sim.fire_left, FIRE])
+		effects.append(["FIRE", _sim.fire_left, FIRE])
 	if _sim.wide_left > 0.0:
-		effects.append(["넓은 패들", _sim.wide_left, UiKit.MINT])
+		effects.append(["WIDE", _sim.wide_left, UiKit.MINT])
 	if _sim.finale:
-		effects.append(["마무리", 0.0, UiKit.CORAL])
+		effects.append(["FINALE", 0.0, UiKit.CORAL])
 	var goal := 0.0
-	var goal_name := "남은 건물"
+	var goal_name := "LEFT"
 	if _landmark >= 0:
 		goal = float(_sim.cell_hp[_landmark]) / float(_sim.cell_max_hp[_landmark])
-		goal_name = "타워"
+		goal_name = "TOWER"
 	else:
 		goal = 1.0 - float(_sim.destroyed) / maxf(1.0, _sim.breakable_count())
 	_hud.show_state(_sim.score, _sim.lives, _sim.combo_multiplier(), _sim.any_fever(), goal_name, goal, effects)
@@ -332,12 +336,23 @@ func _setup_ui() -> void:
 		return
 	_map = StageMapScript.new()
 	layer.add_child(_map)
-	var result := last_result if String(last_result.get("stage", "")) == _stage_id else {}
-	# 방금 깬 스테이지의 결과는, 다음 스테이지가 골라진 뒤에도 보여 준다
-	if result.is_empty() and not last_result.is_empty():
-		result = last_result
+	# 방금 끝난 판의 결과와 그 스테이지의 순위를 함께 보여 준다
+	var result := last_result
+	var cleared := _save.cleared
 	var ranked := String(result.get("stage", _stage_id))
-	_map.setup(_city_name, _stage_list, _save.cleared, _stage_index, _save.top(ranked, 5), result)
+	var ranking := _save.top(ranked, 5)
+	if OS.has_environment("SMASHCITY_DEMO_RESULT"):
+		# 화면 확인용 가짜 결과. 기록에는 남기지 않는다.
+		result = {"cleared": true, "score": 48200, "rank": 2, "stage": _stage_id}
+		ranking = [{"score": 61350, "cleared": true, "at": "11.23 21:40"}, {"score": 48200, "cleared": true, "at": "11.24 17:12"},
+			{"score": 30980, "cleared": false, "at": "11.24 16:55"}, {"score": 12400, "cleared": false, "at": "11.22 09:03"}]
+		cleared = [_stage_id]
+	var best := {}
+	for st: Dictionary in _stage_list:
+		best[String(st["id"])] = _save.best(String(st["id"]))
+	if OS.has_environment("SMASHCITY_DEMO_RESULT"):
+		best[_stage_id] = 61350
+	_map.setup(_city_name, _stage_list, cleared, _stage_index, best, ranking, result)
 	_map.started.connect(_start)
 
 

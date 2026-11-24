@@ -129,7 +129,7 @@ func show_state(score: int, lives: int, combo: float, fever: bool, goal_name: St
 	_goal_text.text = goal_name
 	_goal.value = clampf(goal, 0.0, 1.0) * 100.0
 	var text: Label = _combo.get_node("Text")
-	text.text = "피버 x%.1f" % combo if fever else "x%.1f" % combo
+	text.text = "FEVER x%.1f" % combo if fever else "x%.1f" % combo
 	var sb_combo: StyleBoxFlat = _combo.get_theme_stylebox("panel")
 	sb_combo.bg_color = UiKit.CORAL if fever else (UiKit.GOLD if combo > 1.05 else UiKit.GREY)
 
@@ -143,7 +143,7 @@ func show_state(score: int, lives: int, combo: float, fever: bool, goal_name: St
 		_chips.add_child(UiKit.chip("", UiKit.SKY, Color.WHITE, 22))
 	for i in want:
 		var chip := _chips.get_child(i) as PanelContainer
-		(chip.get_node("Text") as Label).text = "%s %d" % [effects[i][0], ceili(effects[i][1])]
+		(chip.get_node("Text") as Label).text = "%s %d" % [effects[i][0], ceili(effects[i][1])] if effects[i][1] > 0.0 else String(effects[i][0])
 		(chip.get_theme_stylebox("panel") as StyleBoxFlat).bg_color = effects[i][2]
 	_chips.visible = want > 0
 

@@ -48,6 +48,8 @@ const WALL_TINTS: Array[Color] = [Color("FFF4E3"), Color("FFE3E0"), Color("E3F4E
 const ROOF_TINTS: Array[Color] = [Color("E8785A"), Color("F2A65A"), Color("4FB0A5"), Color("E56B8C"), Color("5E8FD6"), Color("8A78D6")]
 const WINDOW := Color("8CCBF2")
 const STONE := Color("D8D2C4")
+## 부서진 자리에 남는 터의 색. 길보다 조금 어둡다.
+const TRACE_EDGE := Color("E6D4B4")
 const DECK := Color("F1ECE1")
 const WALL_TOP := Color("B9C1CE")
 const WALL_SIDE := Color("8792A3")
@@ -104,6 +106,8 @@ var _wall_tint: Array[Color] = []
 var _roof_tint: Array[Color] = []
 var _badges: Array[Dictionary] = []
 var _font: Font
+## 숫자 표지의 모양. none 은 숫자만, plain 은 색 원 위의 숫자, rim 은 흰 테가 있는 색 원 위의 숫자.
+var badge_style := "none"
 var _tops: Array[Node3D] = []
 ## 셀마다 지붕 숫자를 띄울 자리. (지도 x, 블록 윗면에서의 높이, 지도 y). 없으면 Vector3.INF.
 var _label_at: Array[Vector3] = []
@@ -187,12 +191,14 @@ func show_destroyed(cell: int) -> void:
 	if node == null:
 		return
 	cell_nodes[cell] = null
+	_leave_trace(cell)
 	var tween := node.create_tween()
 	tween.tween_property(node, "scale:y", 0.02, 0.22).set_ease(Tween.EASE_IN)
 	tween.tween_callback(node.queue_free)
 
 
-## 숫자 표지. 앞으로 몇 번 맞아야 부서지는지를 색 풍선 안의 숫자로 보여 준다. 한 번 남은 블록에는 띄우지 않는다.
+## 숫자 표지. 앞으로 몇 번 맞아야 부서지는지를 지붕 위에 큰 숫자로 보여 준다. 한 번 남은 블록에는 띄우지 않는다.
+## 숫자의 크기는 블록의 크기를 따른다. badge_style 에 따라 숫자 뒤에 색 원을 받칠 수 있다.
 func _add_badge(ci: int, tops: Node3D, hp: int) -> Dictionary:
 	if _label_at[ci] == Vector3.INF:
 		return {}
@@ -200,25 +206,31 @@ func _add_badge(ci: int, tops: Node3D, hp: int) -> Dictionary:
 	tops.add_child(node)
 	var at := _label_at[ci]
 	node.position = _at(Vector2(at.x, at.z), at.y)
-	var rim_mat := StandardMaterial3D.new()
-	rim_mat.albedo_color = Color.WHITE
-	rim_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	rim_mat.no_depth_test = true
-	rim_mat.render_priority = 1
-	var rim := MeshInstance3D.new()
-	rim.mesh = _sphere(BADGE_RADIUS + 3.5)
-	rim.material_override = rim_mat
-	rim.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	node.add_child(rim)
-	var fill_mat := StandardMaterial3D.new()
-	fill_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	fill_mat.no_depth_test = true
-	fill_mat.render_priority = 2
-	var fill := MeshInstance3D.new()
-	fill.mesh = _sphere(BADGE_RADIUS)
-	fill.material_override = fill_mat
-	fill.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	node.add_child(fill)
+	# 글자의 높이 (m). 작은 블록에서도 읽히고 큰 블록에서는 더 크게.
+	var tall := clampf(sqrt(_area(_outline[ci])) * 0.5, 34.0, 64.0)
+	var fill_mat: StandardMaterial3D = null
+	if badge_style != "none":
+		var radius := tall * 0.62
+		if badge_style == "rim":
+			var rim_mat := StandardMaterial3D.new()
+			rim_mat.albedo_color = Color.WHITE
+			rim_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			rim_mat.no_depth_test = true
+			rim_mat.render_priority = 1
+			var rim := MeshInstance3D.new()
+			rim.mesh = _sphere(radius + 4.0)
+			rim.material_override = rim_mat
+			rim.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			node.add_child(rim)
+		fill_mat = StandardMaterial3D.new()
+		fill_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		fill_mat.no_depth_test = true
+		fill_mat.render_priority = 2
+		var fill := MeshInstance3D.new()
+		fill.mesh = _sphere(radius)
+		fill.material_override = fill_mat
+		fill.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		node.add_child(fill)
 	var label := Label3D.new()
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	label.no_depth_test = true
@@ -226,8 +238,8 @@ func _add_badge(ci: int, tops: Node3D, hp: int) -> Dictionary:
 	label.shaded = false
 	label.font = _badge_font()
 	label.font_size = 96
-	label.outline_size = 0
-	label.pixel_size = BADGE_RADIUS * 0.0165
+	label.outline_size = 0 if badge_style != "none" else 34
+	label.pixel_size = tall / 96.0 * (0.8 if badge_style != "none" else 1.0)
 	label.modulate = Color.WHITE
 	node.add_child(label)
 	var badge := {"node": node, "label": label, "fill": fill_mat}
@@ -240,7 +252,12 @@ func _set_badge(badge: Dictionary, hp: int) -> void:
 		return
 	badge["node"].visible = hp >= 2
 	badge["label"].text = str(hp)
-	badge["fill"].albedo_color = BADGE_COLORS[clampi(hp - 2, 0, BADGE_COLORS.size() - 1)]
+	var color := BADGE_COLORS[clampi(hp - 2, 0, BADGE_COLORS.size() - 1)]
+	if badge["fill"] != null:
+		badge["fill"].albedo_color = color
+	else:
+		# 원이 없을 때는 흰 숫자에 HP 색의 굵은 테두리를 두른다
+		badge["label"].outline_modulate = color.darkened(0.25)
 
 
 func _badge_font() -> Font:
@@ -386,6 +403,20 @@ static func make_item_node(type: String, radius: float) -> Node3D:
 	label.outline_modulate = Color("14213D")
 	node.add_child(label)
 	return node
+
+
+## 부서진 자리에 터를 남긴다. 건물이 있던 윤곽이 바닥에 옅게 남아, 판이 휑해 보이지 않고 어디가 뚫렸는지도 읽힌다.
+## 공은 그 위를 그대로 지나간다.
+func _leave_trace(cell: int) -> void:
+	var st := _begin()
+	var tint := cell_color(cell)
+	_add_prism(st, _outline[cell], 0.0, 0.7, TRACE_EDGE, TRACE_EDGE, 0.0)
+	_add_prism(st, _lawn[cell], 0.7, 1.0, TRACE_EDGE.lerp(tint, 0.22), TRACE_EDGE, 0.0)
+	var trace := _add_mesh(st, false)
+	trace.scale = Vector3(1.0, 0.01, 1.0)
+	var tween := trace.create_tween()
+	tween.tween_interval(0.18)
+	tween.tween_property(trace, "scale:y", 1.0, 0.2)
 
 
 ## 건물이 화면에 그려지는 높이.
