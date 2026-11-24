@@ -30,6 +30,11 @@ const KIND_HOUSE := "house"
 const KIND_TIERED := "tiered"
 const KIND_FLAT := "flat"
 const KIND_LANDMARK := "landmark"
+## 가져온 건물 모델을 통째로 올리는 벽돌
+const KIND_MODEL := "model"
+## 모델 건물의 받침 두께와, HP별 건물 높이 (m)
+const PLINTH := 3.0
+const MODEL_HEIGHTS: Array[float] = [46.0, 74.0, 104.0, 138.0]
 const BADGE_RADIUS := 15.0
 ## 실제 윤곽을 그대로 쓰는 건물의 최소 넓이 (㎡)
 const KEEP_REAL_AREA := 1200.0
@@ -51,6 +56,8 @@ const WINDOW := Color("8CCBF2")
 const STONE := Color("D8D2C4")
 ## 부서진 자리에 남는 터의 색. 길보다 조금 어둡다.
 const TRACE_EDGE := Color("E6D4B4")
+## 블록의 바닥. 벽돌 사이 골목과 자투리 땅의 색이다.
+const BLOCK_GROUND := Color("D9ECC4")
 ## 찻길과 차선의 색, 찻길을 바닥에서 띄우는 높이(호수 위 다리에서도 보이게)
 const ASPHALT := Color("D9D4DE")
 const LANE := Color("FFFFFF")
@@ -108,6 +115,9 @@ var _lawn: Array[PackedVector2Array] = []
 var _is_landmark: Array[bool] = []
 var _plinths: Array[MeshInstance3D] = []
 var _kind: Array[String] = []
+## 모델 건물이 한 번 맞을 때마다 땅속으로 내려앉는 깊이와, 처음의 단계
+var _sink: Array[float] = []
+var _max_tier: Array[int] = []
 var _wall_tint: Array[Color] = []
 var _roof_tint: Array[Color] = []
 var _badges: Array[Dictionary] = []
@@ -148,6 +158,7 @@ func build(stage: StageData, river_width: float, near_bank_y: float, design: Dic
 	for c in stage.cells:
 		boxes.append(_bounds(c["points"]))
 	_boxes = boxes
+	_build_blocks(stage)
 	_build_roads(stage)
 	var real := _assign_buildings(stage, boxes)
 	object_count = 0
@@ -167,6 +178,8 @@ func build(stage: StageData, river_width: float, near_bank_y: float, design: Dic
 		_roof_tint.append(GOLD if cell["landmark"] else ROOF_TINTS[(pick >> 4) % ROOF_TINTS.size()])
 		var start_hp: int = hp[ci] if ci < hp.size() else int(cell["hp"])
 		var tier := _tier(start_hp, start_hp, cell["landmark"])
+		_max_tier.append(tier)
+		_sink.append(MODEL_HEIGHTS[clampi(int(cell["hp"]) - 1, 0, 3)] / tier)
 		var plinth := MeshInstance3D.new()
 		plinth.material_override = _material
 		node.add_child(plinth)
@@ -418,6 +431,16 @@ static func make_item_node(type: String, radius: float) -> Node3D:
 	return node
 
 
+## 큰 도로 사이의 블록 바닥. 네모 벽돌이 다 채우지 못한 자투리가 풀밭으로 보인다.
+func _build_blocks(stage: StageData) -> void:
+	if stage.blocks.is_empty():
+		return
+	var st := _begin()
+	for i in stage.blocks.size():
+		_add_prism(st, stage.blocks[i], 0.0, 0.5, BLOCK_GROUND, BLOCK_GROUND, 0.0)
+	_add_mesh(st, false)
+
+
 ## 길에 생기를 넣는다. 큰 도로를 따라 찻길 띠와 차선을 그리고, 길가에 가로수를 심고, 작은 차를 달리게 한다.
 ## 모두 그림일 뿐이고 판정과는 무관하다. 공은 그 위를 그대로 지나간다.
 func _build_roads(stage: StageData) -> void:
@@ -602,6 +625,9 @@ static func _tier(hp: int, max_hp: int, landmark: bool) -> int:
 func _body_height(ci: int, tier: int) -> float:
 	if _kind[ci] == KIND_PARK:
 		return PARK_HEIGHT
+	if _kind[ci] == KIND_MODEL:
+		# 모델 건물은 받침 위에 서 있다가, 맞을 때마다 땅속으로 한 단씩 내려앉는다
+		return PLINTH - (_max_tier[ci] - tier) * _sink[ci]
 	return BODY_BASE + tier * BODY_FLOOR
 
 
@@ -610,6 +636,9 @@ func _body_mesh(ci: int, tier: int) -> ArrayMesh:
 	var st := _begin()
 	if _kind[ci] == KIND_PARK:
 		_add_prism(st, _outline[ci], 0.0, PARK_HEIGHT, GRASS[ci % GRASS.size()], STONE, 0.0)
+	elif _kind[ci] == KIND_MODEL:
+		# 받침은 그대로 남고 건물만 내려앉는다
+		_add_prism(st, _outline[ci], 0.0, PLINTH, DECK, STONE, 0.0)
 	else:
 		var wall := _wall_tint[ci]
 		_add_bands(st, _outline[ci], 0.0, _body_height(ci, tier), tier * 3, wall, WINDOW, wall.darkened(0.06), 1.0)
@@ -624,6 +653,8 @@ static func _classify(cell: Dictionary, real: Array, area: float) -> String:
 	var hp: int = cell["hp"]
 	if real.is_empty() and hp <= 1:
 		return KIND_PARK
+	if cell["points"].size() == 4 and not ModelLibraryScript.pick(ModelLibraryScript.BUILDINGS, 0).is_empty():
+		return KIND_MODEL
 	if hp >= 3:
 		return KIND_FLAT
 	if hp == 2 and area >= 2600.0:
@@ -686,6 +717,22 @@ func _furnish(st: SurfaceTool, ci: int, cell: Dictionary, lawn: PackedVector2Arr
 				var top := display_height(tower["levels"], true)
 				_add_bands(st, tower["points"], 2.5, top, 18, GLASS_FRAME, GLASS_DEEP, GOLD, 0.36)
 				_label_at[ci] = Vector3(tower["center"].x, top + 66.0, tower["center"].y)
+		KIND_MODEL:
+			# 네모 벽돌에 건물 모델을 통째로 올린다. 바닥은 벽돌에 맞춰 늘리고 높이는 HP를 따른다.
+			var mid := _center(outline)
+			var e0 := outline[1] - outline[0]
+			var e1 := outline[2] - outline[1]
+			var along := e0 if e0.length() >= e1.length() else e1
+			var across := e1 if e0.length() >= e1.length() else e0
+			var half_long := along.length() / 2.0 - 4.0
+			var half_short := across.length() / 2.0 - 4.0
+			var tall := MODEL_HEIGHTS[clampi(int(cell["hp"]) - 1, 0, 3)]
+			var names := ModelLibraryScript.TOWERS if int(cell["hp"]) >= 4 else ModelLibraryScript.BUILDINGS
+			var model := ModelLibraryScript.pick_by_shape(names, half_long / maxf(1.0, half_short), h)
+			if not model.is_empty():
+				_add_model_fit(st, model, mid, along.normalized(), across.normalized(), half_long, half_short, tall, wall, roof)
+			_label_at[ci] = Vector3(mid.x, tall + 16.0, mid.y)
+			object_count += 1
 		KIND_PARK:
 			var spot := _roomiest_point(lawn)
 			_label_at[ci] = Vector3(spot.x, 44.0, spot.y)
@@ -935,6 +982,38 @@ func _add_model(st: SurfaceTool, model: Dictionary, at: Vector2, base: float, he
 		st.set_color(c)
 		var v := points[i] * height
 		st.add_vertex(origin + Vector3(v.x * cy - v.z * sy, v.y, v.x * sy + v.z * cy))
+
+
+## 가져온 건물 모델을 네모 벽돌에 맞춰 올린다. 모델의 긴 쪽이 벽돌의 긴 쪽을 따르도록 바닥을 늘린다.
+##
+## 이 건물들은 벽과 지붕이 모두 어두운 청회색이라 이 판의 밝은 색과 어긋난다.
+## 회색 계열인 면만 골라, 위를 보는 면은 지붕 색으로, 옆을 보는 면은 벽 색으로 물들인다. 밝기의 차이는 살려 창과 띠가 그대로 읽히게 한다.
+## 차양이나 문처럼 원래 색이 있는 면은 그대로 둔다.
+func _add_model_fit(st: SurfaceTool, model: Dictionary, at: Vector2, along: Vector2, across: Vector2, half_long: float, half_short: float, height: float, wall: Color, roof: Color) -> void:
+	var points: PackedVector3Array = model["points"]
+	var colors: PackedColorArray = model["colors"]
+	var half: Vector2 = model["half"]
+	var long_is_x := half.x >= half.y
+	var sx := (half_long if long_is_x else half_short) / maxf(0.0001, half.x)
+	var sz := (half_short if long_is_x else half_long) / maxf(0.0001, half.y)
+	var ax := along if long_is_x else across
+	var az := across if long_is_x else along
+	# 지도 좌표의 방향을 장면 좌표로 옮긴다
+	var x3 := Vector3(ax.x, 0.0, -ax.y)
+	var z3 := Vector3(az.x, 0.0, -az.y)
+	var origin := _at(at, 0.0)
+	for t in range(0, points.size() - 2, 3):
+		var up := absf((points[t + 1] - points[t]).cross(points[t + 2] - points[t]).normalized().y) > 0.7
+		for k in 3:
+			var c := colors[t + k]
+			if c.s < 0.32:
+				# 원래 밝기(대략 0.35~1.0)를 0.82~1.08 배로 옮겨 밝은 색 위에서 명암만 남긴다
+				var shade := lerpf(0.82, 1.08, clampf((c.v - 0.35) / 0.65, 0.0, 1.0))
+				var base := roof if up else wall
+				c = Color(base.r * shade, base.g * shade, base.b * shade)
+			st.set_color(c)
+			var v := points[t + k]
+			st.add_vertex(origin + x3 * (v.x * sx) + z3 * (v.z * sz) + Vector3(0.0, v.y * height, 0.0))
 
 
 ## 가져온 모델 중 하나를 골라 놓는다. 읽을 수 있는 모델이 없으면 아무것도 하지 않고 false 를 돌려준다.

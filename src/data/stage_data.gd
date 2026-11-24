@@ -23,6 +23,8 @@ var pois: Array[Dictionary] = []
 var parks: Array[PackedVector2Array] = []
 ## 통로 면의 바깥 윤곽. 물 위를 지나는 통로(다리)를 가릴 때 쓴다
 var corridors: Array[PackedVector2Array] = []
+## 큰 도로 사이 블록의 윤곽. 그 안을 네모 벽돌이 채운다
+var blocks: Array[PackedVector2Array] = []
 
 
 static func load_file(path: String) -> StageData:
@@ -66,6 +68,8 @@ static func from_dict(d: Dictionary) -> StageData:
 		s.parks.append(_points(ring))
 	for c: Dictionary in d.get("corridors", []):
 		s.corridors.append(_points(c["p"]))
+	for ring: Array in d.get("blocks", []):
+		s.blocks.append(_points(ring))
 	for p: Dictionary in d.get("pois", []):
 		s.pois.append({
 			"position": Vector2(float(p["x"]), float(p["y"])),

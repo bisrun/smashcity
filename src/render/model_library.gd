@@ -17,9 +17,14 @@ const BUSHES: Array[String] = ["nature/plant_bushLarge", "nature/plant_bush"]
 const FLOWERS: Array[String] = ["nature/flower_redA", "nature/flower_yellowA", "nature/flower_purpleA"]
 const ROCKS: Array[String] = ["nature/rock_largeA"]
 const PARASOLS: Array[String] = ["city/detail-parasol-a", "city/detail-parasol-b"]
+## 낮은 건물과 높은 건물. 네모 벽돌 위에 통째로 올린다.
+const BUILDINGS: Array[String] = ["city/building-a", "city/building-b", "city/building-c", "city/building-d", "city/building-e", "city/building-f", "city/building-g",
+	"city/building-h", "city/building-i", "city/building-j", "city/building-k", "city/building-l", "city/building-m", "city/building-n"]
+const TOWERS: Array[String] = ["city/building-skyscraper-a", "city/building-skyscraper-b", "city/building-skyscraper-c", "city/building-skyscraper-d", "city/building-skyscraper-e"]
 
-## 이름 → {points: PackedVector3Array, colors: PackedColorArray}. 못 읽은 모델은 빈 사전.
+## 이름 → {points: PackedVector3Array, colors: PackedColorArray, half: Vector2}. 못 읽은 모델은 빈 사전.
 ## points 는 삼각형 목록이다. 바닥 가운데가 원점이고 높이가 1이 되게 맞춰져 있다.
+## half 는 그렇게 맞춘 뒤의 바닥 반폭(x)과 반깊이(z)다.
 static var _cache := {}
 
 
@@ -27,6 +32,24 @@ static func get_model(name: String) -> Dictionary:
 	if not _cache.has(name):
 		_cache[name] = _load(DIR + name + ".glb")
 	return _cache[name]
+
+
+## 목록에서 바닥의 가로세로 비가 want 에 가장 가까운 것들 가운데 하나를 seed 에 따라 고른다.
+## 네모 벽돌에 건물을 맞춰 늘릴 때 덜 찌그러지게 하려는 것이다.
+static func pick_by_shape(names: Array[String], want: float, seed: int) -> Dictionary:
+	var scored: Array = []
+	for n in names:
+		var m := get_model(n)
+		if m.is_empty():
+			continue
+		var half: Vector2 = m["half"]
+		var ratio := maxf(half.x, half.y) / maxf(0.0001, minf(half.x, half.y))
+		scored.append([absf(log(ratio / want)), n])
+	if scored.is_empty():
+		return {}
+	scored.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0] if a[0] != b[0] else a[1] < b[1])
+	var pool := mini(4, scored.size())
+	return get_model(scored[seed % pool][1])
 
 
 ## 목록에서 seed 에 따라 하나를 고른다. 읽을 수 있는 것이 없으면 빈 사전.
@@ -61,7 +84,8 @@ static func _load(path: String) -> Dictionary:
 	var shift := Vector3((lo.x + hi.x) / 2.0, lo.y, (lo.z + hi.z) / 2.0)
 	for i in points.size():
 		points[i] = (points[i] - shift) / height
-	return {"points": points, "colors": colors}
+	var half := Vector2((hi.x - lo.x) / 2.0, (hi.z - lo.z) / 2.0) / height
+	return {"points": points, "colors": colors, "half": half}
 
 
 static func _collect(node: Node, parent: Transform3D, points: PackedVector3Array, colors: PackedColorArray) -> void:
