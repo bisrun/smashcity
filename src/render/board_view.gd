@@ -25,8 +25,16 @@ const GOLD := Color("F6C53B")
 const GOLD_WALL := Color("FFE08A")
 const LANDMARK_LOT := Color("FBE7A1")
 
+## 건물이 차지한 넓이가 이 비율에 못 미치는 벽돌은 상상의 집으로 채운다.
+const FILL_BELOW_COVERAGE := 0.14
+## 채워 넣는 집 사이의 간격 (m)
+const FILL_SPACING := 26.0
+
 var _w := 0.0
 var _h := 0.0
+
+## 상상으로 채워 넣은 집의 수. build() 뒤에 읽는다.
+var filler_count := 0
 
 
 func build(stage: StageData, river_width: float) -> void:
@@ -37,6 +45,7 @@ func build(stage: StageData, river_width: float) -> void:
 	add_child(_mesh_instance(_build_lakes(stage), false))
 	add_child(_mesh_instance(_build_cells(stage), true))
 	add_child(_mesh_instance(_build_buildings(stage), true))
+	add_child(_mesh_instance(_build_filler(stage), true))
 
 
 ## 건물이 화면에 그려지는 높이.
@@ -83,6 +92,102 @@ func _build_buildings(stage: StageData) -> ArrayMesh:
 		_add_prism(st, pts, SLAB_HEIGHT, top_y, band[(i * 5) % band.size()], wall, 0.0)
 	st.generate_normals()
 	return st.commit()
+
+
+## 건물이 드문 벽돌을 상상의 집으로 채운다. 실제 지도에는 없는 건물이다.
+##
+## 집은 벽돌의 가장 긴 변과 나란히 줄지어 선다. 같은 스테이지에서는 늘 같은 자리에 같은 집이 선다.
+func _build_filler(stage: StageData) -> ArrayMesh:
+	var st := _begin()
+	filler_count = 0
+	var boxes: Array[Rect2] = []
+	for c in stage.cells:
+		boxes.append(_bounds(c["points"]))
+	var inside: Array[Array] = []
+	inside.resize(stage.cells.size())
+	for i in inside.size():
+		inside[i] = []
+	for b in stage.buildings:
+		var pts: PackedVector2Array = b["points"]
+		var center := _center(pts)
+		for ci in stage.cells.size():
+			if boxes[ci].has_point(center) and Geometry2D.is_point_in_polygon(center, stage.cells[ci]["points"]):
+				inside[ci].append({"points": pts, "center": center, "area": _area(pts)})
+				break
+	for ci in stage.cells.size():
+		var cell := stage.cells[ci]
+		if cell["landmark"]:
+			continue
+		var cell_pts: PackedVector2Array = cell["points"]
+		var built := 0.0
+		for b: Dictionary in inside[ci]:
+			built += b["area"]
+		if built >= _area(cell_pts) * FILL_BELOW_COVERAGE:
+			continue
+		var axis := _longest_edge(cell_pts)
+		var side := Vector2(-axis.y, axis.x)
+		var origin := boxes[ci].get_center()
+		var reach := int(ceil(boxes[ci].size.length() / 2.0 / FILL_SPACING))
+		for ix in range(-reach, reach + 1):
+			for iy in range(-reach, reach + 1):
+				var h := _hash(ci, ix, iy)
+				var at := origin + axis * (ix * FILL_SPACING) + side * (iy * FILL_SPACING)
+				var half_w := 5.5 + (h % 5) * 0.6
+				var half_d := 4.5 + ((h >> 3) % 4) * 0.5
+				var corners := PackedVector2Array([
+					at - axis * half_w - side * half_d, at + axis * half_w - side * half_d,
+					at + axis * half_w + side * half_d, at - axis * half_w + side * half_d,
+				])
+				if not _fits(corners, at, cell_pts, inside[ci]):
+					continue
+				var top_y := SLAB_HEIGHT + 9.0 + ((h >> 5) % 3) * 2.0
+				_add_prism(st, corners, SLAB_HEIGHT, top_y, PITCHED[(h >> 7) % PITCHED.size()], WALLS[(h >> 10) % WALLS.size()], 6.0)
+				filler_count += 1
+	st.generate_normals()
+	return st.commit()
+
+
+## 집이 벽돌 안에 온전히 들어가고 실제 건물과 겹치지 않는지.
+func _fits(corners: PackedVector2Array, at: Vector2, cell_pts: PackedVector2Array, real: Array) -> bool:
+	for c in corners:
+		if not Geometry2D.is_point_in_polygon(c, cell_pts):
+			return false
+	for b: Dictionary in real:
+		if at.distance_to(b["center"]) < 18.0 or Geometry2D.is_point_in_polygon(at, b["points"]):
+			return false
+		for c in corners:
+			if Geometry2D.is_point_in_polygon(c, b["points"]):
+				return false
+	return true
+
+
+static func _hash(a: int, b: int, c: int) -> int:
+	return absi((a * 73856093) ^ (b * 19349663) ^ (c * 83492791)) & 0xFFFFFF
+
+
+static func _bounds(pts: PackedVector2Array) -> Rect2:
+	var r := Rect2(pts[0], Vector2.ZERO)
+	for p in pts:
+		r = r.expand(p)
+	return r
+
+
+static func _center(pts: PackedVector2Array) -> Vector2:
+	var c := Vector2.ZERO
+	for p in pts:
+		c += p
+	return c / pts.size()
+
+
+static func _longest_edge(pts: PackedVector2Array) -> Vector2:
+	var best := Vector2.RIGHT
+	var best_len := 0.0
+	for i in pts.size():
+		var e := pts[(i + 1) % pts.size()] - pts[i]
+		if e.length() > best_len:
+			best_len = e.length()
+			best = e.normalized()
+	return best
 
 
 func _begin() -> SurfaceTool:

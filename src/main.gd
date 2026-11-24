@@ -23,6 +23,7 @@ var _camera: Camera3D
 var _paddle: MeshInstance3D
 var _info: Label
 var _info_timer := 0.0
+var _filler_count := 0
 
 
 func _ready() -> void:
@@ -33,6 +34,7 @@ func _ready() -> void:
 	var board: BoardView = BoardViewScript.new()
 	add_child(board)
 	board.build(_stage, RIVER)
+	_filler_count = board.filler_count
 	_setup_camera()
 	_setup_paddle_and_ball()
 	_setup_hud()
@@ -45,7 +47,7 @@ func _process(delta: float) -> void:
 	_info_timer -= delta
 	if _info_timer <= 0.0 and _info != null:
 		_info_timer = 0.5
-		_info.text = "FPS %d   벽돌 %d   건물 %d" % [Engine.get_frames_per_second(), _stage.cells.size(), _stage.buildings.size()]
+		_info.text = "FPS %d   벽돌 %d   건물 %d + 상상 %d" % [Engine.get_frames_per_second(), _stage.cells.size(), _stage.buildings.size(), _filler_count]
 
 
 func _unhandled_input(event: InputEvent) -> void:

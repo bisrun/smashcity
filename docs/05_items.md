@@ -22,15 +22,15 @@
 | 레킹볼 | 공사장 | `landuse=construction` | 공이 커지고 피해가 2가 된다 | 10초 |
 | 연쇄 번개 | 변전소 | `power=substation` | 맞힌 벽돌에서 이웃 벽돌 3개로 피해가 번진다 | 10초 |
 | 멀티볼 | 볼링장, 체육시설 | `leisure=bowling_alley`, `leisure=sports_centre` | 공이 3개로 갈라진다 | 즉시 |
-| 방어막 | 경찰서 | `amenity=police` | 기준선에 막이 생겨 공을 한 번 받아 준다 | 1회 |
-| 라이프 | 약국 | `amenity=pharmacy` | 라이프 +1 | 즉시 |
+| 방어막 | 경찰서 | `amenity=police` | 기준선에 막이 생겨 공을 한 번 받아 준다. 빠짐 한 번을 막는다 | 1회 |
+| 구급상자 | 약국 | `amenity=pharmacy` | 다음에 빠질 때 콤보가 끊기지 않고 바로 돌아온다 | 1회 |
 | 넓은 패들 | 주차장 | `amenity=parking` | 패들 폭 1.5배 | 15초 |
 | 자석 패들 | 고철상, 철물점 | `shop=hardware` | 공이 패들에 붙는다. 놓으면 조준 발사 | 3회 |
 | 가속 | 카페 | `amenity=cafe` | 공이 빨라지고 점수 배율 1.5배 | 12초 |
 | 코인 배율 | 은행 | `amenity=bank` | 코인 2배 | 15초 |
 | 랜덤 | 편의점 | `shop=convenience` | 위 중 하나 | - |
 
-병원은 벽돌에서 제외하므로([03](03_map_conversion.md)) 라이프는 약국에서만 나온다. 라이프와 방어막은 공을 잃지 않게 된 규칙([02](02_core_gameplay.md)의 실패 조건)이 정해지면 다시 설계한다.
+실패와 라이프가 없으므로([02](02_core_gameplay.md)) 라이프를 주던 아이템은 빠짐의 벌을 덜어 주는 아이템으로 바꿨다.
 
 ## 배치 규칙 [제안]
 

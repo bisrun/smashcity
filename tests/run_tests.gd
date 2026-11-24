@@ -15,7 +15,7 @@ var _checks := 0
 
 
 func _init() -> void:
-	for t: Callable in [_test_jamsil_loads, _test_jamsil_shapes_are_valid, _test_nearest_road_point, _test_display_height]:
+	for t: Callable in [_test_jamsil_loads, _test_jamsil_shapes_are_valid, _test_nearest_road_point, _test_display_height, _test_filler_is_stable]:
 		t.call()
 	print("%d개 확인, 실패 %d개" % [_checks, _failures])
 	quit(1 if _failures > 0 else 0)
@@ -86,3 +86,18 @@ func _test_display_height() -> void:
 	var tower: float = BoardViewScript.display_height(123, true)
 	_check(tower > 60.0 and tower < 555.0, "랜드마크는 눌러 그린다 (실제 %.0f)" % tower)
 	_check(BoardViewScript.display_height(40, false) < 40 * 3.2, "60m를 넘는 건물은 눌러 그린다")
+
+
+func _test_filler_is_stable() -> void:
+	var s: StageData = StageDataScript.load_file(JAMSIL)
+	if s == null:
+		return
+	var first: BoardView = BoardViewScript.new()
+	first.build(s, 330.0)
+	var second: BoardView = BoardViewScript.new()
+	second.build(s, 330.0)
+	_check(first.filler_count > 0, "건물이 드문 벽돌에 상상의 집이 들어선다 (실제 %d)" % first.filler_count)
+	_check(first.filler_count == second.filler_count, "같은 스테이지는 늘 같은 수의 집으로 채워진다")
+	_check(first.filler_count < 4000, "채운 집이 지나치게 많지 않다 (실제 %d)" % first.filler_count)
+	first.free()
+	second.free()
