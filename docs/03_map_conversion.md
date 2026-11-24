@@ -57,7 +57,7 @@ OSM의 각 요소가 게임에서 무엇이 되는지 정의한다. 이 규칙�
 | 작은 길 | `highway=tertiary, residential` 등 | 셀의 경계 |
 | 건물 | `building=*` | 셀 위에 서서 셀과 함께 무너진다. 셀의 HP를 정한다 |
 | 랜드마크 | 건물 중 수작업 지정 | 보스 벽돌 |
-| 물 | `natural=water`, `waterway=*` | 해저드. 빠진 공은 강가의 수문으로 떠내려온다 ([02](02_core_gameplay.md)) |
+| 물 | `natural=water`, `waterway=*` | 해저드. 빠진 공은 물보라와 함께 아무 방향으로나 튀어 오른다 ([02](02_core_gameplay.md)) |
 | 다리 | `bridge=yes` | 물 위의 통로 |
 | 공원, 숲 | `leisure=park`, `landuse=forest` | 열린 공간. 나무는 1타 핀 |
 | 지하철역 | `railway=station`, `station=subway` | 워프 입구 |

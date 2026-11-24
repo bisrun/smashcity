@@ -20,7 +20,7 @@ func _init() -> void:
 	for t: Callable in [
 		_test_jamsil_loads, _test_jamsil_shapes_are_valid, _test_nearest_road_point, _test_display_height,
 		_test_board_view_builds, _test_ball_launches_and_bounces_off_walls, _test_ball_breaks_a_cell,
-		_test_paddle_sends_ball_up, _test_missed_ball_costs_a_life, _test_lake_drains_ball_to_river,
+		_test_paddle_sends_ball_up, _test_missed_ball_costs_a_life, _test_water_tosses_ball_out,
 		_test_landmark_clears_stage, _test_sim_is_deterministic, _test_jamsil_plays,
 	]:
 		t.call()
@@ -201,30 +201,42 @@ func _test_missed_ball_costs_a_life() -> void:
 	_check(sim.elapsed == before, "끝난 뒤에는 판정이 멈춘다")
 
 
-func _test_lake_drains_ball_to_river() -> void:
+func _test_water_tosses_ball_out() -> void:
 	var extra := {
 		"lake": [{"p": [200, 800, 800, 800, 800, 1200, 200, 1200], "h": []}],
 		"corridors": [{"p": [450, 0, 550, 0, 550, 2000, 450, 2000], "h": []}],
 	}
 	var sim: Sim = SimScript.new(_stage(extra), _no_gravity())
 	var start := sim.lives
-	_check(sim.outlets.size() == 1 and sim.outlets[0].y < 0.0, "호수마다 강가에 수문이 하나 있다")
-	sim.set_paddle(500)
-	_place(sim, Vector2(300, 700), Vector2(0.2, 1))
+	_place(sim, Vector2(300, 700), Vector2(0, 1))
 	sim.combo = 4
-	_run(sim, 0.3)
-	_check(sim.ball_state == Sim.BallState.DRAINING and sim.falls == 1, "호수에 들어가면 물길에 휩쓸린다")
+	_run(sim, 0.2)
+	_check(sim.ball_state == Sim.BallState.SUNK and sim.falls == 1, "호수에 들어가면 가라앉는다")
 	_check(sim.lives == start and sim.combo == 0, "공은 잃지 않지만 콤보는 끊긴다")
+	var sunk_at := sim.ball_pos
+	_check(sim.take_events().any(func(e: Dictionary) -> bool: return e["type"] == "splash"), "빠졌다는 사건이 생긴다")
 	var waited := 0
-	while sim.ball_state == Sim.BallState.DRAINING and waited < 1000:
+	while sim.ball_state == Sim.BallState.SUNK and waited < 1000:
 		sim.step()
 		waited += 1
-	_check(absf(waited * Sim.STEP - (float(sim.cfg["drain_delay"]) - 0.3)) < 0.25, "정해진 시간만큼 떠내려간다")
-	_check(sim.ball_state == Sim.BallState.FLYING and sim.ball_vel.y < 0.0, "수문에서 패들 쪽으로 튀어나온다")
-	_check(absf(sim.ball_pos.x - sim.outlets[0].x) < 60.0 and sim.ball_pos.y < 0.0, "나오는 자리는 수문이다")
-	sim.set_paddle(100)
-	_run(sim, 1.0)
-	_check(sim.lives == start - 1, "받아 내지 못하면 공 하나를 잃는다")
+	_check(sim.ball_state == Sim.BallState.FLYING and waited * Sim.STEP <= float(sim.cfg["splash_delay"]) + 0.02, "잠깐 뒤 튀어 오른다")
+	_check(sim.ball_pos.distance_to(sunk_at) < 60.0, "빠진 자리에서 나온다")
+	_check(is_equal_approx(sim.ball_vel.length(), float(sim.cfg["ball_speed"])), "튀어 오른 공의 속도는 그대로다")
+	_check(sim.take_events().any(func(e: Dictionary) -> bool: return e["type"] == "emerge"), "튀어 올랐다는 사건이 생긴다")
+	_run(sim, 0.25)
+	_check(sim.falls == 1, "그 물을 벗어나기 전에는 다시 빠지지 않는다")
+
+	var dirs := {}
+	for i in 6:
+		var s2: Sim = SimScript.new(_stage(extra), _no_gravity())
+		for k in i + 1:
+			_place(s2, Vector2(300, 700), Vector2(0, 1))
+			_run(s2, 0.2)
+			_run(s2, float(s2.cfg["splash_delay"]) + 0.01)
+			s2._skipping = false
+		dirs[snappedf(s2.ball_vel.angle(), 0.01)] = true
+	_check(dirs.size() >= 4, "튀어 오르는 방향은 그때그때 다르다 (서로 다른 방향 %d가지)" % dirs.size())
+
 	var bridge: Sim = SimScript.new(_stage(extra), _no_gravity())
 	_place(bridge, Vector2(500, 700), Vector2(0, 1))
 	_run(bridge, 0.7)

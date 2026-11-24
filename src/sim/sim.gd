@@ -12,7 +12,7 @@ extends RefCounted
 const STEP := 1.0 / 120.0
 const GRID := 160.0
 
-enum BallState { WAITING, FLYING, DRAINING }
+enum BallState { WAITING, FLYING, SUNK }
 
 var stage: StageData
 var cfg: Dictionary
@@ -32,15 +32,14 @@ var falls := 0
 var lives := 0
 ## 공을 다 잃어 판이 끝났는지
 var over := false
-## 호수마다 하나씩 있는 강가의 수문. 호수에 빠진 공이 여기로 흘러나온다.
-var outlets: Array[Vector2] = []
 var destroyed := 0
 var elapsed := 0.0
 var cleared := false
 
 var _wait_left := 0.0
-var _drain_to := Vector2.ZERO
-var _drain_side := 1.0
+## 물에서 막 튀어 오른 공인지. 그 물을 벗어날 때까지는 다시 빠지지 않는다.
+var _skipping := false
+var _rng := RandomNumberGenerator.new()
 var _landmarks_left := 0
 var _events: Array[Dictionary] = []
 var _grid := {}
@@ -65,8 +64,8 @@ func _init(p_stage: StageData, p_cfg: Dictionary) -> void:
 	for lake in stage.lakes:
 		var box := _bounds(lake["points"])
 		_lake_boxes.append(box)
-		outlets.append(Vector2(clampf(box.get_center().x, 120.0, stage.width - 120.0), -24.0))
 	lives = int(cfg["lives"])
+	_rng.seed = int(cfg["seed"])
 	paddle_x = stage.width / 2.0
 	_hold(float(cfg["launch_delay"]))
 
@@ -78,7 +77,7 @@ func set_paddle(x: float) -> void:
 
 
 ## 지난 take_events() 뒤에 일어난 일을 돌려주고 비운다.
-## 종류: hit{cell,hp,max_hp}, destroyed{cell,landmark}, paddle, launch, drain{lake}, emerge, lost, over, cleared
+## 종류: hit{cell,hp,max_hp}, destroyed{cell,landmark}, paddle, launch, splash{pos}, emerge{pos}, lost, over, cleared
 func take_events() -> Array[Dictionary]:
 	var out := _events
 	_events = []
@@ -98,7 +97,7 @@ func step() -> void:
 		return
 	elapsed += STEP
 	var paddle_y := float(cfg["paddle_y"])
-	if ball_state == BallState.DRAINING:
+	if ball_state == BallState.SUNK:
 		_wait_left -= STEP
 		if _wait_left <= 0.0:
 			_emerge()
@@ -125,9 +124,10 @@ func step() -> void:
 	if ball_pos.y < paddle_y - float(cfg["fall_margin"]):
 		_lose()
 		return
-	var lake := _lake_at(ball_pos)
-	if lake >= 0:
-		_drain(lake)
+	if _lake_at(ball_pos) < 0:
+		_skipping = false
+	elif not _skipping:
+		_sink()
 
 
 func _hold(seconds: float) -> void:
@@ -158,25 +158,23 @@ func _lose() -> void:
 	_hold(float(cfg["respawn_delay"]))
 
 
-## 호수에 빠졌다. 공은 물길을 타고 강가의 수문으로 떠내려간다.
-func _drain(lake: int) -> void:
+## 물에 빠졌다. 공은 잠깐 가라앉는다.
+func _sink() -> void:
 	falls += 1
 	combo = 0
-	_drain_side = -1.0 if ball_vel.x < 0.0 else 1.0
-	_drain_to = outlets[lake]
-	ball_state = BallState.DRAINING
+	ball_state = BallState.SUNK
 	ball_vel = Vector2.ZERO
-	_wait_left = float(cfg["drain_delay"])
-	_events.append({"type": "drain", "lake": lake})
+	_wait_left = float(cfg["splash_delay"])
+	_events.append({"type": "splash", "pos": ball_pos})
 
 
-## 수문에서 강으로 튀어나온다. 패들 쪽으로 내려오므로 받아 내지 못하면 잃는다.
+## 가라앉았던 자리에서 아무 방향으로나 튀어 오른다. 방향은 판마다 정해진 난수열을 따른다.
 func _emerge() -> void:
-	var a := deg_to_rad(float(cfg["drain_angle_deg"])) * _drain_side
-	ball_pos = _drain_to
-	ball_vel = Vector2(sin(a), -cos(a)) * float(cfg["ball_speed"])
+	ball_vel = Vector2.from_angle(_rng.randf() * TAU) * float(cfg["ball_speed"])
+	_keep_min_angle()
 	ball_state = BallState.FLYING
-	_events.append({"type": "emerge"})
+	_skipping = true
+	_events.append({"type": "emerge", "pos": ball_pos})
 
 
 func _collide_walls() -> void:

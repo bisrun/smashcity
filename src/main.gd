@@ -46,7 +46,7 @@ func _ready() -> void:
 	_setup_light()
 	_board = BoardViewScript.new()
 	add_child(_board)
-	_board.build(_stage, _river, float(_cfg["paddle_y"]) - float(_cfg["fall_margin"]), _sim.outlets)
+	_board.build(_stage, _river, float(_cfg["paddle_y"]) - float(_cfg["fall_margin"]))
 	_setup_camera()
 	_setup_paddle_and_ball()
 	_setup_hud()
@@ -71,6 +71,10 @@ func _process(delta: float) -> void:
 				_board.show_hit(e["cell"], e["hp"], e["max_hp"])
 			"destroyed":
 				_board.show_destroyed(e["cell"])
+			"splash":
+				_board.show_splash(e["pos"], false)
+			"emerge":
+				_board.show_splash(e["pos"], true)
 			"cleared":
 				_banner.text = "클리어\n%d점  남은 공 %d  %d초\n화면을 누르면 다시 시작" % [_sim.score, _sim.lives, int(_sim.elapsed)]
 				_banner.visible = true
@@ -79,7 +83,7 @@ func _process(delta: float) -> void:
 				_banner.visible = true
 	_paddle.position.x = _sim.paddle_x - _stage.width / 2.0
 	_ball.position = Vector3(_sim.ball_pos.x - _stage.width / 2.0, _sim.ball_radius, _stage.height / 2.0 - _sim.ball_pos.y)
-	_ball.visible = _sim.ball_state != Sim.BallState.DRAINING and not _sim.over
+	_ball.visible = _sim.ball_state != Sim.BallState.SUNK and not _sim.over
 	_info_timer -= delta
 	if _info_timer <= 0.0:
 		_info_timer = 0.2
@@ -115,7 +119,7 @@ func _setup_light() -> void:
 	env.background_color = SKY
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color.WHITE
-	env.ambient_light_energy = 0.5
+	env.ambient_light_energy = 0.56
 	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
 	var world := WorldEnvironment.new()
 	world.environment = env
