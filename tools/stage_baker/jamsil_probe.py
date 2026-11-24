@@ -192,7 +192,7 @@ out = dict(
     W=W, H=H, ball=BALL, mpp=round(MPP, 3), report=report,
     buildings=[dict(p=ring(b["poly"].simplify(0.6), 1), lv=b["lv"], lm=1 if b["name"] == tower["name"] and b["lv"] == tower["lv"] else 0) for b in buildings],
     roads=[dict(l=l, c=r["cls"], w=round(real_w(r), 1)) for r in roads if r["cls"] in DRIVE for l in lines(r["line"])],
-    cells=[dict(p=ring(c["poly"]), hp=c["hp"], lm=1 if c["landmark"] else 0) for c in cell_out],
+    cells=[dict(p=ring(c["poly"]), hp=c["hp"], lm=1 if c["landmark"] else 0, e=1 if c["n"] == 0 else 0) for c in cell_out],
     corridors=[dict(p=ring(g), h=[ring(Polygon(i)) for i in g.interiors]) for g in getattr(corr, "geoms", [corr])],
     lake=[dict(p=ring(g), h=[ring(Polygon(i)) for i in g.interiors]) for g in getattr(lake, "geoms", [lake])] if lake is not None else [],
     parks=[ring(g) for p in parks for g in getattr(p, "geoms", [p]) if g.geom_type == "Polygon"],
