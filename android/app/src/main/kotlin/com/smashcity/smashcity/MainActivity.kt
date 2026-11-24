@@ -1,0 +1,5 @@
+package com.smashcity.smashcity
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity : FlutterActivity()
