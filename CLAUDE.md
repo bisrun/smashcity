@@ -55,6 +55,7 @@ python3 tools/check_docs.py
 
 - 원격: `https://github.com/bisrun/smashcity.git`
 - `main`에 직접 커밋하지 않는다. `feat/`, `docs/`, `chore/` 접두어를 붙인 브랜치에서 작업한다.
+- 작업이 끝나고 검증을 통과하면 그 브랜치를 `main`에 합쳐 올린다. 따로 묻지 않는다(2026-11-24 사용자 지시). 검증이 실패했거나 작업이 덜 끝났으면 합치지 않는다.
 - 커밋은 작게 나누고, 메시지는 영어 접두어와 한국어 요지로 쓴다. 예: `docs: 판 크기 기준 변경`.
 - 키와 토큰은 `.env`에만 둔다. `.env.example`만 커밋한다.
 - OSM 원본 추출본은 커밋하지 않는다(`tools/stage_baker/.cache/`).
