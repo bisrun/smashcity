@@ -1,0 +1,132 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "london",
+  "base": "road",
+  "grade_target": 4.4,
+  "level": 0.484,
+  "balance": {
+    "ball_speed": 1203,
+    "paddle_width": 232,
+    "landmark_hp": 23,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 17.9,
+    "drop_interval_end": 8.4,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.5,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1209,
+        196
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        751,
+        264
+      ],
+      "type": "wide",
+      "from": "주차장 Berners Street Car Park"
+    },
+    {
+      "at": [
+        1032,
+        513
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        7,
+        727
+      ],
+      "type": "shield",
+      "from": "경찰서 British Transport Police"
+    },
+    {
+      "at": [
+        145,
+        772
+      ],
+      "type": "life",
+      "from": "약국 Well Pharmacy"
+    },
+    {
+      "at": [
+        732,
+        950
+      ],
+      "type": "wreck",
+      "from": "은행 HSBC UK"
+    },
+    {
+      "at": [
+        534,
+        1273
+      ],
+      "type": "life",
+      "from": "약국 Boots"
+    },
+    {
+      "at": [
+        404,
+        683
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1067,
+        1190
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        488,
+        1743
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1052,
+        2218
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        401,
+        1268
+      ],
+      "gap_toward": [
+        -1.0,
+        -0.2
+      ],
+      "gap_width": 161,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

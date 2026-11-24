@@ -20,7 +20,7 @@ func _init() -> void:
 	for t: Callable in [
 		_test_jamsil_loads, _test_jamsil_shapes_are_valid, _test_nearest_road_point, _test_display_height,
 		_test_board_view_builds, _test_ball_launches_and_bounces_off_walls, _test_ball_breaks_a_cell,
-		_test_forest_lasts_several_hits, _test_paddle_sends_ball_up, _test_missed_ball_costs_a_life, _test_water_splits_ball_in_two,
+		_test_forest_lasts_several_hits, _test_protected_facility_never_breaks, _test_stage_balance_overrides_defaults, _test_shield_saves_one_ball, _test_wrecking_ball_hits_twice_as_hard, _test_paddle_sends_ball_up, _test_missed_ball_costs_a_life, _test_water_splits_ball_in_two,
 		_test_extra_ball_fades_after_bounces, _test_extra_ball_splits_too, _test_sounds_are_built,
 		_test_landmark_clears_stage, _test_item_drops_and_is_caught, _test_multiball, _test_wide_fire_life,
 		_test_extra_balls_do_not_cost_a_life, _test_speed_grows_with_progress, _test_idle_ball_is_pulled_to_a_cell,
@@ -194,6 +194,58 @@ func _test_forest_lasts_several_hits() -> void:
 	_place(fire, Vector2(500, 900), Vector2(0, 1))
 	_run(fire, 0.3)
 	_check(fire.cell_hp[0] == tough - 1 and fire.ball_vel.y < 0.0, "불공도 숲은 한 번에 뚫지 못한다")
+
+
+func _test_protected_facility_never_breaks() -> void:
+	var shrine := _square(400, 1000, 200, 2)
+	shrine["s"] = 1
+	var sim: Sim = SimScript.new(_stage({"cells": [shrine, _square(100, 1700, 100, 2)]}), _no_gravity())
+	_check(sim.cell_solid[0] == 1 and sim.breakable_count() == 1, "부수지 않는 시설은 부술 셀로 세지 않는다")
+	for i in 4:
+		_place(sim, Vector2(500, 900), Vector2(0, 1))
+		_run(sim, 0.3)
+	_check(sim.cell_hp[0] == 2 and sim.destroyed == 0, "시설은 여러 번 맞아도 그대로다")
+	_check(sim.ball_vel.y < 0.0, "공은 시설에서 튕겨 나온다")
+	sim.fire_left = 5.0
+	_place(sim, Vector2(500, 900), Vector2(0, 1))
+	_run(sim, 0.3)
+	_check(sim.cell_hp[0] == 2, "불공도 시설은 부수지 못한다")
+
+
+func _test_stage_balance_overrides_defaults() -> void:
+	var base := _no_gravity()
+	var cfg: Dictionary = BalanceScript.merged(base, {"balance": {"ball_speed": 1300, "cell_hp_bonus": 1, "landmark_hp": 20}})
+	_check(int(cfg["ball_speed"]) == 1300 and int(base["ball_speed"]) != 1300, "스테이지 값이 기본 값을 덮어쓰고, 기본 값은 그대로다")
+	_check(BalanceScript.merged(base, {})["ball_speed"] == base["ball_speed"], "스테이지 값이 없으면 기본 값 그대로다")
+	var sim: Sim = SimScript.new(_stage({"cells": [_square(400, 1000, 200, 2), _square(100, 1700, 100, 1, 1)]}), cfg)
+	_check(sim.cell_hp[0] == 3, "건물 HP에 스테이지의 덧값이 붙는다")
+	_check(sim.cell_hp[1] == 20, "목표 건물의 HP는 스테이지 값을 따른다")
+
+
+func _test_shield_saves_one_ball() -> void:
+	var sim: Sim = SimScript.new(_stage({"cells": [_square(100, 1700, 100, 2)]}), _no_gravity())
+	sim._apply_item("shield")
+	sim._apply_item("shield")
+	_check(sim.shield == 1, "방어막은 한 번에 하나만 가진다")
+	var lives := sim.lives
+	sim.set_paddle(100.0)
+	_place(sim, Vector2(800, float(sim.cfg["paddle_y"]) + 200.0), Vector2(0, -1))
+	_run(sim, 0.6)
+	_check(sim.shield == 0 and sim.lives == lives and sim.ball_vel.y > 0.0, "놓친 공을 방어막이 한 번 받아 올려 보낸다")
+	_check(sim.take_events().any(func(e: Dictionary) -> bool: return e["type"] == "shield_used"), "방어막이 쓰이면 사건이 생긴다")
+	_place(sim, Vector2(800, float(sim.cfg["paddle_y"]) + 200.0), Vector2(0, -1))
+	_run(sim, 0.6)
+	_check(sim.lives == lives - 1, "방어막이 없으면 목숨을 잃는다")
+
+
+func _test_wrecking_ball_hits_twice_as_hard() -> void:
+	var sim: Sim = SimScript.new(_stage({"cells": [_square(400, 1000, 200, 4), _square(100, 1700, 100, 2)]}), _no_gravity())
+	sim._apply_item("wreck")
+	_place(sim, Vector2(500, 900), Vector2(0, 1))
+	_run(sim, 0.3)
+	_check(sim.cell_hp[0] == 2, "레킹볼은 한 번에 두 칸을 깎는다 (남은 HP %d)" % sim.cell_hp[0])
+	_run(sim, float(sim.cfg["wreck_seconds"]) + 0.1)
+	_check(sim.wreck_left == 0.0, "레킹볼은 시간이 지나면 끝난다")
 
 
 func _test_paddle_sends_ball_up() -> void:
@@ -600,10 +652,22 @@ func _test_stage_list_is_valid() -> void:
 	var data: Dictionary = BalanceScript.load_file("res://assets/stages/stages.json")
 	_check(not data.is_empty() and data["cities"].size() >= 1, "스테이지 차례 파일을 읽는다")
 	var ready := 0
-	for s: Dictionary in data["cities"][0]["stages"]:
-		if bool(s["ready"]):
+	for city: Dictionary in data["cities"]:
+		for s: Dictionary in city["stages"]:
+			if not bool(s["ready"]):
+				continue
 			ready += 1
-			_check(FileAccess.file_exists("res://assets/stages/%s/map.json" % s["id"]), "만들어졌다고 한 스테이지는 파일이 있다 (%s)" % s["id"])
+			var dir := "res://assets/stages/%s/" % s["id"]
+			_check(FileAccess.file_exists(dir + "map.json") and FileAccess.file_exists(dir + "design.json"), "만들어졌다고 한 스테이지는 파일이 있다 (%s)" % s["id"])
+			var stage: StageData = StageDataScript.load_file(dir + "map.json")
+			if stage == null:
+				continue
+			var goals := 0
+			for c in stage.cells:
+				if c["landmark"]:
+					goals += 1
+					_check(not c["solid"], "목표 건물은 부술 수 있다 (%s)" % s["id"])
+			_check(goals == 1 and stage.cells.size() >= 40, "스테이지에 목표 건물이 하나 있고 셀이 넉넉하다 (%s)" % s["id"])
 	_check(ready >= 1, "플레이할 수 있는 스테이지가 하나 이상 있다")
 
 

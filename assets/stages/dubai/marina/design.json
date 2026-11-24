@@ -1,0 +1,108 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "dubai",
+  "base": "river",
+  "grade_target": 8.5,
+  "level": 0.854,
+  "balance": {
+    "ball_speed": 1359,
+    "paddle_width": 195,
+    "landmark_hp": 31,
+    "cell_hp_bonus": 2,
+    "drop_interval_start": 20.8,
+    "drop_interval_end": 10.3,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 5.6,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        661,
+        51
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        130,
+        146
+      ],
+      "type": "life",
+      "from": "약국 Life Pharmacy"
+    },
+    {
+      "at": [
+        225,
+        150
+      ],
+      "type": "wreck",
+      "from": "은행 RAK Bank"
+    },
+    {
+      "at": [
+        551,
+        619
+      ],
+      "type": "life",
+      "from": "약국 Life Pharmacy"
+    },
+    {
+      "at": [
+        1250,
+        730
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        441,
+        637
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1071,
+        1190
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        453,
+        1658
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        748,
+        1711
+      ],
+      "gap_toward": [
+        0.2,
+        1.0
+      ],
+      "gap_width": 132,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

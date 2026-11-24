@@ -1,0 +1,116 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "dubai",
+  "base": "river",
+  "grade_target": 5.8,
+  "level": 0.719,
+  "balance": {
+    "ball_speed": 1302,
+    "paddle_width": 208,
+    "landmark_hp": 28,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 19.8,
+    "drop_interval_end": 9.6,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 5.2,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        506,
+        85
+      ],
+      "type": "life",
+      "from": "약국 Aster Pharmacy"
+    },
+    {
+      "at": [
+        790,
+        347
+      ],
+      "type": "life",
+      "from": "약국 Weston"
+    },
+    {
+      "at": [
+        255,
+        485
+      ],
+      "type": "wreck",
+      "from": "은행 Emirates NBD"
+    },
+    {
+      "at": [
+        1352,
+        1052
+      ],
+      "type": "wreck",
+      "from": "은행 Bank Of Baroda"
+    },
+    {
+      "at": [
+        735,
+        1062
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        781,
+        1205
+      ],
+      "type": "fire",
+      "from": "주유소 Gulf Boom"
+    },
+    {
+      "at": [
+        334,
+        670
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1120,
+        1161
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        518,
+        1831
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        746,
+        1170
+      ],
+      "gap_toward": [
+        -1.0,
+        -0.2
+      ],
+      "gap_width": 142,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

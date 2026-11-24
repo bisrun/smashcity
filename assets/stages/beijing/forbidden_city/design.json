@@ -4,20 +4,20 @@
   "theme": "hutong",
   "base": "river",
   "grade_target": 6.2,
-  "level": 0.578,
+  "level": 0.485,
   "balance": {
-    "ball_speed": 1243,
-    "paddle_width": 222,
-    "landmark_hp": 25,
+    "ball_speed": 1204,
+    "paddle_width": 232,
+    "landmark_hp": 23,
     "cell_hp_bonus": 1,
-    "drop_interval_start": 18.6,
-    "drop_interval_end": 8.9,
+    "drop_interval_start": 17.9,
+    "drop_interval_end": 8.4,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.7,
+      "narrow": 4.5,
       "shield": 1.5
     }
   },
@@ -89,7 +89,7 @@
         1.0,
         -0.2
       ],
-      "gap_width": 154,
+      "gap_width": 161,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

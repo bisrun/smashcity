@@ -129,7 +129,7 @@ def bake(stage, raw):
             g = ring_poly(e.get("geometry", []))
             return g
         outer = [LineString([P(p) for p in m["geometry"] if p]) for m in e.get("members", [])
-                 if m.get("role") in ("outer", "") and m.get("geometry") and len(m["geometry"]) >= 2]
+                 if m.get("role") != "inner" and m.get("type") == "way" and m.get("geometry") and len(m["geometry"]) >= 2]   # 역할이 제멋대로 적힌 관계가 있다
         inner = [LineString([P(p) for p in m["geometry"] if p]) for m in e.get("members", [])
                  if m.get("role") == "inner" and m.get("geometry") and len(m["geometry"]) >= 2]
         if not outer:

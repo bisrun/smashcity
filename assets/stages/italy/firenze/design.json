@@ -1,0 +1,140 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "italy",
+  "base": "river",
+  "grade_target": 6.8,
+  "level": 0.337,
+  "balance": {
+    "ball_speed": 1142,
+    "paddle_width": 246,
+    "landmark_hp": 19,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 16.7,
+    "drop_interval_end": 7.7,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.0,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        162,
+        638
+      ],
+      "type": "life",
+      "from": "약국 Pitti"
+    },
+    {
+      "at": [
+        405,
+        745
+      ],
+      "type": "shield",
+      "from": "경찰서 Carabinieri - Pitti"
+    },
+    {
+      "at": [
+        657,
+        870
+      ],
+      "type": "wide",
+      "from": "주차장 Garage Ponte Vecchio"
+    },
+    {
+      "at": [
+        826,
+        974
+      ],
+      "type": "shield",
+      "from": "경찰서 Carabinieri - Comando Stazione Firenze Uffizi"
+    },
+    {
+      "at": [
+        330,
+        1001
+      ],
+      "type": "life",
+      "from": "약국 Santa Trinita"
+    },
+    {
+      "at": [
+        788,
+        1207
+      ],
+      "type": "wreck",
+      "from": "은행 Intesa Sanpaolo"
+    },
+    {
+      "at": [
+        1270,
+        1213
+      ],
+      "type": "wreck",
+      "from": "은행 BNL"
+    },
+    {
+      "at": [
+        1112,
+        1265
+      ],
+      "type": "wide",
+      "from": "주차장 Garage del Bargello"
+    },
+    {
+      "at": [
+        359,
+        646
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1146,
+        1188
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        451,
+        1710
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1051,
+        2269
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        845,
+        1506
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 173,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

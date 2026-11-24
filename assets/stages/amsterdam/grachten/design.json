@@ -1,0 +1,124 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "amsterdam",
+  "base": "river",
+  "grade_target": 5.3,
+  "level": 0.598,
+  "balance": {
+    "ball_speed": 1251,
+    "paddle_width": 220,
+    "landmark_hp": 25,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 18.8,
+    "drop_interval_end": 9.0,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.8,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        281,
+        35
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1120,
+        135
+      ],
+      "type": "wide",
+      "from": "주차장 Heinekenplein"
+    },
+    {
+      "at": [
+        1067,
+        523
+      ],
+      "type": "life",
+      "from": "약국 Apotheek Koek, Schaeffer & van Tijen"
+    },
+    {
+      "at": [
+        252,
+        643
+      ],
+      "type": "wide",
+      "from": "주차장 Q-Park Byzantium"
+    },
+    {
+      "at": [
+        417,
+        811
+      ],
+      "type": "wreck",
+      "from": "은행 ABN AMRO"
+    },
+    {
+      "at": [
+        358,
+        1000
+      ],
+      "type": "shield",
+      "from": "경찰서 Politiebureau Lijnbaansgracht"
+    },
+    {
+      "at": [
+        390,
+        739
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1106,
+        1142
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        424,
+        1665
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1041,
+        2158
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        1076,
+        1390
+      ],
+      "gap_toward": [
+        1.0,
+        -0.2
+      ],
+      "gap_width": 152,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

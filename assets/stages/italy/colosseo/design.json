@@ -1,0 +1,132 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "italy",
+  "base": "road",
+  "grade_target": 5.6,
+  "level": 0.417,
+  "balance": {
+    "ball_speed": 1175,
+    "paddle_width": 238,
+    "landmark_hp": 21,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 17.3,
+    "drop_interval_end": 8.1,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.3,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1434,
+        107
+      ],
+      "type": "fire",
+      "from": "주유소 IP"
+    },
+    {
+      "at": [
+        182,
+        294
+      ],
+      "type": "wreck",
+      "from": "은행 UniCredit"
+    },
+    {
+      "at": [
+        139,
+        330
+      ],
+      "type": "life",
+      "from": "약국 Farmacia S. Sabina"
+    },
+    {
+      "at": [
+        1361,
+        503
+      ],
+      "type": "wide",
+      "from": "주차장 Garage"
+    },
+    {
+      "at": [
+        1412,
+        554
+      ],
+      "type": "life",
+      "from": "약국 Lorusso s.r.l."
+    },
+    {
+      "at": [
+        932,
+        997
+      ],
+      "type": "shield",
+      "from": "경찰서 Commisariato di Polizia Celio"
+    },
+    {
+      "at": [
+        1179,
+        1087
+      ],
+      "type": "wreck",
+      "from": "은행 Banca Popolare di Sondrio"
+    },
+    {
+      "at": [
+        545,
+        681
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1178,
+        1268
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        374,
+        1734
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1034,
+        2218
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        461,
+        1527
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 167,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

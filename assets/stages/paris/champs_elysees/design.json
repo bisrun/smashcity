@@ -1,0 +1,132 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "paris",
+  "base": "river",
+  "grade_target": 5.1,
+  "level": 0.456,
+  "balance": {
+    "ball_speed": 1191,
+    "paddle_width": 234,
+    "landmark_hp": 22,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 17.6,
+    "drop_interval_end": 8.3,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.4,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1447,
+        52
+      ],
+      "type": "life",
+      "from": "약국 Pharmacie Bourgogne"
+    },
+    {
+      "at": [
+        696,
+        73
+      ],
+      "type": "life",
+      "from": "약국 Pharmacie Cotinat"
+    },
+    {
+      "at": [
+        441,
+        162
+      ],
+      "type": "wreck",
+      "from": "은행 BNP Paribas"
+    },
+    {
+      "at": [
+        1226,
+        241
+      ],
+      "type": "fire",
+      "from": "주유소 Total"
+    },
+    {
+      "at": [
+        1209,
+        246
+      ],
+      "type": "wide",
+      "from": "주차장 Invalides"
+    },
+    {
+      "at": [
+        81,
+        475
+      ],
+      "type": "wide",
+      "from": "주차장 Parking Quai branly-Tour Eiffel"
+    },
+    {
+      "at": [
+        883,
+        578
+      ],
+      "type": "wide",
+      "from": "주차장 Q-Park Tour Maubourg"
+    },
+    {
+      "at": [
+        451,
+        677
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1066,
+        1093
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        417,
+        1735
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1012,
+        2222
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        440,
+        1880
+      ],
+      "gap_toward": [
+        1.0,
+        -0.2
+      ],
+      "gap_width": 164,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

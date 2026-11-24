@@ -1,0 +1,116 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "italy",
+  "base": "river",
+  "grade_target": 7.3,
+  "level": 0.913,
+  "balance": {
+    "ball_speed": 1383,
+    "paddle_width": 189,
+    "landmark_hp": 32,
+    "cell_hp_bonus": 2,
+    "drop_interval_start": 21.3,
+    "drop_interval_end": 10.6,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 5.7,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        839,
+        3
+      ],
+      "type": "shield",
+      "from": "경찰서 Polizia Ferroviaria"
+    },
+    {
+      "at": [
+        901,
+        61
+      ],
+      "type": "wreck",
+      "from": "은행 Monte dei Paschi di Siena"
+    },
+    {
+      "at": [
+        1406,
+        90
+      ],
+      "type": "life",
+      "from": "약국 Farmacia San Marco"
+    },
+    {
+      "at": [
+        1283,
+        157
+      ],
+      "type": "wreck",
+      "from": "은행 IBL Banca"
+    },
+    {
+      "at": [
+        841,
+        186
+      ],
+      "type": "life",
+      "from": "약국 Farmacia Baldacci"
+    },
+    {
+      "at": [
+        336,
+        658
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1114,
+        1191
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        743,
+        527
+      ],
+      "type": "wide",
+      "from": "임시 배치 (상상)"
+    },
+    {
+      "at": [
+        710,
+        1600
+      ],
+      "type": "wide",
+      "from": "임시 배치 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        661,
+        1653
+      ],
+      "gap_toward": [
+        0.2,
+        1.0
+      ],
+      "gap_width": 127,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

@@ -4,20 +4,20 @@
   "theme": "tokyo",
   "base": "road",
   "grade_target": 5.7,
-  "level": 0.522,
+  "level": 1.061,
   "balance": {
-    "ball_speed": 1219,
-    "paddle_width": 228,
-    "landmark_hp": 23,
-    "cell_hp_bonus": 1,
-    "drop_interval_start": 18.2,
-    "drop_interval_end": 8.6,
+    "ball_speed": 1446,
+    "paddle_width": 174,
+    "landmark_hp": 35,
+    "cell_hp_bonus": 2,
+    "drop_interval_start": 22.5,
+    "drop_interval_end": 11.3,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.6,
+      "narrow": 6.2,
       "shield": 1.5
     }
   },
@@ -56,30 +56,6 @@
     },
     {
       "at": [
-        1080,
-        471
-      ],
-      "type": "wide",
-      "from": "주차장"
-    },
-    {
-      "at": [
-        481,
-        580
-      ],
-      "type": "shield",
-      "from": "경찰서 渋谷警察署 鉢山交番"
-    },
-    {
-      "at": [
-        1364,
-        681
-      ],
-      "type": "shield",
-      "from": "경찰서 渋谷警察署東交番"
-    },
-    {
-      "at": [
         361,
         676
       ],
@@ -93,22 +69,6 @@
       ],
       "type": "multi",
       "from": "열기구 (상상)"
-    },
-    {
-      "at": [
-        453,
-        1670
-      ],
-      "type": "multi",
-      "from": "열기구 (상상)"
-    },
-    {
-      "at": [
-        966,
-        2237
-      ],
-      "type": "multi",
-      "from": "열기구 (상상)"
     }
   ],
   "walls": [
@@ -118,10 +78,10 @@
         1183
       ],
       "gap_toward": [
-        1.0,
-        -0.2
+        0.2,
+        1.0
       ],
-      "gap_width": 158,
+      "gap_width": 120,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

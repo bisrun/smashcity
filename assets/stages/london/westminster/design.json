@@ -1,0 +1,116 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "london",
+  "base": "river",
+  "grade_target": 7.4,
+  "level": 0.711,
+  "balance": {
+    "ball_speed": 1299,
+    "paddle_width": 209,
+    "landmark_hp": 28,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 19.7,
+    "drop_interval_end": 9.6,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 5.1,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        177,
+        85
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1042,
+        535
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        444,
+        541
+      ],
+      "type": "life",
+      "from": "약국 Victoria Pharmacy"
+    },
+    {
+      "at": [
+        107,
+        706
+      ],
+      "type": "wide",
+      "from": "주차장 Horseferry Road"
+    },
+    {
+      "at": [
+        507,
+        776
+      ],
+      "type": "wreck",
+      "from": "은행 Lloyds Bank"
+    },
+    {
+      "at": [
+        1,
+        868
+      ],
+      "type": "life",
+      "from": "약국 Star Pharmacy"
+    },
+    {
+      "at": [
+        408,
+        639
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1233,
+        1098
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        390,
+        1704
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        747,
+        2056
+      ],
+      "gap_toward": [
+        1.0,
+        -0.2
+      ],
+      "gap_width": 143,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

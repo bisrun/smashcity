@@ -1,0 +1,132 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "paris",
+  "base": "river",
+  "grade_target": 5.5,
+  "level": 0.5,
+  "balance": {
+    "ball_speed": 1210,
+    "paddle_width": 230,
+    "landmark_hp": 23,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 18.0,
+    "drop_interval_end": 8.5,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.5,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1107,
+        18
+      ],
+      "type": "wreck",
+      "from": "은행 BNP Paribas"
+    },
+    {
+      "at": [
+        1302,
+        64
+      ],
+      "type": "life",
+      "from": "약국 Pharmacie Cuvier"
+    },
+    {
+      "at": [
+        378,
+        81
+      ],
+      "type": "life",
+      "from": "약국 Pharmacie Gay-Lussac"
+    },
+    {
+      "at": [
+        375,
+        90
+      ],
+      "type": "wreck",
+      "from": "은행 Société Générale"
+    },
+    {
+      "at": [
+        486,
+        1077
+      ],
+      "type": "wide",
+      "from": "주차장 Saint-Michel"
+    },
+    {
+      "at": [
+        484,
+        1355
+      ],
+      "type": "shield",
+      "from": "경찰서 Police judiciaire - Brigade criminelle - Brigade des stupéfiants"
+    },
+    {
+      "at": [
+        1238,
+        1502
+      ],
+      "type": "wide",
+      "from": "주차장 Lobau Rivoli"
+    },
+    {
+      "at": [
+        448,
+        702
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1064,
+        1182
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        422,
+        1780
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1060,
+        2154
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        923,
+        1764
+      ],
+      "gap_toward": [
+        -1.0,
+        -0.2
+      ],
+      "gap_width": 160,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

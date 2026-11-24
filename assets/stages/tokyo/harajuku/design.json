@@ -4,20 +4,20 @@
   "theme": "tokyo",
   "base": "road",
   "grade_target": 4.0,
-  "level": 0.333,
+  "level": 0.507,
   "balance": {
-    "ball_speed": 1140,
-    "paddle_width": 247,
-    "landmark_hp": 19,
-    "cell_hp_bonus": 0,
-    "drop_interval_start": 16.7,
-    "drop_interval_end": 7.7,
+    "ball_speed": 1213,
+    "paddle_width": 229,
+    "landmark_hp": 23,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 18.1,
+    "drop_interval_end": 8.5,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.0,
+      "narrow": 4.5,
       "shield": 1.5
     }
   },
@@ -80,14 +80,6 @@
     },
     {
       "at": [
-        1119,
-        768
-      ],
-      "type": "wide",
-      "from": "주차장"
-    },
-    {
-      "at": [
         388,
         612
       ],
@@ -126,10 +118,10 @@
         1800
       ],
       "gap_toward": [
-        0.3,
-        -1.0
+        1.0,
+        -0.2
       ],
-      "gap_width": 173,
+      "gap_width": 159,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

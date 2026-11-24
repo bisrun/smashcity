@@ -1,0 +1,132 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "pastel",
+  "base": "road",
+  "grade_target": 3.9,
+  "level": 0.322,
+  "balance": {
+    "ball_speed": 1135,
+    "paddle_width": 248,
+    "landmark_hp": 19,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 16.6,
+    "drop_interval_end": 7.6,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.0,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        701,
+        30
+      ],
+      "type": "shield",
+      "from": "경찰서 Parks Police"
+    },
+    {
+      "at": [
+        1090,
+        202
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1016,
+        576
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1433,
+        882
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1313,
+        894
+      ],
+      "type": "wreck",
+      "from": "은행 HSBC UK"
+    },
+    {
+      "at": [
+        1151,
+        919
+      ],
+      "type": "life",
+      "from": "약국 Notting Hill Pharmacy"
+    },
+    {
+      "at": [
+        886,
+        1436
+      ],
+      "type": "life",
+      "from": "약국 Baywood Chemist"
+    },
+    {
+      "at": [
+        309,
+        658
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1195,
+        1206
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        481,
+        1769
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1010,
+        2176
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        659,
+        1222
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 174,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

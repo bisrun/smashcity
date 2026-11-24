@@ -1,0 +1,92 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "amsterdam",
+  "base": "river",
+  "grade_target": 6.4,
+  "level": 0.974,
+  "balance": {
+    "ball_speed": 1409,
+    "paddle_width": 183,
+    "landmark_hp": 33,
+    "cell_hp_bonus": 2,
+    "drop_interval_start": 21.8,
+    "drop_interval_end": 10.9,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 5.9,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1013,
+        17
+      ],
+      "type": "life",
+      "from": "약국 Rivieren Apotheek"
+    },
+    {
+      "at": [
+        282,
+        168
+      ],
+      "type": "wide",
+      "from": "주차장 P10"
+    },
+    {
+      "at": [
+        628,
+        438
+      ],
+      "type": "life",
+      "from": "약국 Schelde Apotheek"
+    },
+    {
+      "at": [
+        156,
+        706
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        384,
+        642
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1118,
+        1137
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        745,
+        1946
+      ],
+      "gap_toward": [
+        0.2,
+        1.0
+      ],
+      "gap_width": 122,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

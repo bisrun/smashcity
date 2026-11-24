@@ -4,20 +4,20 @@
   "theme": "seoul",
   "base": "road",
   "grade_target": 3.7,
-  "level": 0.167,
+  "level": -0.052,
   "balance": {
-    "ball_speed": 1070,
-    "paddle_width": 263,
-    "landmark_hp": 16,
+    "ball_speed": 1000,
+    "paddle_width": 280,
+    "landmark_hp": 12,
     "cell_hp_bonus": 0,
-    "drop_interval_start": 15.3,
-    "drop_interval_end": 6.8,
+    "drop_interval_start": 14.0,
+    "drop_interval_end": 6.0,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 3.5
+      "narrow": 3.0
     }
   },
   "items": [

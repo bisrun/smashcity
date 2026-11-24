@@ -4,20 +4,20 @@
   "theme": "hutong",
   "base": "river",
   "grade_target": 4.5,
-  "level": 0.389,
+  "level": 0.069,
   "balance": {
-    "ball_speed": 1163,
-    "paddle_width": 241,
-    "landmark_hp": 21,
+    "ball_speed": 1029,
+    "paddle_width": 273,
+    "landmark_hp": 14,
     "cell_hp_bonus": 0,
-    "drop_interval_start": 17.1,
-    "drop_interval_end": 7.9,
+    "drop_interval_start": 14.6,
+    "drop_interval_end": 6.3,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.2,
+      "narrow": 3.2,
       "shield": 1.5
     }
   },
@@ -87,21 +87,5 @@
       "from": "열기구 (상상)"
     }
   ],
-  "walls": [
-    {
-      "around": [
-        436,
-        1942
-      ],
-      "gap_toward": [
-        0.3,
-        -1.0
-      ],
-      "gap_width": 169,
-      "offset": 10,
-      "thickness": 12,
-      "radius": 240,
-      "_note": "목표를 두른 깨지지 않는 벽"
-    }
-  ]
+  "walls": []
 }

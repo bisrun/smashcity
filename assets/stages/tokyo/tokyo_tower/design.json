@@ -4,20 +4,20 @@
   "theme": "tokyo",
   "base": "road",
   "grade_target": 4.3,
-  "level": 0.367,
+  "level": 0.567,
   "balance": {
-    "ball_speed": 1154,
-    "paddle_width": 243,
-    "landmark_hp": 20,
-    "cell_hp_bonus": 0,
-    "drop_interval_start": 16.9,
-    "drop_interval_end": 7.8,
+    "ball_speed": 1238,
+    "paddle_width": 223,
+    "landmark_hp": 24,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 18.5,
+    "drop_interval_end": 8.8,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.1,
+      "narrow": 4.7,
       "shield": 1.5
     }
   },
@@ -80,14 +80,6 @@
     },
     {
       "at": [
-        309,
-        797
-      ],
-      "type": "fire",
-      "from": "주유소 Idemitsu"
-    },
-    {
-      "at": [
         343,
         643
       ],
@@ -126,10 +118,10 @@
         1125
       ],
       "gap_toward": [
-        0.3,
-        -1.0
+        -1.0,
+        -0.2
       ],
-      "gap_width": 171,
+      "gap_width": 155,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

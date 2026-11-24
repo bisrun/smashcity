@@ -1,0 +1,140 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "amsterdam",
+  "base": "river",
+  "grade_target": 4.5,
+  "level": 0.389,
+  "balance": {
+    "ball_speed": 1163,
+    "paddle_width": 241,
+    "landmark_hp": 21,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 17.1,
+    "drop_interval_end": 7.9,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.2,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1151,
+        150
+      ],
+      "type": "life",
+      "from": "약국 MedicijnMan Apotheek"
+    },
+    {
+      "at": [
+        17,
+        183
+      ],
+      "type": "wide",
+      "from": "주차장 Hirschgebouw"
+    },
+    {
+      "at": [
+        36,
+        245
+      ],
+      "type": "wreck",
+      "from": "은행 ABN AMRO"
+    },
+    {
+      "at": [
+        213,
+        449
+      ],
+      "type": "life",
+      "from": "약국 Apotheek Leidsestraat"
+    },
+    {
+      "at": [
+        1151,
+        535
+      ],
+      "type": "wide",
+      "from": "주차장 The Bank"
+    },
+    {
+      "at": [
+        533,
+        596
+      ],
+      "type": "wide",
+      "from": "주차장 Gouden bocht"
+    },
+    {
+      "at": [
+        818,
+        1041
+      ],
+      "type": "wreck",
+      "from": "은행 Stadsbank van Lening"
+    },
+    {
+      "at": [
+        859,
+        1686
+      ],
+      "type": "shield",
+      "from": "경찰서 Politiebureau Nieuwezijds Voorburgwal"
+    },
+    {
+      "at": [
+        440,
+        701
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1122,
+        1207
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        490,
+        1692
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1155,
+        2216
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        1031,
+        1202
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 169,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

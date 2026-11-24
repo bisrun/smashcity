@@ -4,20 +4,20 @@
   "theme": "beijing",
   "base": "road",
   "grade_target": 4.9,
-  "level": 0.433,
+  "level": 0.786,
   "balance": {
-    "ball_speed": 1182,
-    "paddle_width": 237,
-    "landmark_hp": 22,
-    "cell_hp_bonus": 0,
-    "drop_interval_start": 17.5,
-    "drop_interval_end": 8.2,
+    "ball_speed": 1330,
+    "paddle_width": 201,
+    "landmark_hp": 29,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 20.3,
+    "drop_interval_end": 9.9,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.3,
+      "narrow": 5.4,
       "shield": 1.5
     }
   },
@@ -48,14 +48,6 @@
     },
     {
       "at": [
-        1078,
-        2178
-      ],
-      "type": "multi",
-      "from": "열기구 (상상)"
-    },
-    {
-      "at": [
         753,
         445
       ],
@@ -78,10 +70,10 @@
         1436
       ],
       "gap_toward": [
-        0.3,
-        -1.0
+        0.2,
+        1.0
       ],
-      "gap_width": 165,
+      "gap_width": 137,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

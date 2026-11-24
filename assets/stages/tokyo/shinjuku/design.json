@@ -4,20 +4,20 @@
   "theme": "tokyo",
   "base": "road",
   "grade_target": 5.2,
-  "level": 0.467,
+  "level": 0.401,
   "balance": {
-    "ball_speed": 1196,
-    "paddle_width": 233,
-    "landmark_hp": 22,
-    "cell_hp_bonus": 1,
-    "drop_interval_start": 17.7,
-    "drop_interval_end": 8.3,
+    "ball_speed": 1168,
+    "paddle_width": 240,
+    "landmark_hp": 21,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 17.2,
+    "drop_interval_end": 8.0,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.4,
+      "narrow": 4.2,
       "shield": 1.5
     }
   },
@@ -80,6 +80,14 @@
     },
     {
       "at": [
+        183,
+        965
+      ],
+      "type": "fire",
+      "from": "주유소 エネオス"
+    },
+    {
+      "at": [
         358,
         648
       ],
@@ -118,10 +126,10 @@
         1257
       ],
       "gap_toward": [
-        -1.0,
-        -0.2
+        0.3,
+        -1.0
       ],
-      "gap_width": 163,
+      "gap_width": 168,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

@@ -4,20 +4,20 @@
   "theme": "beijing",
   "base": "river",
   "grade_target": 2.2,
-  "level": 0.133,
+  "level": 0.033,
   "balance": {
-    "ball_speed": 1056,
-    "paddle_width": 267,
-    "landmark_hp": 15,
+    "ball_speed": 1014,
+    "paddle_width": 277,
+    "landmark_hp": 13,
     "cell_hp_bonus": 0,
-    "drop_interval_start": 15.1,
-    "drop_interval_end": 6.7,
+    "drop_interval_start": 14.3,
+    "drop_interval_end": 6.2,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 3.4,
+      "narrow": 3.1,
       "shield": 1.5
     }
   },

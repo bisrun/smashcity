@@ -1,0 +1,100 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "amsterdam",
+  "base": "river",
+  "grade_target": 5.0,
+  "level": 0.904,
+  "balance": {
+    "ball_speed": 1380,
+    "paddle_width": 190,
+    "landmark_hp": 32,
+    "cell_hp_bonus": 2,
+    "drop_interval_start": 21.2,
+    "drop_interval_end": 10.5,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 5.7,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1346,
+        64
+      ],
+      "type": "wreck",
+      "from": "은행 ASN Bank"
+    },
+    {
+      "at": [
+        1295,
+        116
+      ],
+      "type": "life",
+      "from": "약국 Ferdinand Bol Apotheek"
+    },
+    {
+      "at": [
+        537,
+        389
+      ],
+      "type": "wreck",
+      "from": "은행 Rabobank"
+    },
+    {
+      "at": [
+        553,
+        479
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1392,
+        578
+      ],
+      "type": "wide",
+      "from": "주차장 Heinekenplein"
+    },
+    {
+      "at": [
+        306,
+        711
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1114,
+        1221
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        1062,
+        1559
+      ],
+      "gap_toward": [
+        0.2,
+        1.0
+      ],
+      "gap_width": 128,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

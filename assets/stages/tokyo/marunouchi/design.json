@@ -4,20 +4,20 @@
   "theme": "tokyo",
   "base": "river",
   "grade_target": 2.6,
-  "level": 0.178,
+  "level": 0.265,
   "balance": {
-    "ball_speed": 1075,
-    "paddle_width": 262,
-    "landmark_hp": 16,
+    "ball_speed": 1111,
+    "paddle_width": 254,
+    "landmark_hp": 18,
     "cell_hp_bonus": 0,
-    "drop_interval_start": 15.4,
-    "drop_interval_end": 6.9,
+    "drop_interval_start": 16.1,
+    "drop_interval_end": 7.3,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 3.5,
+      "narrow": 3.8,
       "shield": 1.5
     }
   },
@@ -111,5 +111,21 @@
       "from": "열기구 (상상)"
     }
   ],
-  "walls": []
+  "walls": [
+    {
+      "around": [
+        1027,
+        1461
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 179,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
 }

@@ -4,20 +4,20 @@
   "theme": "paris",
   "base": "river",
   "grade_target": 3.2,
-  "level": 0.244,
+  "level": 0.11,
   "balance": {
-    "ball_speed": 1103,
-    "paddle_width": 256,
-    "landmark_hp": 17,
+    "ball_speed": 1046,
+    "paddle_width": 269,
+    "landmark_hp": 14,
     "cell_hp_bonus": 0,
-    "drop_interval_start": 16.0,
-    "drop_interval_end": 7.2,
+    "drop_interval_start": 14.9,
+    "drop_interval_end": 6.5,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 3.7,
+      "narrow": 3.3,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -112,21 +112,5 @@
       "from": "열기구 (상상)"
     }
   ],
-  "walls": [
-    {
-      "around": [
-        407,
-        1227
-      ],
-      "gap_toward": [
-        0.3,
-        -1.0
-      ],
-      "gap_width": 180,
-      "offset": 10,
-      "thickness": 12,
-      "radius": 240,
-      "_note": "목표를 두른 깨지지 않는 벽"
-    }
-  ]
+  "walls": []
 }

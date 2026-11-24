@@ -1,0 +1,116 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "london",
+  "base": "river",
+  "grade_target": 7.0,
+  "level": 0.667,
+  "balance": {
+    "ball_speed": 1280,
+    "paddle_width": 213,
+    "landmark_hp": 27,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 19.3,
+    "drop_interval_end": 9.3,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 5.0,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        883,
+        20
+      ],
+      "type": "life",
+      "from": "약국 Paxall Pharmacy"
+    },
+    {
+      "at": [
+        1264,
+        59
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        274,
+        212
+      ],
+      "type": "wide",
+      "from": "주차장 Q Park Pimlico"
+    },
+    {
+      "at": [
+        113,
+        391
+      ],
+      "type": "shield",
+      "from": "경찰서 Police Headquarters"
+    },
+    {
+      "at": [
+        926,
+        484
+      ],
+      "type": "fire",
+      "from": "주유소 BP"
+    },
+    {
+      "at": [
+        1,
+        487
+      ],
+      "type": "fire",
+      "from": "주유소 Shell Victoria"
+    },
+    {
+      "at": [
+        419,
+        700
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1089,
+        1213
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        677,
+        1846
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        19,
+        1923
+      ],
+      "gap_toward": [
+        -1.0,
+        -0.2
+      ],
+      "gap_width": 147,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}
