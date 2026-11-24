@@ -50,6 +50,11 @@ const WINDOW := Color("8CCBF2")
 const STONE := Color("D8D2C4")
 ## 부서진 자리에 남는 터의 색. 길보다 조금 어둡다.
 const TRACE_EDGE := Color("E6D4B4")
+## 찻길과 차선의 색, 찻길을 바닥에서 띄우는 높이(호수 위 다리에서도 보이게)
+const ASPHALT := Color("D9D4DE")
+const LANE := Color("FFFFFF")
+const ROAD_LIFT := 0.75
+const CAR_COUNT := 46
 const DECK := Color("F1ECE1")
 const WALL_TOP := Color("B9C1CE")
 const WALL_SIDE := Color("8792A3")
@@ -113,6 +118,10 @@ var _tops: Array[Node3D] = []
 var _label_at: Array[Vector3] = []
 var _boxes: Array[Rect2] = []
 var _design := {}
+var _car_roads: Array[Dictionary] = []
+var _cars: Array[Dictionary] = []
+var _car_bodies: MultiMeshInstance3D
+var _car_cabins: MultiMeshInstance3D
 
 
 ## near_bank_y 는 화면 아래쪽 강가가 시작되는 y다. 공을 잃는 선과 맞춘다.
@@ -138,6 +147,7 @@ func build(stage: StageData, river_width: float, near_bank_y: float, design: Dic
 	for c in stage.cells:
 		boxes.append(_bounds(c["points"]))
 	_boxes = boxes
+	_build_roads(stage)
 	var real := _assign_buildings(stage, boxes)
 	object_count = 0
 	for ci in stage.cells.size():
@@ -379,8 +389,8 @@ func show_popup(map_pos: Vector2, text: String, color: Color) -> void:
 
 ## 떨어지는 아이템 하나의 모습. 종류마다 색과 글자가 다르다.
 static func make_item_node(type: String, radius: float) -> Node3D:
-	var colors := {"multi": Color("6FB8FF"), "wide": Color("7CD992"), "fire": Color("FF8A5B"), "life": Color("FF6FA3"), "bolt": Color("FFD23F")}
-	var marks := {"multi": "x3", "wide": "<>", "fire": "火", "life": "+1", "bolt": "⚡"}
+	var colors := {"multi": Color("6FB8FF"), "wide": Color("7CD992"), "fire": Color("FF8A5B"), "life": Color("FF6FA3"), "bolt": Color("FFD23F"), "narrow": Color("6B5B95")}
+	var marks := {"multi": "x3", "wide": "<>", "fire": "火", "life": "+1", "bolt": "⚡", "narrow": "><"}
 	var node := Node3D.new()
 	var body := MeshInstance3D.new()
 	var mesh := SphereMesh.new()
@@ -403,6 +413,157 @@ static func make_item_node(type: String, radius: float) -> Node3D:
 	label.outline_modulate = Color("14213D")
 	node.add_child(label)
 	return node
+
+
+## 길에 생기를 넣는다. 큰 도로를 따라 찻길 띠와 차선을 그리고, 길가에 가로수를 심고, 작은 차를 달리게 한다.
+## 모두 그림일 뿐이고 판정과는 무관하다. 공은 그 위를 그대로 지나간다.
+func _build_roads(stage: StageData) -> void:
+	var st := _begin()
+	var trees := _begin()
+	_car_roads.clear()
+	for ri in stage.roads.size():
+		var road := stage.roads[ri]
+		var cls: String = road["road_class"]
+		if cls != "trunk" and cls != "primary" and cls != "secondary":
+			continue
+		var pts: PackedVector2Array = road["points"]
+		if pts.size() < 2:
+			continue
+		var half := 15.0 if cls != "secondary" else 12.0
+		var total := 0.0
+		var lengths := PackedFloat32Array([0.0])
+		for i in pts.size() - 1:
+			total += pts[i].distance_to(pts[i + 1])
+			lengths.append(total)
+		if total < 30.0:
+			continue
+		# 찻길 띠
+		for i in pts.size() - 1:
+			var a := pts[i]
+			var b := pts[i + 1]
+			var dir := (b - a).normalized()
+			var out := Vector2(-dir.y, dir.x) * half
+			st.set_color(ASPHALT)
+			for v: Vector2 in [a - out, b - out, b + out, a - out, b + out, a + out]:
+				st.add_vertex(_at(v, ROAD_LIFT))
+			# 꺾이는 자리의 틈을 메운다
+			for k in 8:
+				var a0 := TAU * k / 8.0
+				var a1 := TAU * (k + 1) / 8.0
+				st.add_vertex(_at(b, ROAD_LIFT))
+				st.add_vertex(_at(b + Vector2(cos(a0), sin(a0)) * half, ROAD_LIFT))
+				st.add_vertex(_at(b + Vector2(cos(a1), sin(a1)) * half, ROAD_LIFT))
+		# 가운데 점선
+		var d := 12.0
+		while d + 16.0 < total:
+			var p0 := _along(pts, lengths, d)
+			var p1 := _along(pts, lengths, d + 16.0)
+			var dir := (p1 - p0).normalized()
+			var out := Vector2(-dir.y, dir.x) * 1.3
+			st.set_color(LANE)
+			for v: Vector2 in [p0 - out, p1 - out, p1 + out, p0 - out, p1 + out, p0 + out]:
+				st.add_vertex(_at(v, ROAD_LIFT + 0.12))
+			d += 36.0
+		# 가로수: 찻길 양옆에 드문드문
+		d = 40.0 + float(_hash(ri, 1, 5) % 40)
+		while d < total - 20.0:
+			var p0 := _along(pts, lengths, d)
+			var p1 := _along(pts, lengths, d + 4.0)
+			var dir := (p1 - p0).normalized()
+			var h := _hash(ri, int(d), 29)
+			var at := p0 + Vector2(-dir.y, dir.x) * (half + 9.0) * (1.0 if h % 2 == 0 else -1.0)
+			if at.x > 12.0 and at.x < _w - 12.0 and at.y > 12.0 and at.y < _h - 12.0 and _cell_at(stage, _boxes, at) < 0 and not _on_water(stage, at):
+				_add_tree(trees, {"at": at, "round": true, "size": 0.62 + (h >> 3) % 4 * 0.05, "base": 0.0, "color": LEAF[(h >> 6) % 3]})
+			d += 84.0
+		if total > 160.0:
+			_car_roads.append({"points": pts, "lengths": lengths, "total": total, "lane": half * 0.5})
+	_add_mesh(st, false)
+	_add_mesh(trees, true)
+	_spawn_cars()
+
+
+static func _on_water(stage: StageData, p: Vector2) -> bool:
+	for lake in stage.lakes:
+		if Geometry2D.is_point_in_polygon(p, lake["points"]):
+			return true
+	return false
+
+
+## 꺾인 선 위에서 처음부터 d 만큼 간 자리.
+static func _along(pts: PackedVector2Array, lengths: PackedFloat32Array, d: float) -> Vector2:
+	var i := 0
+	while i < lengths.size() - 2 and lengths[i + 1] < d:
+		i += 1
+	var seg := lengths[i + 1] - lengths[i]
+	return pts[i].lerp(pts[i + 1], clampf((d - lengths[i]) / maxf(seg, 0.001), 0.0, 1.0))
+
+
+## 차를 길 위에 흩어 놓는다. 몸통과 지붕을 한 번에 그리는 두 묶음으로 만든다.
+func _spawn_cars() -> void:
+	_cars.clear()
+	if _car_roads.is_empty():
+		return
+	var colors: Array[Color] = [Color("F0645A"), Color("FFD23F"), Color("6FB8FF"), Color("FFFFFF"), Color("7CD992"), Color("B58CF0"), Color("FF9F68")]
+	for i in CAR_COUNT:
+		var h := _hash(i, 71, 5)
+		var road: Dictionary = _car_roads[h % _car_roads.size()]
+		_cars.append({"road": road, "d": float((h >> 4) % 1000) / 1000.0 * road["total"], "speed": 55.0 + (h >> 9) % 60,
+			"way": 1.0 if (h >> 15) % 2 == 0 else -1.0, "color": colors[(h >> 17) % colors.size()]})
+	var body := BoxMesh.new()
+	body.size = Vector3(9.0, 5.0, 17.0)
+	var cabin := BoxMesh.new()
+	cabin.size = Vector3(8.0, 4.0, 9.0)
+	_car_bodies = _car_batch(body, true)
+	_car_cabins = _car_batch(cabin, false)
+	for i in _cars.size():
+		_car_bodies.multimesh.set_instance_color(i, _cars[i]["color"])
+		_car_cabins.multimesh.set_instance_color(i, Color("EAF6FF"))
+	_move_cars(0.0)
+
+
+func _car_batch(mesh: Mesh, shadows: bool) -> MultiMeshInstance3D:
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.use_colors = true
+	mm.mesh = mesh
+	mm.instance_count = _cars.size()
+	var mat := StandardMaterial3D.new()
+	mat.vertex_color_use_as_albedo = true
+	mat.roughness = 1.0
+	var node := MultiMeshInstance3D.new()
+	node.multimesh = mm
+	node.material_override = mat
+	node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if shadows else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(node)
+	return node
+
+
+func _process(delta: float) -> void:
+	if not _cars.is_empty():
+		_move_cars(delta)
+
+
+## 차를 길을 따라 움직인다. 끝에 닿으면 반대 차선으로 돌아온다.
+func _move_cars(delta: float) -> void:
+	for i in _cars.size():
+		var car: Dictionary = _cars[i]
+		var road: Dictionary = car["road"]
+		var d: float = car["d"] + car["speed"] * car["way"] * delta
+		if d > road["total"] - 6.0 or d < 6.0:
+			car["way"] = -car["way"]
+			d = clampf(d, 6.0, road["total"] - 6.0)
+		car["d"] = d
+		var p := _along(road["points"], road["lengths"], d)
+		var q := _along(road["points"], road["lengths"], d + 3.0 * car["way"])
+		var dir := (q - p).normalized()
+		if dir == Vector2.ZERO:
+			continue
+		var at: Vector2 = p + Vector2(dir.y, -dir.x) * float(road["lane"])
+		# 지도 좌표의 방향을 장면 좌표로 옮긴다. 차의 앞은 -Z 쪽이다.
+		var forward := Vector3(dir.x, 0.0, -dir.y)
+		var basis := Basis.looking_at(forward, Vector3.UP)
+		_car_bodies.multimesh.set_instance_transform(i, Transform3D(basis, _at(at, ROAD_LIFT + 3.2)))
+		_car_cabins.multimesh.set_instance_transform(i, Transform3D(basis, _at(at, ROAD_LIFT + 7.4)))
 
 
 ## 부서진 자리에 터를 남긴다. 건물이 있던 윤곽이 바닥에 옅게 남아, 판이 휑해 보이지 않고 어디가 뚫렸는지도 읽힌다.

@@ -29,7 +29,7 @@ const SKY := Color("BFE6F2")
 const INK := Color("14213D")
 const FIRE := Color("FF7A3C")
 ## 순간의 효과를 알리는 말은 영어로 쓴다.
-const ITEM_NAMES := {"multi": "MULTI BALL!", "wide": "WIDE PADDLE!", "fire": "FIRE BALL!", "life": "1 UP!", "bolt": "LIGHTNING!"}
+const ITEM_NAMES := {"multi": "MULTI BALL!", "wide": "WIDE PADDLE!", "fire": "FIRE BALL!", "life": "1 UP!", "bolt": "LIGHTNING!", "narrow": "OOPS! NARROW"}
 
 ## 방금 끝난 판의 결과. 장면을 다시 불러도 남아 있어 스테이지 지도에 보여 준다.
 static var last_result := {}
@@ -151,6 +151,11 @@ func _process(delta: float) -> void:
 			"item_caught":
 				_hud.say(ITEM_NAMES.get(e["type_of"], ""))
 				Input.vibrate_handheld(30)
+			"speed_up":
+				_hud.say("SPEED UP!")
+			"rush":
+				_hud.say("RUSH!")
+				_shake = maxf(_shake, 18.0)
 			"fever":
 				_hud.say("FEVER!")
 			"finale":
@@ -310,6 +315,12 @@ func _sync_hud(delta: float) -> void:
 		effects.append(["FIRE", _sim.fire_left, FIRE])
 	if _sim.wide_left > 0.0:
 		effects.append(["WIDE", _sim.wide_left, UiKit.MINT])
+	if _sim.narrow_left > 0.0:
+		effects.append(["NARROW", _sim.narrow_left, Color("6B5B95")])
+	if _sim.rush:
+		effects.append(["RUSH", 0.0, FIRE])
+	if _sim.speed_tier > 0:
+		effects.append(["SPEED x%d" % (_sim.speed_tier + 1), 0.0, UiKit.SKY])
 	if _sim.finale:
 		effects.append(["FINALE", 0.0, UiKit.CORAL])
 	var goal := 0.0

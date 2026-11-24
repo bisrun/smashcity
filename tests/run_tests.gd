@@ -24,7 +24,7 @@ func _init() -> void:
 		_test_landmark_clears_stage, _test_item_drops_and_is_caught, _test_multiball, _test_wide_fire_life,
 		_test_extra_balls_do_not_cost_a_life, _test_speed_grows_with_progress, _test_idle_ball_is_pulled_to_a_cell,
 		_test_fever_chains_to_neighbors, _test_wall_blocks_but_gap_lets_through, _test_bolt_finishes_the_last_cells,
-		_test_models_load, _test_save_data_ranks_scores, _test_stage_list_is_valid, _test_sim_is_deterministic, _test_jamsil_plays,
+		_test_pressure_builds_over_time, _test_narrow_item_hurts, _test_models_load, _test_save_data_ranks_scores, _test_stage_list_is_valid, _test_sim_is_deterministic, _test_jamsil_plays,
 	]:
 		t.call()
 	print("%d개 확인, 실패 %d개" % [_checks, _failures])
@@ -62,9 +62,14 @@ func _place(sim: Sim, pos: Vector2, dir: Vector2) -> void:
 	sim.ball_vel = dir.normalized() * float(sim.cfg["ball_speed"])
 
 
+## 중력과, 시간에 따라 조여 오는 장치를 끈 밸런스 값. 한 가지 규칙만 따로 볼 때 쓴다.
 func _no_gravity() -> Dictionary:
 	var cfg := BalanceScript.load_file()
 	cfg["gravity"] = 0.0
+	cfg["time_speed_every"] = 99999.0
+	cfg["drop_interval_start"] = 99999.0
+	cfg["drop_interval_end"] = 99999.0
+	cfg["rush_after"] = 99999.0
 	return cfg
 
 
@@ -503,6 +508,51 @@ func _test_stage_list_is_valid() -> void:
 	_check(ready >= 1, "플레이할 수 있는 스테이지가 하나 이상 있다")
 
 
+func _test_pressure_builds_over_time() -> void:
+	var cfg := _no_gravity()
+	cfg["time_speed_every"] = 10.0
+	cfg["time_speed_max_tiers"] = 2
+	cfg["drop_interval_start"] = 4.0
+	cfg["drop_interval_end"] = 1.0
+	cfg["drop_ramp_seconds"] = 20.0
+	cfg["rush_after"] = 30.0
+	cfg["rush_drop_interval"] = 0.5
+	var sim: Sim = SimScript.new(_stage({"cells": [_square(100, 1800, 100, 4)]}), cfg)
+	var slow := sim.ball_speed()
+	var kinds := {}
+	var drops_early := 0
+	var drops_late := 0
+	for i in int(45.0 / Sim.STEP):
+		sim.set_paddle(sim.ball_pos.x)
+		sim.step()
+		for e in sim.take_events():
+			kinds[e["type"]] = true
+			if e["type"] == "item_spawn":
+				if sim.elapsed < 10.0:
+					drops_early += 1
+				elif sim.elapsed >= 35.0:
+					drops_late += 1
+	_check(sim.speed_tier == 2 and sim.ball_speed() > slow, "시간이 흐르면 공이 빨라지고, 정해진 단계에서 멈춘다 (단계 %d)" % sim.speed_tier)
+	_check(kinds.has("speed_up"), "빨라질 때 사건이 생긴다")
+	_check(drops_early >= 1, "처음에도 하늘에서 아이템이 떨어진다 (처음 10초에 %d개)" % drops_early)
+	_check(sim.rush and kinds.has("rush"), "한참 지나면 몰아치는 단계에 들어간다")
+	_check(drops_late > drops_early * 3, "몰아치는 단계에서는 아이템이 훨씬 자주 떨어진다 (처음 10초 %d개, 끝 10초 %d개)" % [drops_early, drops_late])
+
+
+func _test_narrow_item_hurts() -> void:
+	var sim: Sim = SimScript.new(_stage(), _no_gravity())
+	var normal := sim.paddle_width()
+	var before := sim.score
+	sim._apply_item("narrow")
+	_check(sim.paddle_width() < normal, "좁은 패들을 받으면 패들이 좁아진다")
+	sim._apply_item("wide")
+	_check(sim.paddle_width() > normal, "넓은 패들을 받으면 좁아진 것이 풀리고 넓어진다")
+	sim._apply_item("narrow")
+	_run(sim, float(sim.cfg["narrow_seconds"]) + 0.1)
+	_check(is_equal_approx(sim.paddle_width(), normal), "시간이 지나면 원래대로 돌아온다")
+	_check(sim.score == before, "나쁜 아이템은 점수를 주지 않는다")
+
+
 func _play(seconds: float) -> Sim:
 	var dir := JAMSIL.get_base_dir()
 	var sim: Sim = SimScript.new(StageDataScript.load_file(JAMSIL), BalanceScript.load_file(), BalanceScript.load_file(dir + "/design.json"))
@@ -514,7 +564,7 @@ func _play(seconds: float) -> Sim:
 				lowest = b.pos.y
 				target = b.pos.x
 		for it in sim.items:
-			if lowest > 400.0:
+			if lowest > 400.0 and it["type"] != "narrow":
 				target = it["pos"].x
 		sim.set_paddle(target + sin(i * 0.013) * 90.0)
 		sim.step()

@@ -21,6 +21,10 @@ const ITEM_FIRE := "fire"
 const ITEM_LIFE := "life"
 ## 마무리 단계에 하늘에서 내려오는 번개. 받으면 남은 셀을 차례로 내리친다.
 const ITEM_BOLT := "bolt"
+## 받으면 손해인 아이템. 패들이 잠깐 좁아진다. 피해야 한다.
+const ITEM_NARROW := "narrow"
+## 하늘에서 떨어지는 아이템의 종류와 나올 비중
+const SKY_ITEMS := {"multi": 3.0, "wide": 2.0, "fire": 2.0, "narrow": 3.0, "life": 0.5}
 
 
 class Ball:
@@ -60,9 +64,14 @@ var over := false
 var destroyed := 0
 var elapsed := 0.0
 var cleared := false
-## 넓은 패들과 불공의 남은 시간 (초)
+## 넓은 패들, 불공, 좁은 패들의 남은 시간 (초)
 var wide_left := 0.0
 var fire_left := 0.0
+var narrow_left := 0.0
+## 시간이 흘러 빨라진 단계. 0부터.
+var speed_tier := 0
+## 판이 길어져 몰아치는 단계에 들어갔는지. 아이템이 쏟아진다.
+var rush := false
 ## 남은 셀이 얼마 없어 마무리 단계에 들어갔는지
 var finale := false
 
@@ -103,6 +112,8 @@ var _strike_wait := 0.0
 ## 놓친 번개가 다시 내려오기까지 남은 시간. 0 이하면 기다리는 번개가 없다.
 var _bolt_retry := 0.0
 var _sky := Ball.new()
+## 다음 아이템이 하늘에서 떨어지기까지 남은 시간
+var _drop_in := 0.0
 ## 깨지지 않는 벽의 조각들. 공은 튕기기만 한다. 각 원소는 얇은 사각형이다.
 var walls: Array[PackedVector2Array] = []
 ## 벽에 난 구멍의 양 끝. 각 원소: [Vector2, Vector2]
@@ -140,6 +151,7 @@ func _init(p_stage: StageData, p_cfg: Dictionary, design: Dictionary = {}) -> vo
 	lives = int(cfg["lives"])
 	_rng.seed = int(cfg["seed"])
 	paddle_x = stage.width / 2.0
+	_drop_in = float(cfg["drop_interval_start"])
 	_add_waiting_ball(float(cfg["launch_delay"]))
 
 
@@ -151,13 +163,18 @@ func set_paddle(x: float) -> void:
 
 ## 지금의 패들 폭. 넓은 패들 아이템이 켜져 있으면 넓다.
 func paddle_width() -> float:
-	return float(cfg["paddle_width"]) * (float(cfg["wide_factor"]) if wide_left > 0.0 else 1.0)
+	var factor := 1.0
+	if wide_left > 0.0:
+		factor = float(cfg["wide_factor"])
+	elif narrow_left > 0.0:
+		factor = float(cfg["narrow_factor"])
+	return float(cfg["paddle_width"]) * factor
 
 
 ## 지난 take_events() 뒤에 일어난 일을 돌려주고 비운다.
 ## 종류: hit{cell,hp,max_hp}, destroyed{cell,landmark}, paddle, launch, splash{pos}, emerge{pos},
 ##       ball_lost{ball}, lost, over, cleared, item_spawn{id,type_of,pos}, item_caught{id,type_of}, item_gone{id},
-##       fever, finale, wall{pos}, bolt{cell,pos}
+##       fever, finale, wall{pos}, bolt{cell,pos}, speed_up{tier}, rush
 ## destroyed 에는 points(얻은 점수)와 chained(연쇄로 부서졌는지)가 함께 온다.
 func take_events() -> Array[Dictionary]:
 	var out := _events
@@ -177,10 +194,10 @@ func breakable_count() -> int:
 	return cell_hp.size()
 
 
-## 지금의 공 속도. 셀을 부술수록 빨라진다.
+## 지금의 공 속도. 셀을 부술수록, 그리고 시간이 흐를수록 빨라진다.
 func ball_speed() -> float:
 	var progress := float(destroyed) / maxf(1.0, float(cell_hp.size()))
-	return float(cfg["ball_speed"]) * (1.0 + float(cfg["speed_gain"]) * progress)
+	return float(cfg["ball_speed"]) * (1.0 + float(cfg["speed_gain"]) * progress) * (1.0 + float(cfg["time_speed_gain"]) * speed_tier)
 
 
 ## 그 공이 달아올랐는지. 달아오른 공이 부순 셀은 맞닿은 셀까지 깎는다.
@@ -222,6 +239,8 @@ func step() -> void:
 	elapsed += STEP
 	wide_left = maxf(0.0, wide_left - STEP)
 	fire_left = maxf(0.0, fire_left - STEP)
+	narrow_left = maxf(0.0, narrow_left - STEP)
+	_step_pressure()
 	for b: Ball in balls.duplicate():
 		_step_ball(b)
 		if cleared:
@@ -245,6 +264,38 @@ func step() -> void:
 			return
 	if balls.is_empty():
 		_lose_life()
+
+
+## 판이 길어질수록 조여 온다. 일정 시간마다 공이 빨라지고, 하늘에서 아이템이 점점 자주 떨어진다.
+## 한참 지나면 몰아치는 단계에 들어가 아이템이 쏟아진다.
+func _step_pressure() -> void:
+	var tier := mini(int(elapsed / float(cfg["time_speed_every"])), int(cfg["time_speed_max_tiers"]))
+	if tier > speed_tier:
+		speed_tier = tier
+		_events.append({"type": "speed_up", "tier": tier})
+	if not rush and elapsed >= float(cfg["rush_after"]):
+		rush = true
+		_drop_in = minf(_drop_in, 0.5)
+		_events.append({"type": "rush"})
+	_drop_in -= STEP
+	if _drop_in <= 0.0:
+		_drop_in = float(cfg["rush_drop_interval"]) if rush else lerpf(float(cfg["drop_interval_start"]), float(cfg["drop_interval_end"]),
+			clampf(elapsed / float(cfg["drop_ramp_seconds"]), 0.0, 1.0))
+		var total := 0.0
+		for w: float in SKY_ITEMS.values():
+			total += w
+		var roll := _rng.randf() * total
+		var type := ITEM_MULTI
+		for k: String in SKY_ITEMS:
+			roll -= float(SKY_ITEMS[k])
+			if roll <= 0.0:
+				type = k
+				break
+		var margin := 90.0
+		var item := {"id": _next_id, "type": type, "pos": Vector2(margin + _rng.randf() * (stage.width - margin * 2.0), float(cfg["drop_height"]))}
+		_next_id += 1
+		items.append(item)
+		_events.append({"type": "item_spawn", "id": item["id"], "type_of": type, "pos": item["pos"]})
 
 
 func _step_ball(b: Ball) -> void:
@@ -348,6 +399,7 @@ func _lose_life() -> void:
 	lives -= 1
 	wide_left = 0.0
 	fire_left = 0.0
+	narrow_left = 0.0
 	_events.append({"type": "lost"})
 	if lives <= 0:
 		over = true
@@ -612,7 +664,8 @@ func _step_items() -> void:
 		it["pos"] = pos
 		if pos.y <= top + 20.0 and pos.y >= top - float(cfg["paddle_thickness"]) - 20.0 and absf(pos.x - paddle_x) <= half + 24.0:
 			items.erase(it)
-			score += int(cfg["score_item"])
+			if it["type"] != ITEM_NARROW:
+				score += int(cfg["score_item"])
 			_events.append({"type": "item_caught", "id": it["id"], "type_of": it["type"]})
 			_apply_item(it["type"])
 		elif pos.y < float(cfg["paddle_y"]) - float(cfg["fall_margin"]):
@@ -644,6 +697,10 @@ func _apply_item(type: String) -> void:
 					balls.append(extra)
 		ITEM_WIDE:
 			wide_left = float(cfg["wide_seconds"])
+			narrow_left = 0.0
+		ITEM_NARROW:
+			narrow_left = float(cfg["narrow_seconds"])
+			wide_left = 0.0
 		ITEM_FIRE:
 			fire_left = float(cfg["fire_seconds"])
 		ITEM_LIFE:
