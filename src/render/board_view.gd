@@ -21,8 +21,9 @@ const GAP := 5.0
 ## 블록 윗면 테두리의 폭 (m)
 const RIM := 6.0
 ## 건물 몸통의 높이: 바닥 + 남은 단계 x 한 단의 높이
+## 한 단을 높게 잡아, 맞을 때마다 건물이 눈에 띄게 줄어든다.
 const BODY_BASE := 8.0
-const BODY_FLOOR := 15.0
+const BODY_FLOOR := 26.0
 const PARK_HEIGHT := 9.0
 const KIND_PARK := "park"
 const KIND_HOUSE := "house"
@@ -190,9 +191,11 @@ func show_hit(cell: int, hp: int, max_hp: int) -> void:
 	var tier := _tier(hp, max_hp, _is_landmark[cell])
 	_plinths[cell].mesh = _body_mesh(cell, tier)
 	var tween := node.create_tween()
-	tween.tween_property(_tops[cell], "position:y", _body_height(cell, tier), 0.14)
-	tween.parallel().tween_property(node, "scale:y", 0.88, 0.05)
-	tween.tween_property(node, "scale:y", 1.0, 0.12)
+	# 쿵 하고 눌렸다가 한 단 낮아진 높이로 튀어 오른다
+	tween.tween_property(_tops[cell], "position:y", _body_height(cell, tier), 0.12).set_ease(Tween.EASE_IN)
+	tween.parallel().tween_property(node, "scale:y", 0.72, 0.06)
+	tween.tween_property(node, "scale:y", 1.06, 0.08)
+	tween.tween_property(node, "scale:y", 1.0, 0.08)
 
 
 ## 셀이 부서졌을 때. 납작하게 꺼뜨린 뒤 없앤다.
@@ -336,7 +339,7 @@ func show_bolt(map_pos: Vector2) -> void:
 
 
 ## 부서지는 조각. 셀이 부서질 때 그 자리에서 튀어 오른다.
-func show_debris(map_pos: Vector2, color: Color, big: bool) -> void:
+func show_debris(map_pos: Vector2, color: Color, big: bool, count: int = 0) -> void:
 	var bits := CPUParticles3D.new()
 	var bit := BoxMesh.new()
 	bit.size = Vector3.ONE * (11.0 if big else 8.0)
@@ -347,7 +350,7 @@ func show_debris(map_pos: Vector2, color: Color, big: bool) -> void:
 	bits.mesh = bit
 	bits.one_shot = true
 	bits.explosiveness = 1.0
-	bits.amount = 26 if big else 14
+	bits.amount = count if count > 0 else (26 if big else 14)
 	bits.lifetime = 0.75
 	bits.direction = Vector3.UP
 	bits.spread = 65.0
@@ -609,7 +612,7 @@ func _body_mesh(ci: int, tier: int) -> ArrayMesh:
 		_add_prism(st, _outline[ci], 0.0, PARK_HEIGHT, GRASS[ci % GRASS.size()], STONE, 0.0)
 	else:
 		var wall := _wall_tint[ci]
-		_add_bands(st, _outline[ci], 0.0, _body_height(ci, tier), tier * 2, wall, WINDOW, wall.darkened(0.06), 1.0)
+		_add_bands(st, _outline[ci], 0.0, _body_height(ci, tier), tier * 3, wall, WINDOW, wall.darkened(0.06), 1.0)
 	st.generate_normals()
 	return st.commit()
 

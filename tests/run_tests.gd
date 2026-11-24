@@ -20,7 +20,8 @@ func _init() -> void:
 	for t: Callable in [
 		_test_jamsil_loads, _test_jamsil_shapes_are_valid, _test_nearest_road_point, _test_display_height,
 		_test_board_view_builds, _test_ball_launches_and_bounces_off_walls, _test_ball_breaks_a_cell,
-		_test_paddle_sends_ball_up, _test_missed_ball_costs_a_life, _test_water_tosses_ball_out,
+		_test_paddle_sends_ball_up, _test_missed_ball_costs_a_life, _test_water_splits_ball_in_two,
+		_test_extra_ball_fades_after_bounces, _test_extra_ball_splits_too, _test_sounds_are_built,
 		_test_landmark_clears_stage, _test_item_drops_and_is_caught, _test_multiball, _test_wide_fire_life,
 		_test_extra_balls_do_not_cost_a_life, _test_speed_grows_with_progress, _test_idle_ball_is_pulled_to_a_cell,
 		_test_fever_chains_to_neighbors, _test_wall_blocks_but_gap_lets_through, _test_bolt_finishes_the_last_cells,
@@ -209,12 +210,28 @@ func _test_missed_ball_costs_a_life() -> void:
 	_check(sim.elapsed == before, "끝난 뒤에는 판정이 멈춘다")
 
 
-func _test_water_tosses_ball_out() -> void:
-	var extra := {
+func _lake_stage() -> Dictionary:
+	return {
 		"lake": [{"p": [200, 800, 800, 800, 800, 1200, 200, 1200], "h": []}],
 		"corridors": [{"p": [450, 0, 550, 0, 550, 2000, 450, 2000], "h": []}],
 	}
-	var sim: Sim = SimScript.new(_stage(extra), _no_gravity())
+
+
+## 공을 호수에 빠뜨리고 튀어 오를 때까지 돌린다.
+func _sink_and_emerge(sim: Sim, at: Vector2) -> void:
+	sim.balls[0].grace = 0.0
+	sim.balls[0].skipping = false
+	sim.balls[0].pos = at
+	sim.balls[0].vel = Vector2(0, 1) * sim.ball_speed()
+	sim.step()
+	var waited := 0
+	while sim.balls[0].state == Sim.BallState.SUNK and waited < 1000:
+		sim.step()
+		waited += 1
+
+
+func _test_water_splits_ball_in_two() -> void:
+	var sim: Sim = SimScript.new(_stage(_lake_stage()), _no_gravity())
 	var start := sim.lives
 	_place(sim, Vector2(300, 700), Vector2(0, 1))
 	sim.combo = 4
@@ -222,33 +239,93 @@ func _test_water_tosses_ball_out() -> void:
 	_check(sim.ball_state == Sim.BallState.SUNK and sim.falls == 1, "호수에 들어가면 가라앉는다")
 	_check(sim.lives == start and sim.combo == 0, "공은 잃지 않지만 콤보는 끊긴다")
 	var sunk_at := sim.ball_pos
-	_check(sim.take_events().any(func(e: Dictionary) -> bool: return e["type"] == "splash"), "빠졌다는 사건이 생긴다")
+	var seen := sim.take_events()
 	var waited := 0
 	while sim.ball_state == Sim.BallState.SUNK and waited < 1000:
 		sim.step()
 		waited += 1
-	_check(sim.ball_state == Sim.BallState.FLYING and waited * Sim.STEP <= float(sim.cfg["splash_delay"]) + 0.02, "잠깐 뒤 튀어 오른다")
+	seen.append_array(sim.take_events())
+	_check(seen.any(func(e: Dictionary) -> bool: return e["type"] == "splash") and seen.any(func(e: Dictionary) -> bool: return e["type"] == "emerge"), "빠질 때와 나올 때 사건이 생긴다")
+	_check(sim.balls.size() == 2, "공 하나가 빠지면 둘이 나온다 (실제 %d)" % sim.balls.size())
+	_check(not sim.balls[0].temporary and sim.balls[1].temporary, "원래 공은 그대로이고 새로 나온 공이 덤 공이다")
+	_check(sim.balls[1].bounces_left == int(sim.cfg["lake_extra_bounces"]), "덤 공은 정해진 횟수만큼 튕길 수 있다")
 	_check(sim.ball_pos.distance_to(sunk_at) < 60.0, "빠진 자리에서 나온다")
-	_check(is_equal_approx(sim.ball_vel.length(), float(sim.cfg["ball_speed"])), "튀어 오른 공의 속도는 그대로다")
-	_check(sim.take_events().any(func(e: Dictionary) -> bool: return e["type"] == "emerge"), "튀어 올랐다는 사건이 생긴다")
-	_run(sim, 0.25)
-	_check(sim.falls == 1, "그 물을 벗어나기 전에는 다시 빠지지 않는다")
+	var center := Vector2(500, 1000)
+	var outward := true
+	for b in sim.balls:
+		if b.vel.dot(b.pos - center) <= 0.0:
+			outward = false
+	_check(outward, "두 공 모두 호수 가운데에서 먼 쪽으로 나간다")
+	_check(sim.balls[0].vel.angle_to(sim.balls[1].vel) != 0.0, "두 공은 서로 다른 방향으로 간다")
+	_run(sim, 0.35)
+	_check(sim.falls == 1, "나온 공은 곧바로 다시 빠지지 않는다")
 
-	var dirs := {}
-	for i in 6:
-		var s2: Sim = SimScript.new(_stage(extra), _no_gravity())
-		for k in i + 1:
-			_place(s2, Vector2(300, 700), Vector2(0, 1))
-			_run(s2, 0.2)
-			_run(s2, float(s2.cfg["splash_delay"]) + 0.01)
-			s2.balls[0].skipping = false
-		dirs[snappedf(s2.ball_vel.angle(), 0.01)] = true
-	_check(dirs.size() >= 4, "튀어 오르는 방향은 그때그때 다르다 (서로 다른 방향 %d가지)" % dirs.size())
 
-	var bridge: Sim = SimScript.new(_stage(extra), _no_gravity())
+func _test_extra_ball_fades_after_bounces() -> void:
+	var cfg := _no_gravity()
+	var sim: Sim = SimScript.new(_stage(_lake_stage()), cfg)
+	_place(sim, Vector2(500, 400), Vector2(0, 1))
+	_sink_and_emerge(sim, Vector2(300, 900))
+	var extra: Sim.Ball = sim.balls[1]
+	var limit := int(cfg["lake_extra_bounces"])
+	# 덤 공을 좌우 벽 사이에서 튕긴다
+	extra.pos = Vector2(500, 300)
+	extra.vel = Vector2(1, 0.3).normalized() * sim.ball_speed()
+	extra.grace = 99.0
+	var faded := false
+	var most := 0
+	for i in 4000:
+		sim.balls[0].pos = Vector2(500, 1700)
+		sim.balls[0].vel = Vector2.ZERO
+		sim.balls[0].state = Sim.BallState.WAITING
+		sim.balls[0].wait = 99.0
+		extra.pos.y = clampf(extra.pos.y, 100.0, 600.0)
+		sim.step()
+		most = maxi(most, limit - extra.bounces_left)
+		if not sim.balls.has(extra):
+			faded = true
+			break
+	_check(faded and most >= limit - 1, "덤 공은 정해진 횟수만큼 튕기면 사라진다 (튕긴 횟수 %d)" % most)
+	_check(sim.take_events().any(func(e: Dictionary) -> bool: return e["type"] == "ball_faded"), "사라질 때 사건이 생긴다")
+	_check(sim.balls.size() == 1 and not sim.balls[0].temporary, "원래 공은 남는다")
+
+
+func _test_extra_ball_splits_too() -> void:
+	var sim: Sim = SimScript.new(_stage(_lake_stage()), _no_gravity())
+	_place(sim, Vector2(500, 400), Vector2(0, 1))
+	_sink_and_emerge(sim, Vector2(300, 900))
+	_check(sim.balls.size() == 2, "한 번 빠져 공이 둘이 됐다")
+	var extra: Sim.Ball = sim.balls[1]
+	sim.balls[0].state = Sim.BallState.WAITING
+	sim.balls[0].wait = 99.0
+	extra.grace = 0.0
+	extra.skipping = false
+	extra.pos = Vector2(700, 1000)
+	extra.vel = Vector2(0, 1) * sim.ball_speed()
+	sim.step()
+	var waited := 0
+	while extra.state == Sim.BallState.SUNK and waited < 1000:
+		sim.step()
+		waited += 1
+	_check(sim.balls.size() == 3, "덤 공이 빠져도 둘이 되어 나온다 (실제 %d)" % sim.balls.size())
+	_check(sim.balls[2].temporary, "거기서 나온 공도 덤 공이다")
+
+	var bridge: Sim = SimScript.new(_stage(_lake_stage()), _no_gravity())
 	_place(bridge, Vector2(500, 700), Vector2(0, 1))
 	_run(bridge, 0.7)
 	_check(bridge.falls == 0 and bridge.ball_pos.y > 1200.0, "호수 위를 지나는 통로로는 건넌다")
+
+
+func _test_sounds_are_built() -> void:
+	var sounds: Dictionary = load("res://src/audio/sfx.gd").build_all()
+	var empty := 0
+	for name: String in sounds:
+		var wav: AudioStreamWAV = sounds[name]
+		if wav.data.size() < 400:
+			empty += 1
+	_check(sounds.size() >= 12 and empty == 0, "효과음을 모두 만든다 (%d개)" % sounds.size())
+	for needed: String in ["hit", "pop", "paddle", "splash", "item", "miss", "clear"]:
+		_check(sounds.has(needed), "%s 소리가 있다" % needed)
 
 
 func _test_landmark_clears_stage() -> void:

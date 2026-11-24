@@ -43,6 +43,14 @@ class Ball:
 	## 끌려가고 있는 셀. 없으면 -1
 	var target := -1
 	var retarget_in := 0.0
+	## 호수에서 갈라져 나온 덤 공인지. 덤 공은 정해진 횟수만큼 튕기면 사라진다.
+	var temporary := false
+	var bounces_left := 0
+	## 사라질 차례가 된 공
+	var gone := false
+	## 빠져 있는 호수의 번호와, 물에서 나온 뒤 다시 빠지지 않는 남은 시간
+	var lake := -1
+	var grace := 0.0
 
 
 var stage: StageData
@@ -102,6 +110,7 @@ var _landmarks_left := 0
 var _events: Array[Dictionary] = []
 var _grid := {}
 var _lake_boxes: Array[Rect2] = []
+var _lake_centers := PackedVector2Array()
 var _rng := RandomNumberGenerator.new()
 var _next_id := 1
 ## 셀 번호 → 그 셀에 든 아이템의 종류
@@ -142,6 +151,7 @@ func _init(p_stage: StageData, p_cfg: Dictionary, design: Dictionary = {}) -> vo
 	_build_neighbors()
 	for lake in stage.lakes:
 		_lake_boxes.append(_bounds(lake["points"]))
+		_lake_centers.append(_center(lake["points"]))
 	for it: Dictionary in design.get("items", []):
 		var cell := cell_at(Vector2(float(it["at"][0]), float(it["at"][1])))
 		if cell >= 0 and not stage.cells[cell]["landmark"]:
@@ -174,7 +184,7 @@ func paddle_width() -> float:
 ## 지난 take_events() 뒤에 일어난 일을 돌려주고 비운다.
 ## 종류: hit{cell,hp,max_hp}, destroyed{cell,landmark}, paddle, launch, splash{pos}, emerge{pos},
 ##       ball_lost{ball}, lost, over, cleared, item_spawn{id,type_of,pos}, item_caught{id,type_of}, item_gone{id},
-##       fever, finale, wall{pos}, bolt{cell,pos}, speed_up{tier}, rush
+##       fever, finale, wall{pos}, bolt{cell,pos}, speed_up{tier}, rush, ball_split{ball,pos}, ball_faded{ball,pos}
 ## destroyed 에는 points(얻은 점수)와 chained(연쇄로 부서졌는지)가 함께 온다.
 func take_events() -> Array[Dictionary]:
 	var out := _events
@@ -312,12 +322,7 @@ func _step_ball(b: Ball) -> void:
 	if b.state == BallState.SUNK:
 		b.wait -= STEP
 		if b.wait <= 0.0:
-			# 가라앉았던 자리에서 아무 방향으로나 튀어 오른다. 방향은 판마다 정해진 난수열을 따른다.
-			b.vel = Vector2.from_angle(_rng.randf() * TAU) * ball_speed()
-			_keep_min_angle(b)
-			b.state = BallState.FLYING
-			b.skipping = true
-			_events.append({"type": "emerge", "pos": b.pos})
+			_emerge(b)
 		return
 
 	var speed := ball_speed()
@@ -335,14 +340,22 @@ func _step_ball(b: Ball) -> void:
 		_collide_cells(b)
 		if cleared:
 			return
+	if b.gone:
+		# 덤 공이 정해진 횟수만큼 튕겼다
+		balls.erase(b)
+		_events.append({"type": "ball_faded", "ball": b.id, "pos": b.pos})
+		return
 	if b.pos.y < paddle_y - float(cfg["fall_margin"]):
 		# 패들을 지나쳐 뒤로 넘어갔다
 		balls.erase(b)
 		_events.append({"type": "ball_lost", "ball": b.id})
 		return
-	if _lake_at(b.pos) < 0:
+	var lake := _lake_at(b.pos)
+	if lake < 0:
 		b.skipping = false
-	elif not b.skipping:
+		b.grace = maxf(0.0, b.grace - STEP)
+	elif not b.skipping and b.grace <= 0.0:
+		b.lake = lake
 		falls += 1
 		b.combo = 0
 		b.state = BallState.SUNK
@@ -377,6 +390,45 @@ func _steer(b: Ball) -> void:
 	var turn := deg_to_rad(float(cfg["finale_turn_deg"] if finale else cfg["homing_turn_deg"])) * STEP
 	var diff := angle_difference(b.vel.angle(), want)
 	b.vel = b.vel.rotated(clampf(diff, -turn, turn))
+
+
+## 가라앉았던 공이 물 밖으로 튀어 오른다. 공 하나가 빠지면 둘이 나온다.
+## 둘 다 호수 가운데에서 먼 쪽, 곧 가까운 물가 쪽으로 나가므로 나오자마자 다시 빠지지 않는다.
+## 덤으로 나온 공은 정해진 횟수만큼 튕기면 사라진다. 덤 공이 빠져도 둘이 나온다.
+func _emerge(b: Ball) -> void:
+	var away := b.pos - _lake_centers[b.lake] if b.lake >= 0 else Vector2.ZERO
+	var base := away.angle() if away.length() > 1.0 else _rng.randf() * TAU
+	var spread := 0.25 + _rng.randf() * 0.6
+	b.vel = Vector2.from_angle(base + spread) * ball_speed()
+	_keep_min_angle(b)
+	b.state = BallState.FLYING
+	b.skipping = true
+	b.grace = float(cfg["water_grace"])
+	_events.append({"type": "emerge", "pos": b.pos})
+	if balls.size() >= int(cfg["max_balls"]):
+		return
+	var extra := Ball.new()
+	extra.id = _next_id
+	_next_id += 1
+	extra.state = BallState.FLYING
+	extra.pos = b.pos
+	extra.vel = Vector2.from_angle(base - spread) * ball_speed()
+	_keep_min_angle(extra)
+	extra.skipping = true
+	extra.grace = b.grace
+	extra.temporary = true
+	extra.bounces_left = int(cfg["lake_extra_bounces"])
+	balls.append(extra)
+	_events.append({"type": "ball_split", "ball": extra.id, "pos": b.pos})
+
+
+## 공이 무언가에 튕겼다. 덤 공은 튕길 때마다 수명이 준다.
+func _bounced(b: Ball) -> void:
+	if not b.temporary:
+		return
+	b.bounces_left -= 1
+	if b.bounces_left <= 0:
+		b.gone = true
 
 
 func _hold_position() -> Vector2:
@@ -424,6 +476,7 @@ func _collide_walls(b: Ball) -> void:
 		hit = true
 	if hit:
 		_keep_min_angle(b)
+		_bounced(b)
 
 
 func _collide_paddle(b: Ball) -> void:
@@ -442,6 +495,7 @@ func _collide_paddle(b: Ball) -> void:
 	b.vel = Vector2(sin(a), cos(a)) * ball_speed()
 	b.pos.y = top + ball_radius
 	b.combo = 0
+	_bounced(b)
 	_events.append({"type": "paddle"})
 
 
@@ -473,6 +527,7 @@ func _collide_barriers(b: Ball) -> void:
 	if b.vel.dot(best_n) < 0.0:
 		b.vel = b.vel.bounce(best_n)
 		_keep_min_angle(b)
+		_bounced(b)
 	_events.append({"type": "wall", "pos": b.pos})
 
 
@@ -594,6 +649,7 @@ func _collide_cells(b: Ball) -> void:
 	if b.vel.dot(best_n) < 0.0:
 		b.vel = b.vel.bounce(best_n)
 		_keep_min_angle(b)
+		_bounced(b)
 	_damage(b, best, 1)
 
 

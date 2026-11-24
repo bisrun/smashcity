@@ -12,6 +12,7 @@ const BoardViewScript := preload("res://src/render/board_view.gd")
 const SaveDataScript := preload("res://src/meta/save_data.gd")
 const HudScript := preload("res://src/ui/hud.gd")
 const StageMapScript := preload("res://src/ui/stage_map.gd")
+const SfxScript := preload("res://src/audio/sfx.gd")
 
 const STAGES_PATH := "res://assets/stages/stages.json"
 ## 카메라가 내려다보는 각도
@@ -43,6 +44,7 @@ var _camera: Camera3D
 var _paddle: Node3D
 var _hud: Hud
 var _map: StageMapScreen
+var _sfx: Sfx
 var _ball_nodes := {}
 var _item_nodes := {}
 var _ball_mesh: SphereMesh
@@ -58,6 +60,9 @@ var _fps_timer := 0.0
 var _drag_from := NAN
 var _drag_paddle := 0.0
 var _shake := 0.0
+## 연달아 부술 때 올라가는 음의 계단과, 마지막으로 부순 뒤 지난 시간
+var _pop_step := 0
+var _since_pop := 99.0
 var _camera_home := Vector3.ZERO
 var _playing := false
 var _ending := -1.0
@@ -94,6 +99,8 @@ func _ready() -> void:
 	_setup_camera()
 	_setup_paddle_and_ball()
 	_setup_ui()
+	_sfx = SfxScript.new()
+	add_child(_sfx)
 	get_viewport().size_changed.connect(_frame_camera)
 	if OS.has_environment("SMASHCITY_AUTOPLAY"):
 		_start()
@@ -137,6 +144,9 @@ func _process(delta: float) -> void:
 		match e["type"]:
 			"hit":
 				_board.show_hit(e["cell"], e["hp"], e["max_hp"])
+				if e["hp"] > 0:
+					_board.show_debris(_board.cell_center(e["cell"]), _board.cell_color(e["cell"]), false, 6)
+					_sfx.play("hit", clampi(e["max_hp"] - e["hp"], 0, 4), -4.0)
 			"destroyed":
 				var at := _board.cell_center(e["cell"])
 				_board.show_debris(at, _board.cell_color(e["cell"]), e["landmark"] or e["chained"])
@@ -144,35 +154,59 @@ func _process(delta: float) -> void:
 				_board.show_destroyed(e["cell"])
 				_shake = maxf(_shake, 16.0 if e["chained"] else 9.0)
 				Input.vibrate_handheld(18)
+				# 연달아 부술수록 음이 올라간다
+				_pop_step = _pop_step + 1 if _since_pop < 1.2 else 0
+				_since_pop = 0.0
+				_sfx.play("pop", _pop_step)
+			"paddle":
+				_sfx.play("paddle")
+			"wall":
+				_sfx.play("wall", 0, -6.0)
+			"launch":
+				_sfx.play("emerge", 0, -4.0)
 			"splash":
 				_board.show_splash(e["pos"], false)
+				_sfx.play("splash")
 			"emerge":
 				_board.show_splash(e["pos"], true)
+				_sfx.play("emerge")
+			"ball_faded":
+				_sfx.play("fade")
 			"item_caught":
 				_hud.say(ITEM_NAMES.get(e["type_of"], ""))
+				_sfx.play("bad" if e["type_of"] == "narrow" else "item")
 				Input.vibrate_handheld(30)
 			"speed_up":
 				_hud.say("SPEED UP!")
+				_sfx.play("speed")
 			"rush":
 				_hud.say("RUSH!")
+				_sfx.play("fever")
 				_shake = maxf(_shake, 18.0)
 			"fever":
 				_hud.say("FEVER!")
+				_sfx.play("fever")
 			"finale":
 				_hud.say("FINALE!")
+				_sfx.play("fever")
 			"bolt":
 				_board.show_bolt(e["pos"])
+				_sfx.play("bolt")
 				_shake = maxf(_shake, 20.0)
 			"lost":
 				_hud.say("MISS!")
+				_sfx.play("miss")
 				_shake = maxf(_shake, 26.0)
 				Input.vibrate_handheld(120)
 			"cleared":
 				_hud.say("CLEAR!")
+				_sfx.play("clear")
 				_finish(true)
 			"over":
 				_hud.say("GAME OVER")
+				_sfx.play("over")
 				_finish(false)
+	_since_pop += delta
 	# 화면 흔들림
 	_shake = maxf(0.0, _shake - delta * 60.0)
 	_camera.position = _camera_home + Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0), 0.0) * _shake
@@ -198,6 +232,8 @@ func _finish(cleared: bool) -> void:
 
 
 func _start() -> void:
+	if _sfx != null:
+		_sfx.play("tap")
 	if _map != null:
 		_map.queue_free()
 		_map = null
@@ -256,24 +292,45 @@ func _sync_balls() -> void:
 	var seen := {}
 	for b in _sim.balls:
 		seen[b.id] = true
-		var node: Node3D = _ball_nodes.get(b.id)
+		var node: MeshInstance3D = _ball_nodes.get(b.id)
 		if node == null:
 			node = MeshInstance3D.new()
 			node.mesh = _outline_mesh
-			node.material_override = _outline_mat
 			var core := MeshInstance3D.new()
+			core.name = "Core"
 			core.mesh = _ball_mesh
-			core.material_override = _ball_mat
+			if b.temporary:
+				# 덤 공은 저마다의 재질을 가져, 튕길수록 옅어진다
+				node.material_override = _see_through(INK, 5)
+				core.material_override = _see_through(Color("BFEFFF"), 6)
+			else:
+				node.material_override = _outline_mat
+				core.material_override = _ball_mat
+				node.add_child(_make_trail())
 			node.add_child(core)
-			node.add_child(_make_trail())
 			add_child(node)
 			_ball_nodes[b.id] = node
 		node.position = _to_scene(b.pos, _sim.ball_radius)
 		node.visible = b.state != Sim.BallState.SUNK
+		if b.temporary:
+			var left := clampf(float(b.bounces_left) / float(_cfg["lake_extra_bounces"]), 0.0, 1.0)
+			var alpha := lerpf(0.18, 0.95, left)
+			(node.material_override as StandardMaterial3D).albedo_color.a = alpha * 0.8
+			((node.get_node("Core") as MeshInstance3D).material_override as StandardMaterial3D).albedo_color.a = alpha
 	for id: int in _ball_nodes.keys():
 		if not seen.has(id):
 			_ball_nodes[id].queue_free()
 			_ball_nodes.erase(id)
+
+
+func _see_through(color: Color, priority: int) -> StandardMaterial3D:
+	var mat := _flat(color, true)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.no_depth_test = true
+	mat.render_priority = priority
+	if priority == 5:
+		mat.cull_mode = BaseMaterial3D.CULL_FRONT
+	return mat
 
 
 ## 공 뒤에 남는 꼬리.
@@ -434,12 +491,17 @@ func _setup_paddle_and_ball() -> void:
 	_outline_mesh = SphereMesh.new()
 	_outline_mesh.radius = r + 5.0
 	_outline_mesh.height = (r + 5.0) * 2.0
+	# 공은 높은 건물에 가려도 보이게 그린다
 	_outline_mat = _flat(INK, true)
 	_outline_mat.cull_mode = BaseMaterial3D.CULL_FRONT
+	_outline_mat.no_depth_test = true
+	_outline_mat.render_priority = 5
 	_ball_mesh = SphereMesh.new()
 	_ball_mesh.radius = r
 	_ball_mesh.height = r * 2.0
 	_ball_mat = _flat(Color.WHITE, true)
+	_ball_mat.no_depth_test = true
+	_ball_mat.render_priority = 6
 	_trail_mesh = SphereMesh.new()
 	_trail_mesh.radius = r * 0.8
 	_trail_mesh.height = r * 1.6
