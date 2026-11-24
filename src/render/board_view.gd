@@ -25,7 +25,13 @@ const RIM := 6.0
 ## 한 단을 높게 잡아, 맞을 때마다 건물이 눈에 띄게 줄어든다.
 const BODY_BASE := 8.0
 const BODY_FLOOR := 26.0
+## 남은 숫자(1~4)에 따른 건물의 높이. 차이가 눈에 띄도록 고르게 올리지 않고 위로 갈수록 크게 벌린다.
+const TIER_HEIGHTS: Array[float] = [26.0, 58.0, 100.0, 150.0]
 const PARK_HEIGHT := 12.0
+## 숲을 두른 짙은 수풀 띠의 폭, 올록볼록한 혹 하나의 길이와 깊이
+const HEDGE := 5.0
+const LOBE := 26.0
+const LOBE_DEPTH := 6.0
 const KIND_PARK := "park"
 const KIND_HOUSE := "house"
 const KIND_TIERED := "tiered"
@@ -193,6 +199,12 @@ func build(stage: StageData, river_width: float, near_bank_y: float, design: Dic
 		add_child(node)
 		cell_nodes.append(node)
 		var kind := _classify(cell, real[ci], _area(outline))
+		if kind == KIND_PARK:
+			# 숲은 각진 구획 그대로가 아니라 수풀처럼 올록볼록한 윤곽으로 그린다
+			outline = _blob(outline, ci)
+			lawn = _inset(outline, HEDGE)
+			_outline[ci] = outline
+			_lawn[ci] = lawn
 		if USE_MODEL_BUILDINGS and kind != KIND_PARK and kind != KIND_LANDMARK:
 			var fit := _model_fit(outline)
 			if not fit.is_empty():
@@ -636,17 +648,19 @@ func _body_height(ci: int, tier: int) -> float:
 	if _kind[ci] == KIND_MODEL:
 		# 모델 건물은 받침 위에 서 있다가, 맞을 때마다 땅속으로 한 단씩 내려앉는다
 		return PLINTH - (_max_tier[ci] - tier) * _sink[ci]
-	return BODY_BASE + tier * BODY_FLOOR
+	# 숫자가 클수록 훌쩍 높다. 같은 숫자라도 건물마다 조금씩 다르다.
+	return TIER_HEIGHTS[clampi(tier, 1, 4) - 1] * (0.86 + 0.28 * float(_hash(ci, 5, 9) % 100) / 100.0)
 
 
 ## 블록 몸통. 블록의 윤곽이 그대로 건물의 벽이 된다. 층마다 창문 띠를 두른다.
 func _body_mesh(ci: int, tier: int) -> ArrayMesh:
 	var st := _begin()
 	if _kind[ci] == KIND_PARK:
-		# 숲: 돌 테두리를 두른 화단. 테두리가 숲의 경계를 또렷하게 보여 준다. 맞을수록 풀빛이 가을빛으로 바뀐다.
+		# 숲: 짙은 수풀 띠가 올록볼록하게 둘러 숲의 경계를 보여 준다. 맞을수록 풀빛이 가을빛으로 바뀐다.
 		_add_skirt(st, _outline[ci])
-		_add_prism(st, _outline[ci], 0.0, PARK_HEIGHT, CURB, CURB.darkened(0.18), 0.0)
-		_add_prism(st, _lawn[ci], PARK_HEIGHT, PARK_HEIGHT + 1.6, GRASS[ci % GRASS.size()].lerp(AUTUMN, 1.0 - _health[ci]), CURB.darkened(0.1), 0.0)
+		var grass := GRASS[ci % GRASS.size()].lerp(AUTUMN, 1.0 - _health[ci])
+		_add_prism(st, _outline[ci], 0.0, PARK_HEIGHT, grass.darkened(0.3), grass.darkened(0.42), 0.0)
+		_add_prism(st, _lawn[ci], PARK_HEIGHT, PARK_HEIGHT + 2.0, grass, grass.darkened(0.3), 0.0)
 	elif _kind[ci] == KIND_MODEL:
 		# 받침은 그대로 남고 건물만 내려앉는다
 		_add_skirt(st, _outline[ci])
@@ -694,6 +708,60 @@ static func _classify(cell: Dictionary, real: Array, area: float) -> String:
 
 
 ## 윤곽을 안으로 들인다. 들일 수 없을 만큼 좁으면 그대로 돌려준다.
+## 구획의 윤곽을 수풀처럼 바꾼다. 모서리를 둥글리고 가장자리를 올록볼록하게 판다.
+## 안쪽으로만 파므로 판정에 쓰는 구획 밖으로 나가지 않는다. 모양을 못 만들면 원래 윤곽을 돌려준다.
+static func _blob(pts: PackedVector2Array, seed: int) -> PackedVector2Array:
+	var ring := pts.duplicate()
+	if Geometry2D.is_polygon_clockwise(ring):
+		ring.reverse()
+	# 모서리 둥글리기: 안으로 줄였다가 둥글게 다시 키운다
+	var round := minf(16.0, sqrt(_area(ring)) * 0.16)
+	var shrunk := Geometry2D.offset_polygon(ring, -round, Geometry2D.JOIN_ROUND)
+	if shrunk.is_empty():
+		return pts
+	var core: PackedVector2Array = shrunk[0]
+	for c: PackedVector2Array in shrunk:
+		if _area(c) > _area(core):
+			core = c
+	var grown := Geometry2D.offset_polygon(core, round, Geometry2D.JOIN_ROUND)
+	if grown.is_empty() or grown[0].size() < 3:
+		return pts
+	var smooth: PackedVector2Array = grown[0]
+	var n := smooth.size()
+	var total := 0.0
+	for i in n:
+		total += smooth[i].distance_to(smooth[(i + 1) % n])
+	if total < LOBE * 3.0:
+		return smooth
+	# 둘레를 따라 걸으며 혹과 혹 사이를 안으로 판다
+	var lobes := maxi(5, int(round(total / LOBE)))
+	var samples := lobes * 6
+	var out := PackedVector2Array()
+	var seg := 0
+	var seg_start := 0.0
+	var seg_len := smooth[0].distance_to(smooth[1 % n])
+	var center := Vector2.ZERO
+	for q in smooth:
+		center += q / n
+	for k in samples:
+		var d := total * k / samples
+		while d > seg_start + seg_len and seg < n - 1:
+			seg_start += seg_len
+			seg += 1
+			seg_len = smooth[seg].distance_to(smooth[(seg + 1) % n])
+		var a := smooth[seg]
+		var b := smooth[(seg + 1) % n]
+		var at := a.lerp(b, clampf((d - seg_start) / maxf(0.001, seg_len), 0.0, 1.0))
+		var lobe := k / 6
+		var depth := LOBE_DEPTH * (0.6 + 0.8 * float(_hash(seed, lobe, 77) % 100) / 100.0)
+		var dip := 1.0 - absf(sin(PI * float(k % 6) / 6.0 + PI / 12.0))
+		var inward := (center - at).normalized()
+		out.append(at + inward * depth * dip)
+	if Geometry2D.triangulate_polygon(out).is_empty():
+		return smooth
+	return out
+
+
 static func _inset(pts: PackedVector2Array, by: float) -> PackedVector2Array:
 	var ring := pts.duplicate()
 	if Geometry2D.is_polygon_clockwise(ring):

@@ -20,7 +20,7 @@ func _init() -> void:
 	for t: Callable in [
 		_test_jamsil_loads, _test_jamsil_shapes_are_valid, _test_nearest_road_point, _test_display_height,
 		_test_board_view_builds, _test_ball_launches_and_bounces_off_walls, _test_ball_breaks_a_cell,
-		_test_forest_lasts_ten_hits, _test_paddle_sends_ball_up, _test_missed_ball_costs_a_life, _test_water_splits_ball_in_two,
+		_test_forest_lasts_several_hits, _test_paddle_sends_ball_up, _test_missed_ball_costs_a_life, _test_water_splits_ball_in_two,
 		_test_extra_ball_fades_after_bounces, _test_extra_ball_splits_too, _test_sounds_are_built,
 		_test_landmark_clears_stage, _test_item_drops_and_is_caught, _test_multiball, _test_wide_fire_life,
 		_test_extra_balls_do_not_cost_a_life, _test_speed_grows_with_progress, _test_idle_ball_is_pulled_to_a_cell,
@@ -174,21 +174,21 @@ func _test_ball_breaks_a_cell() -> void:
 	_check(sim.ball_pos.y > 1100.0, "부서진 자리는 공이 지나간다")
 
 
-func _test_forest_lasts_ten_hits() -> void:
+func _test_forest_lasts_several_hits() -> void:
 	var forest := _square(400, 1000, 200, 1)
 	forest["e"] = 1
 	var sim: Sim = SimScript.new(_stage({"cells": [forest, _square(100, 1700, 100, 2)]}), _no_gravity())
 	var tough := int(sim.cfg["forest_hp"])
-	_check(tough == 10 and sim.cell_hp[0] == tough, "건물이 없던 낮은 구획은 숲이고, 열 번 맞아야 부서진다")
+	_check(tough == 5 and sim.cell_hp[0] == tough, "건물이 없던 낮은 구획은 숲이고, 다섯 번 맞아야 부서진다")
 	_check(sim.breakable_count() == 2, "숲도 부술 셀로 센다")
 	for i in tough - 1:
 		_place(sim, Vector2(500, 900), Vector2(0, 1))
 		_run(sim, 0.3)
-	_check(sim.cell_hp[0] == 1 and sim.destroyed == 0, "아홉 번 맞아도 아직 서 있다 (남은 HP %d)" % sim.cell_hp[0])
+	_check(sim.cell_hp[0] == 1 and sim.destroyed == 0, "마지막 한 번 전까지는 서 있다 (남은 HP %d)" % sim.cell_hp[0])
 	_check(sim.ball_vel.y < 0.0, "공은 숲에서 튕겨 나온다")
 	_place(sim, Vector2(500, 900), Vector2(0, 1))
 	_run(sim, 0.3)
-	_check(sim.cell_hp[0] == 0 and sim.destroyed == 1, "열 번째에 부서진다")
+	_check(sim.cell_hp[0] == 0 and sim.destroyed == 1, "마지막 한 번에 부서진다")
 	var fire: Sim = SimScript.new(_stage({"cells": [forest, _square(100, 1700, 100, 2)]}), _no_gravity())
 	fire.fire_left = 5.0
 	_place(fire, Vector2(500, 900), Vector2(0, 1))

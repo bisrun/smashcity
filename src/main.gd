@@ -5,6 +5,7 @@ extends Node3D
 ## 흐름: 스테이지 지도 → 플레이 → (장면을 다시 불러) 결과가 얹힌 스테이지 지도.
 ## 지금 플레이할 수 있는 스테이지는 잠실 하나다.
 
+const ModelLibraryScript := preload("res://src/render/model_library.gd")
 const StageDataScript := preload("res://src/data/stage_data.gd")
 const BalanceScript := preload("res://src/data/balance.gd")
 const SimScript := preload("res://src/sim/sim.gd")
@@ -23,6 +24,10 @@ const HUD_SHARE := 0.13
 ## 한 프레임에 따라잡을 판정 횟수의 한도. 프레임이 끊겨도 한꺼번에 몰아서 돌지 않게 한다.
 const MAX_STEPS_PER_FRAME := 8
 ## 끌기의 민감도. 1이면 손가락이 움직인 만큼 패들이 움직인다.
+## 패들로 쓰는 배 모델, 판정 두께에 대한 배의 폭, 높이를 누르는 비율
+const SHIP_MODEL := "watercraft/ship-ocean-liner"
+const SHIP_BEAM := 1.35
+const SHIP_HEIGHT := 0.8
 const DRAG_GAIN := 1.25
 ## 판이 끝난 뒤 스테이지 지도로 넘어가기까지의 시간 (초)
 ## 클리어하면 축하를 충분히 보여 준 뒤에 넘어간다. 게임 오버는 그보다 짧다.
@@ -520,7 +525,8 @@ func _setup_paddle_and_ball() -> void:
 	_paddle = Node3D.new()
 	_paddle.position = Vector3(0.0, 0.0, _stage.height / 2.0 - float(_cfg["paddle_y"]))
 	add_child(_paddle)
-	_paddle.add_child(_boat(width, thick))
+	var ship := _ship(width, thick)
+	_paddle.add_child(ship if ship != null else _boat(width, thick))
 
 	var r := _sim.ball_radius
 	_outline_mesh = SphereMesh.new()
@@ -545,7 +551,37 @@ func _setup_paddle_and_ball() -> void:
 	_trail_mesh.material = _ball_mat
 
 
-## 패들로 쓰는 배. 앞뒤가 뾰족한 선체에 갑판, 선실, 굴뚝, 깃발을 얹는다. 길이가 패들의 폭이다.
+## 패들로 쓰는 배. Kenney Watercraft Kit 의 여객선 모델이다(CC0). 길이가 패들의 폭이다.
+## 모델을 못 읽으면 null 을 돌려주고, 그때는 직접 만든 배(_boat)를 쓴다.
+func _ship(length: float, beam: float) -> MeshInstance3D:
+	var model: Dictionary = ModelLibraryScript.get_model(SHIP_MODEL)
+	if model.is_empty():
+		return null
+	var half: Vector2 = model["half"]
+	var points: PackedVector3Array = model["points"]
+	var colors: PackedColorArray = model["colors"]
+	# 모델은 z 쪽으로 길다. 눕혀서 x 쪽으로 길게 놓고 패들의 폭에 맞춘다.
+	var along := length / (2.0 * half.y)
+	var across := maxf(beam * SHIP_BEAM, along * half.x * 2.0 * 0.8) / (2.0 * half.x)
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	st.set_smooth_group(-1)
+	for i in points.size():
+		st.set_color(colors[i])
+		st.add_vertex(Vector3(points[i].z * along, points[i].y * along * SHIP_HEIGHT, -points[i].x * across))
+	st.generate_normals()
+	var mat := StandardMaterial3D.new()
+	mat.vertex_color_use_as_albedo = true
+	mat.vertex_color_is_srgb = true
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.roughness = 1.0
+	var mi := MeshInstance3D.new()
+	mi.mesh = st.commit()
+	mi.material_override = mat
+	return mi
+
+
+## 직접 만든 배. 모델을 못 읽을 때만 쓴다. 앞뒤가 뾰족한 선체에 갑판, 선실, 굴뚝, 깃발을 얹는다. 길이가 패들의 폭이다.
 func _boat(length: float, beam: float) -> MeshInstance3D:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
