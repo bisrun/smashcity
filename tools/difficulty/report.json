@@ -1,0 +1,266 @@
+{
+ "paris/eiffel": {
+  "average": {
+   "broken": 0.68,
+   "clear": 0.38,
+   "lost": 2.13,
+   "time": 150.0
+  },
+  "expert": {
+   "broken": 0.92,
+   "clear": 0.88,
+   "lost": 1.0,
+   "time": 210.0
+  },
+  "id": "paris/eiffel",
+  "novice": {
+   "broken": 0.0,
+   "clear": 0.0,
+   "lost": 3.0,
+   "time": 0.0
+  },
+  "runs": 8
+ },
+ "seoul/bukchon": {
+  "average": {
+   "broken": 0.92,
+   "clear": 0.75,
+   "lost": 0.75,
+   "time": 229.0
+  },
+  "expert": {
+   "broken": 0.9,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 141.0
+  },
+  "id": "seoul/bukchon",
+  "novice": {
+   "broken": 0.26,
+   "clear": 0.0,
+   "lost": 3.0,
+   "time": 0.0
+  },
+  "runs": 8
+ },
+ "seoul/coex": {
+  "average": {
+   "broken": 0.97,
+   "clear": 1.0,
+   "lost": 0.25,
+   "time": 104.0
+  },
+  "expert": {
+   "broken": 0.99,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 74.0
+  },
+  "id": "seoul/coex",
+  "novice": {
+   "broken": 0.54,
+   "clear": 0.38,
+   "lost": 2.38,
+   "time": 62.0
+  },
+  "runs": 8
+ },
+ "seoul/dongdaemun": {
+  "average": {
+   "broken": 0.99,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 94.0
+  },
+  "expert": {
+   "broken": 0.96,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 75.0
+  },
+  "id": "seoul/dongdaemun",
+  "novice": {
+   "broken": 0.51,
+   "clear": 0.38,
+   "lost": 2.0,
+   "time": 51.0
+  },
+  "runs": 8
+ },
+ "seoul/gangnam": {
+  "average": {
+   "broken": 0.99,
+   "clear": 1.0,
+   "lost": 0.25,
+   "time": 72.0
+  },
+  "expert": {
+   "broken": 0.95,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 55.0
+  },
+  "id": "seoul/gangnam",
+  "novice": {
+   "broken": 0.72,
+   "clear": 0.75,
+   "lost": 1.13,
+   "time": 49.0
+  },
+  "runs": 8
+ },
+ "seoul/gyeongbokgung": {
+  "average": {
+   "broken": 0.95,
+   "clear": 0.75,
+   "lost": 1.25,
+   "time": 158.0
+  },
+  "expert": {
+   "broken": 0.97,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 123.0
+  },
+  "id": "seoul/gyeongbokgung",
+  "novice": {
+   "broken": 0.17,
+   "clear": 0.0,
+   "lost": 3.0,
+   "time": 0.0
+  },
+  "runs": 8
+ },
+ "seoul/hongdae": {
+  "average": {
+   "broken": 0.88,
+   "clear": 0.88,
+   "lost": 0.5,
+   "time": 105.0
+  },
+  "expert": {
+   "broken": 0.98,
+   "clear": 1.0,
+   "lost": 0.13,
+   "time": 67.0
+  },
+  "id": "seoul/hongdae",
+  "novice": {
+   "broken": 0.52,
+   "clear": 0.5,
+   "lost": 1.63,
+   "time": 42.0
+  },
+  "runs": 8
+ },
+ "seoul/jamsil": {
+  "average": {
+   "broken": 0.85,
+   "clear": 1.0,
+   "lost": 0.13,
+   "time": 134.0
+  },
+  "expert": {
+   "broken": 0.92,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 125.0
+  },
+  "id": "seoul/jamsil",
+  "novice": {
+   "broken": 0.72,
+   "clear": 0.75,
+   "lost": 1.13,
+   "time": 151.0
+  },
+  "runs": 8
+ },
+ "seoul/myeongdong": {
+  "average": {
+   "broken": 0.96,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 155.0
+  },
+  "expert": {
+   "broken": 0.98,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 122.0
+  },
+  "id": "seoul/myeongdong",
+  "novice": {
+   "broken": 0.51,
+   "clear": 0.5,
+   "lost": 1.88,
+   "time": 175.0
+  },
+  "runs": 8
+ },
+ "seoul/olympic_park": {
+  "average": {
+   "broken": 0.72,
+   "clear": 0.63,
+   "lost": 1.63,
+   "time": 293.0
+  },
+  "expert": {
+   "broken": 0.88,
+   "clear": 1.0,
+   "lost": 0.13,
+   "time": 231.0
+  },
+  "id": "seoul/olympic_park",
+  "novice": {
+   "broken": 0.3,
+   "clear": 0.0,
+   "lost": 3.0,
+   "time": 0.0
+  },
+  "runs": 8
+ },
+ "seoul/yeouido": {
+  "average": {
+   "broken": 0.76,
+   "clear": 1.0,
+   "lost": 0.63,
+   "time": 112.0
+  },
+  "expert": {
+   "broken": 0.71,
+   "clear": 1.0,
+   "lost": 0.25,
+   "time": 83.0
+  },
+  "id": "seoul/yeouido",
+  "novice": {
+   "broken": 0.37,
+   "clear": 0.38,
+   "lost": 2.25,
+   "time": 92.0
+  },
+  "runs": 8
+ },
+ "tokyo/asakusa": {
+  "average": {
+   "broken": 0.73,
+   "clear": 1.0,
+   "lost": 0.13,
+   "time": 53.0
+  },
+  "expert": {
+   "broken": 0.68,
+   "clear": 1.0,
+   "lost": 0.13,
+   "time": 47.0
+  },
+  "id": "tokyo/asakusa",
+  "novice": {
+   "broken": 0.8,
+   "clear": 1.0,
+   "lost": 0.5,
+   "time": 93.0
+  },
+  "runs": 8
+ }
+}

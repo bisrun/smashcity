@@ -28,11 +28,16 @@ const BODY_FLOOR := 26.0
 ## 남은 숫자(1~4)에 따른 건물의 높이. 차이가 눈에 띄도록 고르게 올리지 않고 위로 갈수록 크게 벌린다.
 const TIER_HEIGHTS: Array[float] = [26.0, 58.0, 100.0, 150.0]
 const PARK_HEIGHT := 12.0
+## 부수지 않는 시설의 몸통 높이
+const HERITAGE_HEIGHT := 30.0
 ## 숲을 두른 짙은 수풀 띠의 폭, 올록볼록한 혹 하나의 길이와 깊이
 const HEDGE := 5.0
 const LOBE := 26.0
 const LOBE_DEPTH := 6.0
 const KIND_PARK := "park"
+## 부수지 않는 시설: 종교시설, 추모시설, 병원, 문화재
+const KIND_HERITAGE := "heritage"
+const THEMES_PATH := "res://assets/themes.json"
 const KIND_HOUSE := "house"
 const KIND_TIERED := "tiered"
 const KIND_FLAT := "flat"
@@ -63,12 +68,14 @@ const MAX_HEIGHT_SCALE := 1.35
 const TREE_SPACING := 34.0
 const SHORE_SPACING := 40.0
 
-const ROAD := Color("F7ECD8")
+## 땅의 색. 지역 테마가 바꿀 수 있어서 상수가 아니다.
+var ROAD := Color("F7ECD8")
 const WATER := Color("63CFE0")
 ## 건물 벽과 지붕의 색. 블록마다 하나씩 고른다.
-const WALL_TINTS: Array[Color] = [Color("FFF4E3"), Color("FFE3E0"), Color("E3F4EA"), Color("E2EEFB"), Color("FFF3C9"), Color("EEE4F8"),
+## 아래 색들은 지역 테마(assets/themes.json)가 바꿀 수 있다.
+var WALL_TINTS: Array[Color] = [Color("FFF4E3"), Color("FFE3E0"), Color("E3F4EA"), Color("E2EEFB"), Color("FFF3C9"), Color("EEE4F8"),
 	Color("F3C9AE"), Color("EDB8A0"), Color("CFE6D8"), Color("C9DDF2"), Color("FFFFFF"), Color("F6DDB6")]
-const ROOF_TINTS: Array[Color] = [Color("E8785A"), Color("F2A65A"), Color("4FB0A5"), Color("E56B8C"), Color("5E8FD6"), Color("8A78D6")]
+var ROOF_TINTS: Array[Color] = [Color("E8785A"), Color("F2A65A"), Color("4FB0A5"), Color("E56B8C"), Color("5E8FD6"), Color("8A78D6")]
 const WINDOW := Color("8CCBF2")
 ## 건물마다 고르는 창의 색, 불이 켜진 창의 색
 const WINDOWS: Array[Color] = [Color("8CCBF2"), Color("7FD6D8"), Color("9DB8F2"), Color("6FB3E8"), Color("A9D9F5")]
@@ -92,7 +99,7 @@ const WALL_TOP := Color("B9C1CE")
 const WALL_SIDE := Color("8792A3")
 ## 숫자 표지의 색. 2, 3, 4, 5 이상 순서.
 const BADGE_COLORS: Array[Color] = [Color("3DBE8B"), Color("F5A623"), Color("F0645A"), Color("8A78D6")]
-const GRASS: Array[Color] = [Color("BFE3A8"), Color("B4DC9E"), Color("C9E9B3")]
+var GRASS: Array[Color] = [Color("BFE3A8"), Color("B4DC9E"), Color("C9E9B3")]
 const WALLS: Array[Color] = [Color("FFF7EC"), Color("FDEFDC"), Color("F7EEF6"), Color("EEF6F3")]
 const PITCHED: Array[Color] = [Color("E8785A"), Color("F2A65A"), Color("5BB5A6"), Color("E56B8C"), Color("6F9BD8"), Color("F0C24B")]
 const FLAT_LOW: Array[Color] = [Color("8FD3C8"), Color("9CC9F0"), Color("F6D06A")]
@@ -139,6 +146,12 @@ var _lawn: Array[PackedVector2Array] = []
 var _is_landmark: Array[bool] = []
 var _plinths: Array[MeshInstance3D] = []
 var _kind: Array[String] = []
+## 지역 테마. 지붕 모양의 비율, 꽃나무의 비율, 부수지 않는 시설의 색
+var _style := {}
+var _blossom := 0.0
+## 패들이 다니는 자리: 강(river)이나 큰 도로(road)
+var _base := "river"
+var _heritage := {"roof": Color("4A5568"), "wall": Color("E9DCC6"), "trim": Color("C9B48A")}
 ## 셀마다 남은 HP의 비율 (1이면 멀쩡). 숲의 색을 정한다.
 var _health: Array[float] = []
 var _wall_tint: Array[Color] = []
@@ -165,7 +178,39 @@ var _max_tier: Array[int] = []
 ## near_bank_y 는 화면 아래쪽 강가가 시작되는 y다. 공을 잃는 선과 맞춘다.
 ## design 은 스테이지의 수작업 기획(design.json)이다. 멀티볼 아이템이 든 자리에 열기구를 띄운다.
 ## hp 는 셀마다의 시작 HP다. 지붕 숫자에 쓴다. 비우면 스테이지 데이터의 HP를 쓴다.
+## 지역 테마를 입힌다. build 보다 먼저 부른다. 이름이 없거나 모르는 이름이면 기본 모습 그대로다.
+func apply_theme(theme_name: String) -> void:
+	if theme_name == "" or not FileAccess.file_exists(THEMES_PATH):
+		return
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(THEMES_PATH))
+	if typeof(parsed) != TYPE_DICTIONARY or typeof(parsed.get(theme_name)) != TYPE_DICTIONARY:
+		return
+	var theme: Dictionary = parsed[theme_name]
+	if theme.has("walls"):
+		WALL_TINTS = _colors(theme["walls"])
+	if theme.has("roofs"):
+		ROOF_TINTS = _colors(theme["roofs"])
+	if theme.has("grass"):
+		GRASS = _colors(theme["grass"])
+	if theme.has("ground"):
+		ROAD = Color(String(theme["ground"]))
+	_style = theme.get("style", {})
+	_blossom = float(theme.get("blossom", 0.0))
+	var h: Dictionary = theme.get("heritage", {})
+	for k: String in h:
+		_heritage[k] = Color(String(h[k]))
+
+
+static func _colors(list: Array) -> Array[Color]:
+	var out: Array[Color] = []
+	for c in list:
+		out.append(Color(String(c)))
+	return out
+
+
 func build(stage: StageData, river_width: float, near_bank_y: float, design: Dictionary = {}, hp: PackedInt32Array = PackedInt32Array()) -> void:
+	apply_theme(String(design.get("theme", "")))
+	_base = String(design.get("base", "river"))
 	_w = stage.width
 	_h = stage.height
 	_material = StandardMaterial3D.new()
@@ -198,7 +243,7 @@ func build(stage: StageData, river_width: float, near_bank_y: float, design: Dic
 		var node := Node3D.new()
 		add_child(node)
 		cell_nodes.append(node)
-		var kind := _classify(cell, real[ci], _area(outline))
+		var kind := _styled(_classify(cell, real[ci], _area(outline)), ci)
 		if kind == KIND_PARK:
 			# 숲은 각진 구획 그대로가 아니라 수풀처럼 올록볼록한 윤곽으로 그린다
 			outline = _blob(outline, ci)
@@ -272,7 +317,7 @@ func show_thud(cell: int, map_pos: Vector2) -> void:
 	tween.tween_property(node, "scale", Vector3(1.03, 0.9, 1.03), 0.06)
 	tween.tween_property(node, "scale", Vector3(0.99, 1.05, 0.99), 0.08)
 	tween.tween_property(node, "scale", Vector3.ONE, 0.08)
-	show_debris(map_pos, LEAF[cell % LEAF.size()], false, 7)
+	show_debris(map_pos, STONE if _kind[cell] == KIND_HERITAGE else LEAF[cell % LEAF.size()], false, 7)
 
 
 ## 셀이 부서졌을 때. 납작하게 꺼뜨린 뒤 없앤다.
@@ -492,8 +537,8 @@ func show_popup(map_pos: Vector2, text: String, color: Color) -> void:
 
 ## 떨어지는 아이템 하나의 모습. 종류마다 색과 글자가 다르다.
 static func make_item_node(type: String, radius: float) -> Node3D:
-	var colors := {"multi": Color("6FB8FF"), "wide": Color("7CD992"), "fire": Color("FF8A5B"), "life": Color("FF6FA3"), "bolt": Color("FFD23F"), "narrow": Color("6B5B95")}
-	var marks := {"multi": "x3", "wide": "<>", "fire": "火", "life": "+1", "bolt": "⚡", "narrow": "><"}
+	var colors := {"shield": Color("5AC8E0"), "wreck": Color("8A78D6"), "multi": Color("6FB8FF"), "wide": Color("7CD992"), "fire": Color("FF8A5B"), "life": Color("FF6FA3"), "bolt": Color("FFD23F"), "narrow": Color("6B5B95")}
+	var marks := {"shield": "U", "wreck": "x2", "multi": "x3", "wide": "<>", "fire": "火", "life": "+1", "bolt": "⚡", "narrow": "><"}
 	var node := Node3D.new()
 	var body := MeshInstance3D.new()
 	var mesh := SphereMesh.new()
@@ -645,6 +690,8 @@ static func _tier(hp: int, max_hp: int, _landmark: bool) -> int:
 func _body_height(ci: int, tier: int) -> float:
 	if _kind[ci] == KIND_PARK:
 		return PARK_HEIGHT
+	if _kind[ci] == KIND_HERITAGE:
+		return HERITAGE_HEIGHT
 	if _kind[ci] == KIND_MODEL:
 		# 모델 건물은 받침 위에 서 있다가, 맞을 때마다 땅속으로 한 단씩 내려앉는다
 		return PLINTH - (_max_tier[ci] - tier) * _sink[ci]
@@ -661,6 +708,12 @@ func _body_mesh(ci: int, tier: int) -> ArrayMesh:
 		var grass := GRASS[ci % GRASS.size()].lerp(AUTUMN, 1.0 - _health[ci])
 		_add_prism(st, _outline[ci], 0.0, PARK_HEIGHT, grass.darkened(0.3), grass.darkened(0.42), 0.0)
 		_add_prism(st, _lawn[ci], PARK_HEIGHT, PARK_HEIGHT + 2.0, grass, grass.darkened(0.3), 0.0)
+	elif _kind[ci] == KIND_HERITAGE:
+		# 부수지 않는 시설: 돌 기단 위에 색 기둥을 두른 몸통
+		_add_skirt(st, _outline[ci])
+		_add_prism(st, _outline[ci], 0.0, 7.0, STONE.lightened(0.12), STONE.darkened(0.08), 0.0)
+		var hall := _inset(_outline[ci], 6.0)
+		_add_bands(st, hall, 7.0, HERITAGE_HEIGHT, 1, _heritage["wall"], _heritage["trim"], _heritage["roof"], 1.0, true)
 	elif _kind[ci] == KIND_MODEL:
 		# 받침은 그대로 남고 건물만 내려앉는다
 		_add_skirt(st, _outline[ci])
@@ -696,6 +749,8 @@ func _model_fit(outline: PackedVector2Array) -> Dictionary:
 static func _classify(cell: Dictionary, real: Array, area: float) -> String:
 	if cell["landmark"]:
 		return KIND_LANDMARK
+	if cell.get("solid", false):
+		return KIND_HERITAGE
 	var hp: int = cell["hp"]
 	# 판정이 부서지지 않는 숲으로 치는 셀과 같은 기준이어야 한다
 	if SimScript.is_park(cell):
@@ -705,6 +760,18 @@ static func _classify(cell: Dictionary, real: Array, area: float) -> String:
 	if hp == 2 and area >= 2600.0:
 		return KIND_TIERED
 	return KIND_HOUSE
+
+
+## 지역 테마가 지붕 모양의 비율을 정했으면 그 비율대로 고른다.
+func _styled(kind: String, ci: int) -> String:
+	if _style.is_empty() or kind == KIND_PARK or kind == KIND_LANDMARK or kind == KIND_HERITAGE:
+		return kind
+	var roll := float(_hash(ci, 3, 61) % 1000) / 1000.0
+	for k: String in [KIND_HOUSE, KIND_TIERED, KIND_FLAT]:
+		roll -= float(_style.get(k, 0.0))
+		if roll < 0.0:
+			return k
+	return kind
 
 
 ## 윤곽을 안으로 들인다. 들일 수 없을 만큼 좁으면 그대로 돌려준다.
@@ -826,6 +893,23 @@ func _furnish(st: SurfaceTool, ci: int, cell: Dictionary, lawn: PackedVector2Arr
 				_add_model_fit(st, model, fit["center"], fit["along"], fit["across"], fit["half_long"], fit["half_short"], tall, wall, roof)
 			_label_at[ci] = Vector3(fit["center"].x, tall + 16.0, fit["center"].y)
 			object_count += 1
+		KIND_HERITAGE:
+			# 층층이 좁아지는 큰 기와지붕. 처마가 몸통 밖으로 나온다. 숫자는 붙이지 않는다.
+			var tile: Color = _heritage["roof"]
+			var eave := _inset(outline, 1.0)
+			_add_prism(st, eave, 0.0, 3.0, tile.lightened(0.12), tile.darkened(0.18), 0.0)
+			var ring := eave
+			var top := 3.0
+			var step := clampf(sqrt(area) * 0.12, 6.0, 14.0)
+			for k in 4:
+				var next := _inset(ring, step)
+				if next.size() < 3 or _area(next) > _area(ring) * 0.96 or _area(next) < 150.0:
+					break
+				_add_prism(st, next, top, top + 7.0, tile.lightened(0.05 * (k + 1)), tile.darkened(0.12), 0.0)
+				ring = next
+				top += 7.0
+			_add_prism(st, _inset(ring, step * 0.5), top, top, _heritage["trim"], _heritage["trim"], 9.0)
+			object_count += 1
 		KIND_PARK:
 			var spot := _roomiest_point(lawn)
 			_label_at[ci] = Vector3(spot.x, 44.0, spot.y)
@@ -847,7 +931,7 @@ func _furnish(st: SurfaceTool, ci: int, cell: Dictionary, lawn: PackedVector2Arr
 							lakeside = true
 					var round_tree := lakeside or (t >> 12) % 3 != 0
 					_add_tree(st, {"at": at, "round": round_tree, "size": 1.5 + ((t >> 14) % 5) * 0.12, "base": 0.0,
-						"color": (BLOSSOM if lakeside else (LEAF if round_tree else PINE))[(t >> 17) % 3]})
+						"color": (BLOSSOM if lakeside or float((t >> 22) % 100) / 100.0 < _blossom else (LEAF if round_tree else PINE))[(t >> 17) % 3]})
 					planted += 1
 					var extra := at + axis * 15.0 + side * 11.0
 					if _tree_fits(extra, lawn):
@@ -1580,6 +1664,7 @@ static func _longest_edge(pts: PackedVector2Array) -> Vector2:
 ## 강가의 선은 곧지 않고 굽이친다. 판정과는 무관한 그림이다.
 func _build_surroundings(river_width: float, near_bank_y: float) -> void:
 	var st := _begin()
+	var road := _base == "road"
 	var x0 := -OUTSIDE
 	var x1 := _w + OUTSIDE
 	var bottom := -river_width - OUTSIDE
@@ -1592,20 +1677,35 @@ func _build_surroundings(river_width: float, near_bank_y: float) -> void:
 		var na := _near_shore(xa, near_bank_y)
 		var nb := _near_shore(xb, near_bank_y)
 		_band(st, xa, xb, 0.0, 0.0, sa, sb, 0.5, BANK, BANK)
-		_band(st, xa, xb, sa, sb, sa - 9.0, sb - 9.0, 0.45, SAND, SAND)
-		_band(st, xa, xb, sa - 9.0, sb - 9.0, sa - 12.5, sb - 12.5, 0.4, FOAM, FOAM)
-		_band(st, xa, xb, sa - 12.5, sb - 12.5, -130.0, -130.0, 0.0, WATER_NEAR, WATER_MID)
-		_band(st, xa, xb, -130.0, -130.0, na + 3.5, nb + 3.5, 0.0, WATER_MID, WATER_FAR)
-		_band(st, xa, xb, na + 3.5, nb + 3.5, na, nb, 0.4, FOAM, FOAM)
-		_band(st, xa, xb, na, nb, na - 9.0, nb - 9.0, 0.45, SAND, SAND)
+		if road:
+			# 큰 도로: 보도 사이에 찻길
+			_band(st, xa, xb, sa, sb, sa - 12.5, sb - 12.5, 0.45, DECK, DECK)
+			_band(st, xa, xb, sa - 12.5, sb - 12.5, na + 3.5, nb + 3.5, 0.0, ASPHALT, ASPHALT.darkened(0.05))
+			_band(st, xa, xb, na + 3.5, nb + 3.5, na - 9.0, nb - 9.0, 0.45, DECK, DECK)
+		else:
+			_band(st, xa, xb, sa, sb, sa - 9.0, sb - 9.0, 0.45, SAND, SAND)
+			_band(st, xa, xb, sa - 9.0, sb - 9.0, sa - 12.5, sb - 12.5, 0.4, FOAM, FOAM)
+			_band(st, xa, xb, sa - 12.5, sb - 12.5, -130.0, -130.0, 0.0, WATER_NEAR, WATER_MID)
+			_band(st, xa, xb, -130.0, -130.0, na + 3.5, nb + 3.5, 0.0, WATER_MID, WATER_FAR)
+			_band(st, xa, xb, na + 3.5, nb + 3.5, na, nb, 0.4, FOAM, FOAM)
+			_band(st, xa, xb, na, nb, na - 9.0, nb - 9.0, 0.45, SAND, SAND)
 		_band(st, xa, xb, na - 9.0, nb - 9.0, bottom, bottom, 0.5, BANK, BANK)
 		x = xb
 	# 판의 옆과 위를 감싸는 풀밭
 	_band(st, x0, 0.0, _h + OUTSIDE, _h + OUTSIDE, 0.0, 0.0, 0.3, BANK, BANK)
 	_band(st, _w, x1, _h + OUTSIDE, _h + OUTSIDE, 0.0, 0.0, 0.3, BANK, BANK)
 	_band(st, 0.0, _w, _h + OUTSIDE, _h + OUTSIDE, _h, _h, 0.3, BANK, BANK)
+	if road:
+		# 차선: 찻길을 따라 흰 점선 여러 줄
+		var lane_y := -150.0
+		while lane_y > near_bank_y + 60.0:
+			var lx := x0
+			while lx < x1:
+				_band(st, lx, lx + 46.0, lane_y, lane_y, lane_y - 5.0, lane_y - 5.0, 0.15, LANE, LANE)
+				lx += 110.0
+			lane_y -= 150.0
 	# 잔물결
-	for i in 170:
+	for i in (0 if road else 170):
 		var h := _hash(i, 31, 7)
 		var rx := x0 + float(h % 4096) / 4096.0 * (x1 - x0)
 		var ry := near_bank_y + 30.0 + float((h >> 12) % 1024) / 1024.0 * (-near_bank_y - 60.0)

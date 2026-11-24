@@ -24,6 +24,10 @@ const ITEM_BOLT := "bolt"
 ## 받으면 손해인 아이템. 패들이 잠깐 좁아진다. 피해야 한다.
 const ITEM_NARROW := "narrow"
 ## 하늘에서 떨어지는 아이템의 종류와 나올 비중
+## 방어막: 놓친 공을 한 번 받아 준다. 레킹볼: 잠깐 동안 한 번에 두 칸씩 깎는다.
+const ITEM_SHIELD := "shield"
+const ITEM_WRECK := "wreck"
+## 하늘에서 떨어지는 아이템의 기본 비율. 스테이지가 값(sky_items)으로 바꿀 수 있다.
 const SKY_ITEMS := {"multi": 3.0, "wide": 2.0, "fire": 2.0, "narrow": 3.0, "life": 0.5}
 
 
@@ -58,7 +62,7 @@ var cfg: Dictionary
 
 var cell_hp := PackedInt32Array()
 var cell_max_hp := PackedInt32Array()
-## 부서지지 않는 셀인지. 지금은 그런 셀이 없다. 숲은 여러 번 맞아야 부서지는 보통 셀이다.
+## 부서지지 않는 셀인지. 종교시설, 추모시설, 병원, 문화재가 선 셀이 그렇다(docs/03_map_conversion.md). 공은 튕겨 나오기만 한다.
 var cell_solid := PackedByteArray()
 var balls: Array[Ball] = []
 ## 떨어지고 있는 아이템. 각 원소: {id: int, type: String, pos: Vector2}
@@ -77,6 +81,9 @@ var cleared := false
 ## 넓은 패들, 불공, 좁은 패들의 남은 시간 (초)
 var wide_left := 0.0
 var fire_left := 0.0
+## 레킹볼이 남은 시간, 남은 방어막의 수
+var wreck_left := 0.0
+var shield := 0
 var narrow_left := 0.0
 ## 시간이 흘러 빨라진 단계. 0부터.
 var speed_tier := 0
@@ -145,8 +152,8 @@ func _init(p_stage: StageData, p_cfg: Dictionary, design: Dictionary = {}) -> vo
 	cell_solid.resize(stage.cells.size())
 	for i in stage.cells.size():
 		var c := stage.cells[i]
-		cell_solid[i] = 0
-		var hp: int = int(cfg["landmark_hp"]) if c["landmark"] else c["hp"]
+		cell_solid[i] = 1 if c.get("solid", false) and not c["landmark"] else 0
+		var hp: int = int(cfg["landmark_hp"]) if c["landmark"] else int(c["hp"]) + int(cfg.get("cell_hp_bonus", 0))
 		if is_park(c):
 			hp = int(cfg["forest_hp"])  # 숲은 오래 버틴다
 		cell_hp[i] = hp
@@ -191,7 +198,7 @@ func paddle_width() -> float:
 ## 종류: hit{cell,hp,max_hp}, destroyed{cell,landmark}, paddle, launch, splash{pos}, emerge{pos},
 ##       ball_lost{ball}, lost, over, cleared, item_spawn{id,type_of,pos}, item_caught{id,type_of}, item_gone{id},
 ##       fever, finale, wall{pos}, bolt{cell,pos}, speed_up{tier}, rush, ball_split{ball,pos}, ball_faded{ball,pos},
-##       thud{cell,pos}
+##       thud{cell,pos}, shield_used{pos}
 ## destroyed 에는 points(얻은 점수)와 chained(연쇄로 부서졌는지)가 함께 온다.
 func take_events() -> Array[Dictionary]:
 	var out := _events
@@ -267,6 +274,7 @@ func step() -> void:
 	elapsed += STEP
 	wide_left = maxf(0.0, wide_left - STEP)
 	fire_left = maxf(0.0, fire_left - STEP)
+	wreck_left = maxf(0.0, wreck_left - STEP)
 	narrow_left = maxf(0.0, narrow_left - STEP)
 	_step_pressure()
 	for b: Ball in balls.duplicate():
@@ -310,12 +318,13 @@ func _step_pressure() -> void:
 		_drop_in = float(cfg["rush_drop_interval"]) if rush else lerpf(float(cfg["drop_interval_start"]), float(cfg["drop_interval_end"]),
 			clampf(elapsed / float(cfg["drop_ramp_seconds"]), 0.0, 1.0))
 		var total := 0.0
-		for w: float in SKY_ITEMS.values():
+		var table: Dictionary = cfg.get("sky_items", SKY_ITEMS)
+		for w: float in table.values():
 			total += w
 		var roll := _rng.randf() * total
 		var type := ITEM_MULTI
-		for k: String in SKY_ITEMS:
-			roll -= float(SKY_ITEMS[k])
+		for k: String in table:
+			roll -= float(table[k])
 			if roll <= 0.0:
 				type = k
 				break
@@ -362,6 +371,14 @@ func _step_ball(b: Ball) -> void:
 		# 덤 공이 정해진 횟수만큼 튕겼다
 		balls.erase(b)
 		_events.append({"type": "ball_faded", "ball": b.id, "pos": b.pos})
+		return
+	if b.pos.y < paddle_y - float(cfg["fall_margin"]) and shield > 0 and not b.temporary:
+		# 방어막이 한 번 받아 준다
+		shield -= 1
+		b.pos.y = paddle_y - float(cfg["fall_margin"]) + 1.0
+		b.vel.y = absf(b.vel.y)
+		_keep_min_angle(b)
+		_events.append({"type": "shield_used", "pos": b.pos})
 		return
 	if b.pos.y < paddle_y - float(cfg["fall_margin"]):
 		# 패들을 지나쳐 뒤로 넘어갔다
@@ -469,6 +486,7 @@ func _lose_life() -> void:
 	lives -= 1
 	wide_left = 0.0
 	fire_left = 0.0
+	wreck_left = 0.0
 	narrow_left = 0.0
 	_events.append({"type": "lost"})
 	if lives <= 0:
@@ -668,7 +686,7 @@ func _collide_cells(b: Ball) -> void:
 		b.vel = b.vel.bounce(best_n)
 		_keep_min_angle(b)
 		_bounced(b)
-	_damage(b, best, 1)
+	_damage(b, best, 2 if wreck_left > 0.0 else 1)
 
 
 func _damage(b: Ball, idx: int, amount: int) -> void:
@@ -783,6 +801,10 @@ func _apply_item(type: String) -> void:
 			fire_left = float(cfg["fire_seconds"])
 		ITEM_LIFE:
 			lives += 1
+		ITEM_SHIELD:
+			shield = mini(shield + 1, int(cfg.get("shield_max", 1)))
+		ITEM_WRECK:
+			wreck_left = float(cfg.get("wreck_seconds", 10.0))
 		ITEM_BOLT:
 			# 남은 셀을 위에서부터 차례로 내리친다
 			_strikes.clear()

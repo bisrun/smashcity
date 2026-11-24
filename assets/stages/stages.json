@@ -1,17 +1,565 @@
 {
-  "_comment": "도시와 스테이지의 차례. ready 가 false 인 스테이지는 아직 만들지 않은 것이다.",
-  "cities": [
+ "_comment": "지역과 스테이지의 차례. ready 가 false 인 스테이지는 아직 지도를 굽지 않은 것이다. tools/stage_baker/design.py 가 만든다.",
+ "cities": [
+  {
+   "id": "seoul",
+   "name": "서울",
+   "stages": [
     {
-      "id": "seoul",
-      "name": "서울",
-      "stages": [
-        {"id": "seoul/jamsil", "name": "잠실", "ready": true},
-        {"id": "seoul/gangnam", "name": "강남", "ready": false},
-        {"id": "seoul/hongdae", "name": "홍대와 합정", "ready": false},
-        {"id": "seoul/yeouido", "name": "여의도", "ready": false},
-        {"id": "seoul/samseong", "name": "삼성과 종합운동장", "ready": false},
-        {"id": "seoul/myeongdong", "name": "명동과 남산", "ready": false}
-      ]
+     "id": "seoul/jamsil",
+     "name": "잠실",
+     "ready": true
+    },
+    {
+     "id": "seoul/olympic_park",
+     "name": "올림픽공원",
+     "ready": true
+    },
+    {
+     "id": "seoul/gangnam",
+     "name": "강남역",
+     "ready": true
+    },
+    {
+     "id": "seoul/coex",
+     "name": "코엑스와 삼성",
+     "ready": true
+    },
+    {
+     "id": "seoul/yeouido",
+     "name": "여의도",
+     "ready": true
+    },
+    {
+     "id": "seoul/hongdae",
+     "name": "홍대",
+     "ready": true
+    },
+    {
+     "id": "seoul/myeongdong",
+     "name": "명동과 남산",
+     "ready": true
+    },
+    {
+     "id": "seoul/dongdaemun",
+     "name": "동대문",
+     "ready": true
+    },
+    {
+     "id": "seoul/bukchon",
+     "name": "북촌과 인사동",
+     "ready": true
+    },
+    {
+     "id": "seoul/gyeongbokgung",
+     "name": "경복궁과 광화문",
+     "ready": true
     }
-  ]
+   ]
+  },
+  {
+   "id": "tokyo",
+   "name": "도쿄",
+   "stages": [
+    {
+     "id": "tokyo/asakusa",
+     "name": "아사쿠사",
+     "ready": true
+    },
+    {
+     "id": "tokyo/ueno",
+     "name": "우에노",
+     "ready": true
+    },
+    {
+     "id": "tokyo/akihabara",
+     "name": "아키하바라",
+     "ready": true
+    },
+    {
+     "id": "tokyo/ginza",
+     "name": "긴자",
+     "ready": true
+    },
+    {
+     "id": "tokyo/marunouchi",
+     "name": "도쿄역과 마루노우치",
+     "ready": true
+    },
+    {
+     "id": "tokyo/roppongi",
+     "name": "롯폰기",
+     "ready": true
+    },
+    {
+     "id": "tokyo/tokyo_tower",
+     "name": "도쿄타워",
+     "ready": true
+    },
+    {
+     "id": "tokyo/harajuku",
+     "name": "하라주쿠와 오모테산도",
+     "ready": true
+    },
+    {
+     "id": "tokyo/shinjuku",
+     "name": "신주쿠",
+     "ready": true
+    },
+    {
+     "id": "tokyo/shibuya",
+     "name": "시부야",
+     "ready": true
+    }
+   ]
+  },
+  {
+   "id": "beijing",
+   "name": "베이징",
+   "stages": [
+    {
+     "id": "beijing/sanlitun",
+     "name": "싼리툰",
+     "ready": true
+    },
+    {
+     "id": "beijing/art798",
+     "name": "798 예술구",
+     "ready": true
+    },
+    {
+     "id": "beijing/olympic_green",
+     "name": "올림픽공원과 냐오차오",
+     "ready": true
+    },
+    {
+     "id": "beijing/wangfujing",
+     "name": "왕푸징",
+     "ready": true
+    },
+    {
+     "id": "beijing/qianmen",
+     "name": "첸먼 거리",
+     "ready": true
+    },
+    {
+     "id": "beijing/shichahai",
+     "name": "스차하이와 난뤄구샹",
+     "ready": true
+    },
+    {
+     "id": "beijing/cbd",
+     "name": "궈마오",
+     "ready": true
+    },
+    {
+     "id": "beijing/beihai",
+     "name": "베이하이 공원",
+     "ready": true
+    },
+    {
+     "id": "beijing/tiantan",
+     "name": "톈탄 공원",
+     "ready": true
+    },
+    {
+     "id": "beijing/forbidden_city",
+     "name": "자금성",
+     "ready": true
+    }
+   ]
+  },
+  {
+   "id": "paris",
+   "name": "파리",
+   "stages": [
+    {
+     "id": "paris/montmartre",
+     "name": "몽마르트르",
+     "ready": true
+    },
+    {
+     "id": "paris/marais",
+     "name": "마레",
+     "ready": true
+    },
+    {
+     "id": "paris/saint_germain",
+     "name": "생제르맹",
+     "ready": true
+    },
+    {
+     "id": "paris/opera",
+     "name": "오페라",
+     "ready": true
+    },
+    {
+     "id": "paris/la_defense",
+     "name": "라데팡스",
+     "ready": false
+    },
+    {
+     "id": "paris/louvre",
+     "name": "루브르",
+     "ready": false
+    },
+    {
+     "id": "paris/cite",
+     "name": "시테섬",
+     "ready": false
+    },
+    {
+     "id": "paris/champs_elysees",
+     "name": "샹젤리제",
+     "ready": false
+    },
+    {
+     "id": "paris/etoile",
+     "name": "개선문",
+     "ready": false
+    },
+    {
+     "id": "paris/eiffel",
+     "name": "에펠탑",
+     "ready": true
+    }
+   ]
+  },
+  {
+   "id": "london",
+   "name": "런던",
+   "stages": [
+    {
+     "id": "london/camden",
+     "name": "캠든타운",
+     "ready": false
+    },
+    {
+     "id": "london/notting_hill",
+     "name": "노팅힐",
+     "ready": false
+    },
+    {
+     "id": "london/covent_garden",
+     "name": "코벤트가든",
+     "ready": false
+    },
+    {
+     "id": "london/soho",
+     "name": "소호와 피카딜리",
+     "ready": false
+    },
+    {
+     "id": "london/kings_cross",
+     "name": "킹스크로스",
+     "ready": false
+    },
+    {
+     "id": "london/canary_wharf",
+     "name": "카나리워프",
+     "ready": false
+    },
+    {
+     "id": "london/city",
+     "name": "시티",
+     "ready": false
+    },
+    {
+     "id": "london/tower_bridge",
+     "name": "타워브리지",
+     "ready": false
+    },
+    {
+     "id": "london/buckingham",
+     "name": "버킹엄",
+     "ready": false
+    },
+    {
+     "id": "london/westminster",
+     "name": "웨스트민스터",
+     "ready": false
+    }
+   ]
+  },
+  {
+   "id": "amsterdam",
+   "name": "암스테르담",
+   "stages": [
+    {
+     "id": "amsterdam/jordaan",
+     "name": "요르단",
+     "ready": false
+    },
+    {
+     "id": "amsterdam/dam",
+     "name": "담 광장",
+     "ready": false
+    },
+    {
+     "id": "amsterdam/centraal",
+     "name": "중앙역",
+     "ready": false
+    },
+    {
+     "id": "amsterdam/grachten",
+     "name": "운하 고리",
+     "ready": false
+    },
+    {
+     "id": "amsterdam/leidseplein",
+     "name": "레이체 광장",
+     "ready": false
+    },
+    {
+     "id": "amsterdam/museumplein",
+     "name": "뮤지엄 광장",
+     "ready": false
+    },
+    {
+     "id": "amsterdam/vondelpark",
+     "name": "폰덜 공원",
+     "ready": false
+    },
+    {
+     "id": "amsterdam/de_pijp",
+     "name": "더 페이프",
+     "ready": false
+    },
+    {
+     "id": "amsterdam/amstel",
+     "name": "암스털 강",
+     "ready": false
+    },
+    {
+     "id": "amsterdam/ij",
+     "name": "에이 강과 북쪽 부두",
+     "ready": false
+    }
+   ]
+  },
+  {
+   "id": "italy",
+   "name": "이탈리아",
+   "stages": [
+    {
+     "id": "italy/trastevere",
+     "name": "로마 트라스테베레",
+     "ready": false
+    },
+    {
+     "id": "italy/spagna",
+     "name": "로마 스페인 광장",
+     "ready": false
+    },
+    {
+     "id": "italy/trevi",
+     "name": "로마 트레비 분수",
+     "ready": false
+    },
+    {
+     "id": "italy/navona",
+     "name": "로마 나보나 광장",
+     "ready": false
+    },
+    {
+     "id": "italy/colosseo",
+     "name": "로마 콜로세움",
+     "ready": false
+    },
+    {
+     "id": "italy/firenze",
+     "name": "피렌체",
+     "ready": false
+    },
+    {
+     "id": "italy/pisa",
+     "name": "피사",
+     "ready": false
+    },
+    {
+     "id": "italy/milano",
+     "name": "밀라노",
+     "ready": false
+    },
+    {
+     "id": "italy/vaticano",
+     "name": "로마 산탄젤로",
+     "ready": false
+    },
+    {
+     "id": "italy/venezia",
+     "name": "베네치아",
+     "ready": false
+    }
+   ]
+  },
+  {
+   "id": "barcelona",
+   "name": "바르셀로나",
+   "stages": [
+    {
+     "id": "barcelona/barceloneta",
+     "name": "바르셀로네타",
+     "ready": false
+    },
+    {
+     "id": "barcelona/gotic",
+     "name": "고딕 지구",
+     "ready": false
+    },
+    {
+     "id": "barcelona/rambla",
+     "name": "람블라스",
+     "ready": false
+    },
+    {
+     "id": "barcelona/born",
+     "name": "엘 보른",
+     "ready": false
+    },
+    {
+     "id": "barcelona/gracia",
+     "name": "그라시아",
+     "ready": false
+    },
+    {
+     "id": "barcelona/eixample",
+     "name": "에이샴플라",
+     "ready": false
+    },
+    {
+     "id": "barcelona/montjuic",
+     "name": "몬주익",
+     "ready": false
+    },
+    {
+     "id": "barcelona/camp_nou",
+     "name": "캄프 누",
+     "ready": false
+    },
+    {
+     "id": "barcelona/park_guell",
+     "name": "구엘 공원",
+     "ready": false
+    },
+    {
+     "id": "barcelona/sagrada",
+     "name": "사그라다 파밀리아",
+     "ready": false
+    }
+   ]
+  },
+  {
+   "id": "dubai",
+   "name": "두바이",
+   "stages": [
+    {
+     "id": "dubai/deira",
+     "name": "데이라 금시장",
+     "ready": false
+    },
+    {
+     "id": "dubai/fahidi",
+     "name": "알 파히디",
+     "ready": false
+    },
+    {
+     "id": "dubai/frame",
+     "name": "두바이 프레임",
+     "ready": false
+    },
+    {
+     "id": "dubai/city_walk",
+     "name": "시티워크",
+     "ready": false
+    },
+    {
+     "id": "dubai/business_bay",
+     "name": "비즈니스 베이",
+     "ready": false
+    },
+    {
+     "id": "dubai/difc",
+     "name": "DIFC",
+     "ready": false
+    },
+    {
+     "id": "dubai/marina",
+     "name": "두바이 마리나",
+     "ready": false
+    },
+    {
+     "id": "dubai/jbr",
+     "name": "JBR과 블루워터",
+     "ready": false
+    },
+    {
+     "id": "dubai/palm",
+     "name": "팜 주메이라",
+     "ready": false
+    },
+    {
+     "id": "dubai/burj_khalifa",
+     "name": "부르즈 할리파",
+     "ready": false
+    }
+   ]
+  },
+  {
+   "id": "newyork",
+   "name": "뉴욕",
+   "stages": [
+    {
+     "id": "newyork/dumbo",
+     "name": "브루클린 덤보",
+     "ready": false
+    },
+    {
+     "id": "newyork/soho",
+     "name": "소호",
+     "ready": false
+    },
+    {
+     "id": "newyork/greenwich",
+     "name": "그리니치 빌리지",
+     "ready": false
+    },
+    {
+     "id": "newyork/chelsea",
+     "name": "첼시와 하이라인",
+     "ready": false
+    },
+    {
+     "id": "newyork/flatiron",
+     "name": "플랫아이언",
+     "ready": false
+    },
+    {
+     "id": "newyork/hudson_yards",
+     "name": "허드슨 야드",
+     "ready": false
+    },
+    {
+     "id": "newyork/grand_central",
+     "name": "그랜드 센트럴",
+     "ready": false
+    },
+    {
+     "id": "newyork/central_park",
+     "name": "센트럴파크 남쪽",
+     "ready": false
+    },
+    {
+     "id": "newyork/empire",
+     "name": "엠파이어 스테이트",
+     "ready": false
+    },
+    {
+     "id": "newyork/times_square",
+     "name": "타임스 스퀘어",
+     "ready": false
+    }
+   ]
+  }
+ ]
 }

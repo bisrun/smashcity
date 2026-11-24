@@ -1,0 +1,139 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "tokyo",
+  "base": "river",
+  "grade_target": 3.0,
+  "level": 0.222,
+  "balance": {
+    "ball_speed": 1093,
+    "paddle_width": 258,
+    "landmark_hp": 17,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 15.8,
+    "drop_interval_end": 7.1,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 3.7,
+      "shield": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        92,
+        357
+      ],
+      "type": "shield",
+      "from": "경찰서 愛宕警察署東新橋交番"
+    },
+    {
+      "at": [
+        122,
+        517
+      ],
+      "type": "wide",
+      "from": "주차장 新橋駅前パーキング"
+    },
+    {
+      "at": [
+        1388,
+        603
+      ],
+      "type": "shield",
+      "from": "경찰서 築地警察署小田原町交番"
+    },
+    {
+      "at": [
+        349,
+        627
+      ],
+      "type": "life",
+      "from": "약국 トモズ"
+    },
+    {
+      "at": [
+        771,
+        694
+      ],
+      "type": "wide",
+      "from": "주차장 中央区営銀座地下駐車場"
+    },
+    {
+      "at": [
+        1425,
+        830
+      ],
+      "type": "fire",
+      "from": "주유소 エネオス"
+    },
+    {
+      "at": [
+        350,
+        1112
+      ],
+      "type": "wide",
+      "from": "주차장 西銀座駐車場"
+    },
+    {
+      "at": [
+        354,
+        1234
+      ],
+      "type": "life",
+      "from": "약국 阪神調剤薬局"
+    },
+    {
+      "at": [
+        431,
+        623
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1116,
+        1188
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        497,
+        1656
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1050,
+        2236
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        1022,
+        2098
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 182,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "hutong",
+  "base": "river",
+  "grade_target": 5.8,
+  "level": 0.533,
+  "balance": {
+    "ball_speed": 1224,
+    "paddle_width": 227,
+    "landmark_hp": 24,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 18.3,
+    "drop_interval_end": 8.7,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.6,
+      "shield": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1011,
+        128
+      ],
+      "type": "life",
+      "from": "약국 同仁堂"
+    },
+    {
+      "at": [
+        7,
+        273
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        355,
+        481
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1140,
+        1020
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        440,
+        1677
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1078,
+        2207
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        547,
+        1971
+      ],
+      "gap_toward": [
+        -1.0,
+        -0.2
+      ],
+      "gap_width": 157,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

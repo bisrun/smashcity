@@ -1,0 +1,123 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "hutong",
+  "base": "river",
+  "grade_target": 4.5,
+  "level": 0.389,
+  "balance": {
+    "ball_speed": 1163,
+    "paddle_width": 241,
+    "landmark_hp": 21,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 17.1,
+    "drop_interval_end": 7.9,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.2,
+      "shield": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        47,
+        443
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        508,
+        959
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        169,
+        1185
+      ],
+      "type": "shield",
+      "from": "경찰서 Community Police"
+    },
+    {
+      "at": [
+        1344,
+        1268
+      ],
+      "type": "life",
+      "from": "약국"
+    },
+    {
+      "at": [
+        753,
+        1602
+      ],
+      "type": "shield",
+      "from": "경찰서 安定门派出所"
+    },
+    {
+      "at": [
+        1459,
+        1671
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        443,
+        654
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1096,
+        1189
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        476,
+        1758
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1064,
+        2288
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        569,
+        1294
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 169,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

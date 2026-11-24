@@ -1,0 +1,138 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "seoul",
+  "base": "river",
+  "grade_target": 3.2,
+  "level": 0.244,
+  "balance": {
+    "ball_speed": 1103,
+    "paddle_width": 256,
+    "landmark_hp": 17,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 16.0,
+    "drop_interval_end": 7.2,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 3.7
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1246,
+        93
+      ],
+      "type": "life",
+      "from": "약국"
+    },
+    {
+      "at": [
+        554,
+        291
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1120,
+        487
+      ],
+      "type": "life",
+      "from": "약국 선진약국"
+    },
+    {
+      "at": [
+        626,
+        704
+      ],
+      "type": "wide",
+      "from": "주차장 유료민영주차장"
+    },
+    {
+      "at": [
+        1261,
+        752
+      ],
+      "type": "fire",
+      "from": "주유소 선광주유소"
+    },
+    {
+      "at": [
+        838,
+        1067
+      ],
+      "type": "wide",
+      "from": "주차장 홍익대학교 주차장"
+    },
+    {
+      "at": [
+        981,
+        1904
+      ],
+      "type": "fire",
+      "from": "주유소 중앙석유동교주유소"
+    },
+    {
+      "at": [
+        1254,
+        2490
+      ],
+      "type": "fire",
+      "from": "주유소 SK엔크린 셀프 삼보주유소"
+    },
+    {
+      "at": [
+        402,
+        652
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1161,
+        1177
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        430,
+        1732
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1013,
+        2257
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        707,
+        1708
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 180,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

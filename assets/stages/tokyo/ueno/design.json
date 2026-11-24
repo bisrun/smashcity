@@ -1,0 +1,115 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "tokyo",
+  "base": "road",
+  "grade_target": 2.1,
+  "level": 0.122,
+  "balance": {
+    "ball_speed": 1051,
+    "paddle_width": 268,
+    "landmark_hp": 15,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 15.0,
+    "drop_interval_end": 6.6,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 3.4,
+      "shield": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        416,
+        218
+      ],
+      "type": "life",
+      "from": "약국 マツモトキヨシ"
+    },
+    {
+      "at": [
+        391,
+        258
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1303,
+        262
+      ],
+      "type": "life",
+      "from": "약국 どらっぐぱぱす"
+    },
+    {
+      "at": [
+        24,
+        579
+      ],
+      "type": "wide",
+      "from": "주차장 三井のリパーク"
+    },
+    {
+      "at": [
+        548,
+        658
+      ],
+      "type": "wide",
+      "from": "주차장 三井のリパーク"
+    },
+    {
+      "at": [
+        494,
+        723
+      ],
+      "type": "shield",
+      "from": "경찰서 上野警察署黒門交番"
+    },
+    {
+      "at": [
+        886,
+        1349
+      ],
+      "type": "shield",
+      "from": "경찰서 上野警察署上野駅交番"
+    },
+    {
+      "at": [
+        338,
+        631
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1140,
+        1230
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        409,
+        1731
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1108,
+        2282
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": []
+}

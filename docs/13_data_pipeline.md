@@ -15,6 +15,18 @@ OSM 추출 → 변환 (stage_baker) → map.json ─┐
               기획자 작성 → design.json ───┘
 ```
 
+## 도구
+
+| 도구 | 하는 일 |
+|---|---|
+| `tools/stage_baker/world.json` | 지역 10곳과 스테이지 100개의 이름, 좌표, 방향, 테마. 단일 출처 |
+| `tools/stage_baker/bake.py` | OSM을 받아 `map.json`을 만든다. 받은 원본은 `.cache/`에 두고 커밋하지 않는다 |
+| `tools/stage_baker/design.py` | `design.json` 초안과 `assets/stages/stages.json`을 만든다. `_auto` 표시가 있는 초안만 다시 쓴다 |
+| `tools/difficulty/measure.gd` | 봇 세 가지로 스테이지를 돌려 클리어율을 잰다 |
+| `tools/difficulty/tune.py` | 여러 스테이지를 나눠 재고, 목표 등급에 맞게 손잡이를 고친다 |
+
+OSM은 Overpass API로 받는다. 공개 서버는 느리거나 거절할 때가 많아 서버 네 곳을 돌아가며 다시 시도한다. 스테이지 하나를 받고 굽는 데 1분쯤 걸린다.
+
 ## 변환 단계
 
 `tools/stage_baker`가 수행한다. 변환 규칙은 [03 지도 변환 규칙](03_map_conversion.md)을 따른다.

@@ -1,0 +1,91 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "beijing",
+  "base": "road",
+  "grade_target": 4.9,
+  "level": 0.433,
+  "balance": {
+    "ball_speed": 1182,
+    "paddle_width": 237,
+    "landmark_hp": 22,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 17.5,
+    "drop_interval_end": 8.2,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.3,
+      "shield": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        451,
+        642
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1152,
+        1172
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        494,
+        1740
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1078,
+        2178
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        753,
+        445
+      ],
+      "type": "wide",
+      "from": "임시 배치 (상상)"
+    },
+    {
+      "at": [
+        733,
+        1669
+      ],
+      "type": "wide",
+      "from": "임시 배치 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        796,
+        1436
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 165,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

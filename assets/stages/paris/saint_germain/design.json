@@ -1,0 +1,140 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "paris",
+  "base": "river",
+  "grade_target": 3.7,
+  "level": 0.3,
+  "balance": {
+    "ball_speed": 1126,
+    "paddle_width": 250,
+    "landmark_hp": 19,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 16.4,
+    "drop_interval_end": 7.5,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 3.9,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        175,
+        10
+      ],
+      "type": "life",
+      "from": "약국 Pharmacie Edgar Quinet"
+    },
+    {
+      "at": [
+        469,
+        65
+      ],
+      "type": "wreck",
+      "from": "은행 CIC"
+    },
+    {
+      "at": [
+        69,
+        172
+      ],
+      "type": "wreck",
+      "from": "은행 BNP Paribas"
+    },
+    {
+      "at": [
+        47,
+        195
+      ],
+      "type": "wide",
+      "from": "주차장 Tour Montparnasse"
+    },
+    {
+      "at": [
+        1403,
+        303
+      ],
+      "type": "life",
+      "from": "약국 Pharmacie Gay-Lussac"
+    },
+    {
+      "at": [
+        1338,
+        723
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        211,
+        811
+      ],
+      "type": "wide",
+      "from": "주차장 Q-Park Saint-Placide - Sèvres - rue de Rennes"
+    },
+    {
+      "at": [
+        706,
+        1019
+      ],
+      "type": "shield",
+      "from": "경찰서 Centre de Police Saint Sulpice"
+    },
+    {
+      "at": [
+        478,
+        680
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1053,
+        1204
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        474,
+        1728
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1010,
+        2180
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        557,
+        1355
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 176,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "hutong",
+  "base": "river",
+  "grade_target": 6.2,
+  "level": 0.578,
+  "balance": {
+    "ball_speed": 1243,
+    "paddle_width": 222,
+    "landmark_hp": 25,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 18.6,
+    "drop_interval_end": 8.9,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.7,
+      "shield": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1312,
+        22
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        125,
+        1672
+      ],
+      "type": "life",
+      "from": "약국"
+    },
+    {
+      "at": [
+        1113,
+        1835
+      ],
+      "type": "shield",
+      "from": "경찰서 北京市公安局行政复议办公室"
+    },
+    {
+      "at": [
+        221,
+        675
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1104,
+        1199
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        501,
+        1730
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1020,
+        2269
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        696,
+        2097
+      ],
+      "gap_toward": [
+        1.0,
+        -0.2
+      ],
+      "gap_width": 154,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

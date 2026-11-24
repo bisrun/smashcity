@@ -1,0 +1,148 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "paris",
+  "base": "river",
+  "grade_target": 6.8,
+  "level": 0.544,
+  "balance": {
+    "ball_speed": 1228,
+    "paddle_width": 226,
+    "landmark_hp": 24,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 18.4,
+    "drop_interval_end": 8.7,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.6,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1,
+        14
+      ],
+      "type": "shield",
+      "from": "경찰서 Police nationale"
+    },
+    {
+      "at": [
+        1284,
+        36
+      ],
+      "type": "life",
+      "from": "약국 Pharmacie Place Cambronne"
+    },
+    {
+      "at": [
+        1376,
+        48
+      ],
+      "type": "fire",
+      "from": "주유소 Avia"
+    },
+    {
+      "at": [
+        263,
+        185
+      ],
+      "type": "life",
+      "from": "약국 Pharmacie du Théâtre"
+    },
+    {
+      "at": [
+        207,
+        187
+      ],
+      "type": "wreck",
+      "from": "은행 Crédit Mutuel"
+    },
+    {
+      "at": [
+        569,
+        382
+      ],
+      "type": "wreck",
+      "from": "은행 Banque Populaire"
+    },
+    {
+      "at": [
+        475,
+        537
+      ],
+      "type": "fire",
+      "from": "주유소 Total"
+    },
+    {
+      "at": [
+        386,
+        652
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1072,
+        1225
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        345,
+        1696
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1044,
+        2274
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        782,
+        532
+      ],
+      "type": "wide",
+      "from": "임시 배치 (상상)"
+    },
+    {
+      "at": [
+        712,
+        1477
+      ],
+      "type": "wide",
+      "from": "임시 배치 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        658,
+        2055
+      ],
+      "gap_toward": [
+        1.0,
+        -0.2
+      ],
+      "gap_width": 156,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}
