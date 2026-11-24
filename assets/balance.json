@@ -1,5 +1,5 @@
 {
-  "ball_speed": 720,
+  "ball_speed": 1000,
   "gravity": 90,
   "min_angle_deg": 15,
   "paddle_width": 280,
@@ -11,6 +11,9 @@
   "launch_delay": 1.0,
   "launch_angle_deg": 10,
   "respawn_delay": 1.5,
+  "lives": 3,
+  "drain_delay": 0.7,
+  "drain_angle_deg": 18,
   "landmark_hp": 12,
   "score_hit": 10,
   "score_destroy_per_hp": 100,

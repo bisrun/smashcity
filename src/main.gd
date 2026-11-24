@@ -46,7 +46,7 @@ func _ready() -> void:
 	_setup_light()
 	_board = BoardViewScript.new()
 	add_child(_board)
-	_board.build(_stage, _river, float(_cfg["paddle_y"]) - float(_cfg["fall_margin"]))
+	_board.build(_stage, _river, float(_cfg["paddle_y"]) - float(_cfg["fall_margin"]), _sim.outlets)
 	_setup_camera()
 	_setup_paddle_and_ball()
 	_setup_hud()
@@ -72,14 +72,18 @@ func _process(delta: float) -> void:
 			"destroyed":
 				_board.show_destroyed(e["cell"])
 			"cleared":
-				_banner.text = "클리어\n%d점  빠짐 %d회  %d초\n화면을 누르면 다시 시작" % [_sim.score, _sim.falls, int(_sim.elapsed)]
+				_banner.text = "클리어\n%d점  남은 공 %d  %d초\n화면을 누르면 다시 시작" % [_sim.score, _sim.lives, int(_sim.elapsed)]
+				_banner.visible = true
+			"over":
+				_banner.text = "게임 오버\n%d점  부순 벽돌 %d\n화면을 누르면 다시 시작" % [_sim.score, _sim.destroyed]
 				_banner.visible = true
 	_paddle.position.x = _sim.paddle_x - _stage.width / 2.0
 	_ball.position = Vector3(_sim.ball_pos.x - _stage.width / 2.0, _sim.ball_radius, _stage.height / 2.0 - _sim.ball_pos.y)
+	_ball.visible = _sim.ball_state != Sim.BallState.DRAINING and not _sim.over
 	_info_timer -= delta
 	if _info_timer <= 0.0:
 		_info_timer = 0.2
-		_info.text = "%d점   x%.1f   빠짐 %d\n부순 벽돌 %d/%d   %dfps" % [_sim.score, _sim.combo_multiplier(), _sim.falls,
+		_info.text = "%d점   x%.1f   공 %d\n부순 벽돌 %d/%d   %dfps" % [_sim.score, _sim.combo_multiplier(), _sim.lives,
 			_sim.destroyed, _sim.breakable_count(), Engine.get_frames_per_second()]
 
 
@@ -98,7 +102,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		pressed = true
 	if is_nan(x) or _sim == null:
 		return
-	if _sim.cleared and pressed:
+	if (_sim.cleared or _sim.over) and pressed:
 		get_tree().reload_current_scene()
 		return
 	var view_w := get_viewport().get_visible_rect().size.x

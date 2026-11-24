@@ -12,7 +12,7 @@ extends RefCounted
 const STEP := 1.0 / 120.0
 const GRID := 160.0
 
-enum BallState { WAITING, FLYING }
+enum BallState { WAITING, FLYING, DRAINING }
 
 var stage: StageData
 var cfg: Dictionary
@@ -27,12 +27,20 @@ var paddle_x := 0.0
 var score := 0
 ## 패들에 닿지 않고 연속으로 부순 셀의 수
 var combo := 0
+## 호수에 빠진 횟수
 var falls := 0
+var lives := 0
+## 공을 다 잃어 판이 끝났는지
+var over := false
+## 호수마다 하나씩 있는 강가의 수문. 호수에 빠진 공이 여기로 흘러나온다.
+var outlets: Array[Vector2] = []
 var destroyed := 0
 var elapsed := 0.0
 var cleared := false
 
 var _wait_left := 0.0
+var _drain_to := Vector2.ZERO
+var _drain_side := 1.0
 var _landmarks_left := 0
 var _events: Array[Dictionary] = []
 var _grid := {}
@@ -55,7 +63,10 @@ func _init(p_stage: StageData, p_cfg: Dictionary) -> void:
 			_landmarks_left += 1
 	_build_grid()
 	for lake in stage.lakes:
-		_lake_boxes.append(_bounds(lake["points"]))
+		var box := _bounds(lake["points"])
+		_lake_boxes.append(box)
+		outlets.append(Vector2(clampf(box.get_center().x, 120.0, stage.width - 120.0), -24.0))
+	lives = int(cfg["lives"])
 	paddle_x = stage.width / 2.0
 	_hold(float(cfg["launch_delay"]))
 
@@ -67,7 +78,7 @@ func set_paddle(x: float) -> void:
 
 
 ## 지난 take_events() 뒤에 일어난 일을 돌려주고 비운다.
-## 종류: hit{cell,hp,max_hp}, destroyed{cell,landmark}, paddle, fall{water}, launch, cleared
+## 종류: hit{cell,hp,max_hp}, destroyed{cell,landmark}, paddle, launch, drain{lake}, emerge, lost, over, cleared
 func take_events() -> Array[Dictionary]:
 	var out := _events
 	_events = []
@@ -83,10 +94,15 @@ func breakable_count() -> int:
 
 
 func step() -> void:
-	if cleared:
+	if cleared or over:
 		return
 	elapsed += STEP
 	var paddle_y := float(cfg["paddle_y"])
+	if ball_state == BallState.DRAINING:
+		_wait_left -= STEP
+		if _wait_left <= 0.0:
+			_emerge()
+		return
 	if ball_state == BallState.WAITING:
 		ball_pos = Vector2(paddle_x, paddle_y + float(cfg["paddle_thickness"]) / 2.0 + ball_radius + 2.0)
 		_wait_left -= STEP
@@ -107,9 +123,11 @@ func step() -> void:
 		if cleared:
 			return
 	if ball_pos.y < paddle_y - float(cfg["fall_margin"]):
-		_fall(false)
-	elif _in_water(ball_pos):
-		_fall(true)
+		_lose()
+		return
+	var lake := _lake_at(ball_pos)
+	if lake >= 0:
+		_drain(lake)
 
 
 func _hold(seconds: float) -> void:
@@ -126,11 +144,39 @@ func _launch() -> void:
 	_events.append({"type": "launch"})
 
 
-func _fall(water: bool) -> void:
+## 패들을 지나쳐 뒤로 넘어갔다. 공 하나를 잃는다.
+func _lose() -> void:
+	lives -= 1
+	combo = 0
+	_events.append({"type": "lost"})
+	if lives <= 0:
+		over = true
+		ball_state = BallState.WAITING
+		ball_vel = Vector2.ZERO
+		_events.append({"type": "over"})
+		return
+	_hold(float(cfg["respawn_delay"]))
+
+
+## 호수에 빠졌다. 공은 물길을 타고 강가의 수문으로 떠내려간다.
+func _drain(lake: int) -> void:
 	falls += 1
 	combo = 0
-	_events.append({"type": "fall", "water": water})
-	_hold(float(cfg["respawn_delay"]))
+	_drain_side = -1.0 if ball_vel.x < 0.0 else 1.0
+	_drain_to = outlets[lake]
+	ball_state = BallState.DRAINING
+	ball_vel = Vector2.ZERO
+	_wait_left = float(cfg["drain_delay"])
+	_events.append({"type": "drain", "lake": lake})
+
+
+## 수문에서 강으로 튀어나온다. 패들 쪽으로 내려오므로 받아 내지 못하면 잃는다.
+func _emerge() -> void:
+	var a := deg_to_rad(float(cfg["drain_angle_deg"])) * _drain_side
+	ball_pos = _drain_to
+	ball_vel = Vector2(sin(a), -cos(a)) * float(cfg["ball_speed"])
+	ball_state = BallState.FLYING
+	_events.append({"type": "emerge"})
 
 
 func _collide_walls() -> void:
@@ -237,8 +283,8 @@ func _keep_min_angle() -> void:
 	ball_vel = Vector2(sx * sqrt(speed * speed - min_vy * min_vy), sy * min_vy)
 
 
-## 물 위인지. 물 위를 지나는 통로(다리)는 물이 아니다.
-func _in_water(p: Vector2) -> bool:
+## 그 자리가 몇 번째 호수의 물 위인지. 물이 아니면 -1. 물 위를 지나는 통로(다리)는 물이 아니다.
+func _lake_at(p: Vector2) -> int:
 	for i in stage.lakes.size():
 		if not _lake_boxes[i].has_point(p):
 			continue
@@ -246,9 +292,9 @@ func _in_water(p: Vector2) -> bool:
 			continue
 		for c in stage.corridors:
 			if Geometry2D.is_point_in_polygon(p, c):
-				return false
-		return true
-	return false
+				return -1
+		return i
+	return -1
 
 
 func _build_grid() -> void:

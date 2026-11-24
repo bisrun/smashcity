@@ -20,7 +20,7 @@ func _init() -> void:
 	for t: Callable in [
 		_test_jamsil_loads, _test_jamsil_shapes_are_valid, _test_nearest_road_point, _test_display_height,
 		_test_board_view_builds, _test_ball_launches_and_bounces_off_walls, _test_ball_breaks_a_cell,
-		_test_paddle_sends_ball_up, _test_missed_ball_comes_back, _test_water_returns_ball_but_bridge_is_safe,
+		_test_paddle_sends_ball_up, _test_missed_ball_costs_a_life, _test_lake_drains_ball_to_river,
 		_test_landmark_clears_stage, _test_sim_is_deterministic, _test_jamsil_plays,
 	]:
 		t.call()
@@ -125,9 +125,10 @@ func _test_board_view_builds() -> void:
 	first.build(s, 760.0, -690.0)
 	var second: BoardView = BoardViewScript.new()
 	second.build(s, 760.0, -690.0)
-	_check(first.cell_nodes.size() == s.cells.size(), "셀마다 노드가 하나씩 있다")
-	_check(first.tree_count > 200, "건물이 드문 셀과 공원, 호숫가에 나무가 선다 (실제 %d)" % first.tree_count)
-	_check(first.tree_count == second.tree_count, "같은 스테이지는 늘 같은 수의 나무가 선다")
+	_check(first.cell_nodes.size() == s.cells.size(), "셀마다 블록이 하나씩 있다")
+	_check(first.object_count >= s.cells.size() * 0.8, "블록 대부분에 큼직한 것이 하나 이상 올라간다 (블록 %d, 올린 것 %d)" % [s.cells.size(), first.object_count])
+	_check(first.object_count < s.buildings.size(), "지도의 건물 수보다 적게 올린다 (실제 %d)" % first.object_count)
+	_check(first.object_count == second.object_count, "같은 스테이지는 늘 같게 꾸며진다")
 	first.free()
 	second.free()
 
@@ -177,31 +178,56 @@ func _test_paddle_sends_ball_up() -> void:
 	_check(sim.ball_vel.y > 0.0 and sim.ball_vel.x > 100.0, "패들 오른쪽에 맞으면 오른쪽으로 눕는다")
 
 
-func _test_missed_ball_comes_back() -> void:
+func _test_missed_ball_costs_a_life() -> void:
 	var sim: Sim = SimScript.new(_stage(), _no_gravity())
+	var start := sim.lives
+	_check(start == int(sim.cfg["lives"]) and start >= 1, "밸런스 값만큼의 공으로 시작한다")
 	sim.set_paddle(200)
 	_place(sim, Vector2(800, -400), Vector2(0, -1))
 	_run(sim, 0.6)
-	_check(sim.falls == 1 and sim.ball_state == Sim.BallState.WAITING, "패들을 지나치면 빠진 것으로 세고 공은 기다린다")
-	_check(sim.take_events().any(func(e: Dictionary) -> bool: return e["type"] == "fall"), "빠졌다는 사건이 생긴다")
-	_check(not sim.cleared, "빠져도 판은 끝나지 않는다")
+	_check(sim.lives == start - 1 and sim.ball_state == Sim.BallState.WAITING, "패들 뒤로 넘어가면 공 하나를 잃는다")
+	_check(sim.take_events().any(func(e: Dictionary) -> bool: return e["type"] == "lost"), "잃었다는 사건이 생긴다")
 	_run(sim, float(sim.cfg["respawn_delay"]) + 0.05)
-	_check(sim.ball_state == Sim.BallState.FLYING and sim.ball_vel.y > 0.0, "잠시 뒤 패들에서 다시 발사된다")
-	_check(absf(sim.ball_pos.x - 200.0) < 60.0, "패들이 있는 자리에서 나온다")
+	_check(sim.ball_state == Sim.BallState.FLYING and sim.ball_vel.y > 0.0, "공이 남아 있으면 패들에서 다시 발사된다")
+	for i in start - 1:
+		sim.set_paddle(200)
+		_place(sim, Vector2(800, -400), Vector2(0, -1))
+		_run(sim, 0.6)
+		_run(sim, float(sim.cfg["respawn_delay"]) + 0.05)
+	_check(sim.lives == 0 and sim.over, "공을 다 잃으면 판이 끝난다")
+	_check(sim.take_events().any(func(e: Dictionary) -> bool: return e["type"] == "over"), "끝났다는 사건이 생긴다")
+	var before := sim.elapsed
+	_run(sim, 0.5)
+	_check(sim.elapsed == before, "끝난 뒤에는 판정이 멈춘다")
 
 
-func _test_water_returns_ball_but_bridge_is_safe() -> void:
+func _test_lake_drains_ball_to_river() -> void:
 	var extra := {
 		"lake": [{"p": [200, 800, 800, 800, 800, 1200, 200, 1200], "h": []}],
 		"corridors": [{"p": [450, 0, 550, 0, 550, 2000, 450, 2000], "h": []}],
 	}
 	var sim: Sim = SimScript.new(_stage(extra), _no_gravity())
-	_place(sim, Vector2(300, 700), Vector2(0, 1))
-	_run(sim, 0.4)
-	_check(sim.falls == 1 and sim.ball_state == Sim.BallState.WAITING, "호수에 들어가면 빠진 것으로 세고 패들로 돌아온다")
+	var start := sim.lives
+	_check(sim.outlets.size() == 1 and sim.outlets[0].y < 0.0, "호수마다 강가에 수문이 하나 있다")
+	sim.set_paddle(500)
+	_place(sim, Vector2(300, 700), Vector2(0.2, 1))
+	sim.combo = 4
+	_run(sim, 0.3)
+	_check(sim.ball_state == Sim.BallState.DRAINING and sim.falls == 1, "호수에 들어가면 물길에 휩쓸린다")
+	_check(sim.lives == start and sim.combo == 0, "공은 잃지 않지만 콤보는 끊긴다")
+	var waited := 0
+	while sim.ball_state == Sim.BallState.DRAINING and waited < 1000:
+		sim.step()
+		waited += 1
+	_check(absf(waited * Sim.STEP - (float(sim.cfg["drain_delay"]) - 0.3)) < 0.25, "정해진 시간만큼 떠내려간다")
+	_check(sim.ball_state == Sim.BallState.FLYING and sim.ball_vel.y < 0.0, "수문에서 패들 쪽으로 튀어나온다")
+	_check(absf(sim.ball_pos.x - sim.outlets[0].x) < 60.0 and sim.ball_pos.y < 0.0, "나오는 자리는 수문이다")
+	sim.set_paddle(100)
+	_run(sim, 1.0)
+	_check(sim.lives == start - 1, "받아 내지 못하면 공 하나를 잃는다")
 	var bridge: Sim = SimScript.new(_stage(extra), _no_gravity())
 	_place(bridge, Vector2(500, 700), Vector2(0, 1))
-	_run(bridge, 0.9)
+	_run(bridge, 0.7)
 	_check(bridge.falls == 0 and bridge.ball_pos.y > 1200.0, "호수 위를 지나는 통로로는 건넌다")
 
 
@@ -239,4 +265,4 @@ func _test_jamsil_plays() -> void:
 	_check(not is_nan(p.x) and not is_nan(p.y), "공 위치가 깨지지 않는다")
 	_check(p.x >= 0.0 and p.x <= sim.stage.width and p.y <= sim.stage.height, "공이 판 밖으로 나가지 않는다")
 	_check(sim.destroyed >= 10, "2분 동안 벽돌이 10개 이상 부서진다 (실제 %d)" % sim.destroyed)
-	print("  잠실 2분: 부순 벽돌 %d/%d, 빠짐 %d회, %d점%s" % [sim.destroyed, sim.breakable_count(), sim.falls, sim.score, ", 클리어" if sim.cleared else ""])
+	print("  잠실 2분: 부순 벽돌 %d/%d, 호수에 빠짐 %d회, 남은 공 %d, %d점%s%s" % [sim.destroyed, sim.breakable_count(), sim.falls, sim.lives, sim.score, ", 클리어" if sim.cleared else "", ", 게임 오버" if sim.over else ""])
