@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter analyze *)",
+      "Bash(flutter analyze)",
+      "Bash(flutter test *)",
+      "Bash(flutter test)",
+      "Bash(flutter pub get)",
+      "Bash(dart format *)",
+      "Bash(dart analyze *)",
+      "Bash(python3 tools/check_docs.py)",
+      "Bash(git status *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git diff)",
+      "Bash(git log *)",
+      "Bash(git branch)"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(android/key.properties)"
+    ]
+  }
+}
