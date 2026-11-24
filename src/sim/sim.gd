@@ -32,6 +32,11 @@ class Ball:
 	var skipping := false
 	## 패들에 닿지 않고 연속으로 부순 셀의 수
 	var combo := 0
+	## 마지막으로 셀을 맞힌 뒤 지난 시간 (초)
+	var idle := 0.0
+	## 끌려가고 있는 셀. 없으면 -1
+	var target := -1
+	var retarget_in := 0.0
 
 
 var stage: StageData
@@ -56,6 +61,8 @@ var cleared := false
 ## 넓은 패들과 불공의 남은 시간 (초)
 var wide_left := 0.0
 var fire_left := 0.0
+## 남은 셀이 얼마 없어 마무리 단계에 들어갔는지
+var finale := false
 
 ## 첫 번째 공을 가리키는 지름길. 공이 하나뿐인 상황과 테스트에서 쓴다.
 var ball_pos: Vector2:
@@ -88,6 +95,14 @@ var _rng := RandomNumberGenerator.new()
 var _next_id := 1
 ## 셀 번호 → 그 셀에 든 아이템의 종류
 var _item_in_cell := {}
+## 깨지지 않는 벽의 조각들. 공은 튕기기만 한다. 각 원소는 얇은 사각형이다.
+var walls: Array[PackedVector2Array] = []
+## 벽에 난 구멍의 양 끝. 각 원소: [Vector2, Vector2]
+var gates: Array[Array] = []
+var _wall_grid := {}
+## 셀 번호 → 맞닿은 셀들. 연쇄에 쓴다.
+var _neighbors: Array[PackedInt32Array] = []
+var _centers := PackedVector2Array()
 
 
 ## design 은 스테이지의 수작업 기획(design.json)이다. 없으면 아이템 없이 돈다.
@@ -105,12 +120,15 @@ func _init(p_stage: StageData, p_cfg: Dictionary, design: Dictionary = {}) -> vo
 		if c["landmark"]:
 			_landmarks_left += 1
 	_build_grid()
+	_build_neighbors()
 	for lake in stage.lakes:
 		_lake_boxes.append(_bounds(lake["points"]))
 	for it: Dictionary in design.get("items", []):
 		var cell := cell_at(Vector2(float(it["at"][0]), float(it["at"][1])))
 		if cell >= 0 and not stage.cells[cell]["landmark"]:
 			_item_in_cell[cell] = String(it["type"])
+	for w: Dictionary in design.get("walls", []):
+		_build_wall(w)
 	lives = int(cfg["lives"])
 	_rng.seed = int(cfg["seed"])
 	paddle_x = stage.width / 2.0
@@ -130,7 +148,9 @@ func paddle_width() -> float:
 
 ## 지난 take_events() 뒤에 일어난 일을 돌려주고 비운다.
 ## 종류: hit{cell,hp,max_hp}, destroyed{cell,landmark}, paddle, launch, splash{pos}, emerge{pos},
-##       ball_lost{ball}, lost, over, cleared, item_spawn{id,type,pos}, item_caught{id,type}, item_gone{id}
+##       ball_lost{ball}, lost, over, cleared, item_spawn{id,type_of,pos}, item_caught{id,type_of}, item_gone{id},
+##       fever, finale, wall{pos}
+## destroyed 에는 points(얻은 점수)와 chained(연쇄로 부서졌는지)가 함께 온다.
 func take_events() -> Array[Dictionary]:
 	var out := _events
 	_events = []
@@ -147,6 +167,25 @@ func combo_multiplier() -> float:
 
 func breakable_count() -> int:
 	return cell_hp.size()
+
+
+## 지금의 공 속도. 셀을 부술수록 빨라진다.
+func ball_speed() -> float:
+	var progress := float(destroyed) / maxf(1.0, float(cell_hp.size()))
+	return float(cfg["ball_speed"]) * (1.0 + float(cfg["speed_gain"]) * progress)
+
+
+## 그 공이 달아올랐는지. 달아오른 공이 부순 셀은 맞닿은 셀까지 깎는다.
+func is_fever(b: Ball) -> bool:
+	return b.combo >= int(cfg["fever_combo"])
+
+
+## 판 위에 달아오른 공이 하나라도 있는지.
+func any_fever() -> bool:
+	for b in balls:
+		if is_fever(b):
+			return true
+	return false
 
 
 ## 셀에 든 아이템의 종류. 없으면 빈 문자열.
@@ -191,7 +230,7 @@ func _step_ball(b: Ball) -> void:
 		b.wait -= STEP
 		if b.wait <= 0.0:
 			var a := deg_to_rad(float(cfg["launch_angle_deg"])) * (1.0 if lives % 2 == 1 else -1.0)
-			b.vel = Vector2(sin(a), cos(a)) * float(cfg["ball_speed"])
+			b.vel = Vector2(sin(a), cos(a)) * ball_speed()
 			b.state = BallState.FLYING
 			_events.append({"type": "launch"})
 		return
@@ -199,15 +238,17 @@ func _step_ball(b: Ball) -> void:
 		b.wait -= STEP
 		if b.wait <= 0.0:
 			# 가라앉았던 자리에서 아무 방향으로나 튀어 오른다. 방향은 판마다 정해진 난수열을 따른다.
-			b.vel = Vector2.from_angle(_rng.randf() * TAU) * float(cfg["ball_speed"])
+			b.vel = Vector2.from_angle(_rng.randf() * TAU) * ball_speed()
 			_keep_min_angle(b)
 			b.state = BallState.FLYING
 			b.skipping = true
 			_events.append({"type": "emerge", "pos": b.pos})
 		return
 
-	var speed := float(cfg["ball_speed"])
+	var speed := ball_speed()
+	b.idle += STEP
 	b.vel.y -= float(cfg["gravity"]) * STEP
+	_steer(b)
 	b.vel = b.vel.normalized() * speed
 	var subs := maxi(1, ceili(speed * STEP / (ball_radius * 0.5)))
 	var dt := STEP / subs
@@ -215,6 +256,7 @@ func _step_ball(b: Ball) -> void:
 		b.pos += b.vel * dt
 		_collide_walls(b)
 		_collide_paddle(b)
+		_collide_barriers(b)
 		_collide_cells(b)
 		if cleared:
 			return
@@ -232,6 +274,34 @@ func _step_ball(b: Ball) -> void:
 		b.vel = Vector2.ZERO
 		b.wait = float(cfg["splash_delay"])
 		_events.append({"type": "splash", "pos": b.pos})
+
+
+## 오래 아무것도 못 맞힌 공, 또는 마무리 단계의 공을 가장 가까운 셀 쪽으로 조금씩 꺾는다.
+## 위로 가는 공에만 건다. 내려오는 공은 건드리지 않아 패들로 받는 일은 그대로 남는다.
+func _steer(b: Ball) -> void:
+	if b.vel.y <= 0.0 or b.pos.y < 0.0:
+		return
+	if not finale and b.idle < float(cfg["homing_after"]):
+		b.target = -1
+		return
+	b.retarget_in -= STEP
+	if b.retarget_in <= 0.0 or b.target < 0 or cell_hp[b.target] <= 0:
+		b.retarget_in = 0.25
+		b.target = -1
+		var best := INF
+		for i in cell_hp.size():
+			if cell_hp[i] <= 0:
+				continue
+			var d := _centers[i].distance_squared_to(b.pos)
+			if d < best:
+				best = d
+				b.target = i
+	if b.target < 0:
+		return
+	var want := (_centers[b.target] - b.pos).angle()
+	var turn := deg_to_rad(float(cfg["finale_turn_deg"] if finale else cfg["homing_turn_deg"])) * STEP
+	var diff := angle_difference(b.vel.angle(), want)
+	b.vel = b.vel.rotated(clampf(diff, -turn, turn))
 
 
 func _hold_position() -> Vector2:
@@ -293,10 +363,122 @@ func _collide_paddle(b: Ball) -> void:
 		return
 	# 맞은 자리가 가운데에서 멀수록 옆으로 눕는다
 	var a := clampf(off / half, -1.0, 1.0) * deg_to_rad(float(cfg["paddle_max_angle_deg"]))
-	b.vel = Vector2(sin(a), cos(a)) * float(cfg["ball_speed"])
+	b.vel = Vector2(sin(a), cos(a)) * ball_speed()
 	b.pos.y = top + ball_radius
 	b.combo = 0
 	_events.append({"type": "paddle"})
+
+
+## 깨지지 않는 벽에 튕긴다. 벽은 깎이지 않는다.
+func _collide_barriers(b: Ball) -> void:
+	var bucket: PackedInt32Array = _wall_grid.get(_key(b.pos), PackedInt32Array())
+	var best_depth := 0.0
+	var best_n := Vector2.ZERO
+	for idx in bucket:
+		var pts := walls[idx]
+		var q := _closest_on_outline(pts, b.pos)
+		var d := q.distance_to(b.pos)
+		if d < 0.0001:
+			continue
+		var depth := 0.0
+		var n := Vector2.ZERO
+		if Geometry2D.is_point_in_polygon(b.pos, pts):
+			depth = ball_radius + d
+			n = (q - b.pos) / d
+		elif d < ball_radius:
+			depth = ball_radius - d
+			n = (b.pos - q) / d
+		if depth > best_depth:
+			best_depth = depth
+			best_n = n
+	if best_depth <= 0.0:
+		return
+	b.pos += best_n * best_depth
+	if b.vel.dot(best_n) < 0.0:
+		b.vel = b.vel.bounce(best_n)
+		_keep_min_angle(b)
+	_events.append({"type": "wall", "pos": b.pos})
+
+
+## 벽 하나를 세운다. around 가 가리키는 셀에서 작은 길로 이어진 셀들을 둘러싸고, gap_toward 쪽에 구멍을 낸다.
+## 둘레는 그 셀들을 감싸는 볼록한 윤곽이다. 구획이 큰 도로로 둘러싸여 있으면 벽은 큰 도로의 한쪽 면을 따라 서게 된다.
+func _build_wall(w: Dictionary) -> void:
+	var start := cell_at(Vector2(float(w["around"][0]), float(w["around"][1])))
+	if start < 0:
+		return
+	# radius 를 주면 그 거리 안의 셀까지만 두른다. 구획이 너무 넓을 때 쓴다.
+	var reach_limit := float(w.get("radius", INF))
+	var seen := {start: true}
+	var queue: Array[int] = [start]
+	var cloud := PackedVector2Array()
+	while not queue.is_empty():
+		var c: int = queue.pop_front()
+		cloud.append_array(stage.cells[c]["points"])
+		for n in _neighbors[c]:
+			if not seen.has(n) and _centers[n].distance_to(_centers[start]) <= reach_limit:
+				seen[n] = true
+				queue.append(n)
+	var hull := Geometry2D.convex_hull(cloud)
+	if hull.size() < 4:
+		return
+	hull.remove_at(hull.size() - 1)  # convex_hull 은 첫 점을 끝에 한 번 더 넣는다
+	if Geometry2D.is_polygon_clockwise(hull):
+		hull.reverse()
+	var grown := Geometry2D.offset_polygon(hull, float(w.get("offset", 10.0)), Geometry2D.JOIN_MITER)
+	if grown.is_empty():
+		return
+	var ring: PackedVector2Array = grown[0]
+	var toward := Vector2(float(w["gap_toward"][0]), float(w["gap_toward"][1])).normalized()
+	var middle := _center(ring)
+	# 구멍의 가운데: 벽의 둘레에서 gap_toward 쪽으로 가장 멀리 나간 변의 가운데
+	var gap_at := ring[0]
+	var best := -INF
+	for i in ring.size():
+		var mid := (ring[i] + ring[(i + 1) % ring.size()]) / 2.0
+		var score_ := (mid - middle).dot(toward)
+		if score_ > best:
+			best = score_
+			gap_at = mid
+	var half_gap := float(w.get("gap_width", 170.0)) / 2.0
+	var thick := float(w.get("thickness", 12.0))
+	var ends: Array[Vector2] = []
+	for i in ring.size():
+		var a := ring[i]
+		var b := ring[(i + 1) % ring.size()]
+		var along := (b - a).normalized()
+		var out := Vector2(along.y, -along.x)
+		if out.dot(a - middle) < 0.0:
+			out = -out
+		# 변을 구멍에 걸리지 않는 조각들로 자른다
+		var length := a.distance_to(b)
+		var t := (gap_at - a).dot(along)
+		var near := Geometry2D.get_closest_point_to_segment(gap_at, a, b).distance_to(gap_at) < half_gap
+		var pieces: Array[Vector2] = []
+		if not near:
+			pieces.append(Vector2(0.0, length))
+		else:
+			if t - half_gap > 1.0:
+				pieces.append(Vector2(0.0, t - half_gap))
+				ends.append(a + along * (t - half_gap))
+			if t + half_gap < length - 1.0:
+				pieces.append(Vector2(t + half_gap, length))
+				ends.append(a + along * (t + half_gap))
+		for piece in pieces:
+			var p0 := a + along * piece.x
+			var p1 := a + along * piece.y
+			walls.append(PackedVector2Array([p0, p1, p1 + out * thick, p0 + out * thick]))
+	if ends.size() >= 2:
+		gates.append([ends[0], ends[1]])
+	_wall_grid.clear()
+	var pad := ball_radius + 8.0
+	for i in walls.size():
+		var box := _bounds(walls[i]).grow(pad)
+		for gx in range(maxi(0, floori(box.position.x / GRID)), floori(box.end.x / GRID) + 1):
+			for gy in range(maxi(0, floori(box.position.y / GRID)), floori(box.end.y / GRID) + 1):
+				var k := gx + gy * 4096
+				var list: PackedInt32Array = _wall_grid.get(k, PackedInt32Array())
+				list.append(i)
+				_wall_grid[k] = list
 
 
 func _collide_cells(b: Ball) -> void:
@@ -340,18 +522,46 @@ func _collide_cells(b: Ball) -> void:
 
 
 func _damage(b: Ball, idx: int, amount: int) -> void:
+	b.idle = 0.0
+	# 달아오른 공이 부순 셀은 맞닿은 셀을 한 번씩 깎고, 그렇게 부서진 셀도 다시 이웃을 깎는다
+	var queue: Array[int] = [idx]
+	var amounts := {idx: amount}
+	var first := true
+	while not queue.is_empty():
+		var cell: int = queue.pop_front()
+		if cell_hp[cell] <= 0:
+			continue
+		var was_fever := is_fever(b)
+		if not _strike(b, cell, amounts[cell], not first):
+			first = false
+			continue
+		first = false
+		if cleared:
+			return
+		if not was_fever and is_fever(b):
+			_events.append({"type": "fever"})
+		if is_fever(b):
+			for n in _neighbors[cell]:
+				if cell_hp[n] > 0 and not amounts.has(n):
+					amounts[n] = 1
+					queue.append(n)
+
+
+## 셀 하나를 깎는다. 부서졌으면 true.
+func _strike(b: Ball, idx: int, amount: int, chained: bool) -> bool:
 	cell_hp[idx] = maxi(0, cell_hp[idx] - amount)
 	score += int(cfg["score_hit"])
 	_events.append({"type": "hit", "cell": idx, "hp": cell_hp[idx], "max_hp": cell_max_hp[idx]})
 	if cell_hp[idx] > 0:
-		return
+		return false
 	destroyed += 1
-	score += int(round(float(cfg["score_destroy_per_hp"]) * cell_max_hp[idx] * _multiplier(b.combo)))
+	var points := int(round(float(cfg["score_destroy_per_hp"]) * cell_max_hp[idx] * _multiplier(b.combo)))
+	score += points
 	b.combo += 1
 	var landmark: bool = stage.cells[idx]["landmark"]
-	_events.append({"type": "destroyed", "cell": idx, "landmark": landmark})
+	_events.append({"type": "destroyed", "cell": idx, "landmark": landmark, "points": points, "chained": chained})
 	if _item_in_cell.has(idx):
-		var item := {"id": _next_id, "type": _item_in_cell[idx], "pos": _center(stage.cells[idx]["points"])}
+		var item := {"id": _next_id, "type": _item_in_cell[idx], "pos": _centers[idx]}
 		_next_id += 1
 		_item_in_cell.erase(idx)
 		items.append(item)
@@ -361,6 +571,10 @@ func _damage(b: Ball, idx: int, amount: int) -> void:
 		if _landmarks_left <= 0:
 			cleared = true
 			_events.append({"type": "cleared"})
+	if not finale and not cleared and cell_hp.size() - destroyed <= int(cfg["finale_cells"]):
+		finale = true
+		_events.append({"type": "finale"})
+	return true
 
 
 ## 아이템은 곧게 패들 쪽으로 내려온다. 패들로 받으면 발동하고, 놓치면 사라진다.
@@ -454,6 +668,37 @@ func _build_grid() -> void:
 				var list: PackedInt32Array = _grid.get(k, PackedInt32Array())
 				list.append(i)
 				_grid[k] = list
+
+
+## 서로 맞닿은 셀을 찾아 둔다. 작은 길 하나를 사이에 둔 셀끼리가 이웃이다.
+func _build_neighbors() -> void:
+	var reach := float(cfg["chain_radius"])
+	var boxes: Array[Rect2] = []
+	_centers.resize(stage.cells.size())
+	_neighbors.resize(stage.cells.size())
+	for i in stage.cells.size():
+		boxes.append(_bounds(stage.cells[i]["points"]).grow(reach))
+		_centers[i] = _center(stage.cells[i]["points"])
+		_neighbors[i] = PackedInt32Array()
+	for i in stage.cells.size():
+		var a: PackedVector2Array = stage.cells[i]["points"]
+		for j in range(i + 1, stage.cells.size()):
+			if not boxes[i].intersects(boxes[j]):
+				continue
+			var b: PackedVector2Array = stage.cells[j]["points"]
+			var near := false
+			for p in a:
+				if _closest_on_outline(b, p).distance_to(p) <= reach:
+					near = true
+					break
+			if not near:
+				for p in b:
+					if _closest_on_outline(a, p).distance_to(p) <= reach:
+						near = true
+						break
+			if near:
+				_neighbors[i].append(j)
+				_neighbors[j].append(i)
 
 
 func _key(p: Vector2) -> int:

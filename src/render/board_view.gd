@@ -4,11 +4,9 @@ extends Node3D
 ##
 ## 지도 좌표 (x, y)는 장면 좌표 (x - W/2, 높이, H/2 - y)로 옮긴다.
 ##
-## 벽돌(셀) 하나는 두툼한 받침 블록 하나다. 이웃과 틈을 두고 떨어져 있고, 두께와 옆면 색이 남은 HP를 말한다.
-## 블록 위에는 작은 건물을 여럿 늘어놓지 않고 큼직한 것을 몇 개만 올린다(docs/11_art_audio.md).
-## 건물은 흰 벽에 유리 띠를 두른 미니어처 모형처럼 그린다.
-## 블록 위의 것들은 지도의 건물을 그대로 옮긴 것이 아니라 그 구획의 성격에 맞춰 지어낸 것이다.
-## 넓은 건물과 랜드마크만 실제 윤곽을 쓴다.
+## 벽돌(셀) 하나는 건물 한 채다. 블록의 윤곽이 그대로 건물의 벽이 되고, 이웃과는 틈을 두고 떨어져 있다.
+## 남은 HP만큼 층이 쌓이고, 맞을 때마다 한 단 낮아진다. 그 위에 종류에 맞는 지붕을 얹는다(docs/11_art_audio.md).
+## 건물이 없던 낮은 구획은 큰 나무를 심은 공원이 된다. 랜드마크만 실제 윤곽의 탑을 세운다.
 
 ## 강가 나무가 서는 높이
 const SLAB_HEIGHT := 1.0
@@ -21,10 +19,16 @@ const SOFT_RATIO := 0.45
 const GAP := 5.0
 ## 블록 윗면 테두리의 폭 (m)
 const RIM := 6.0
-## 블록 두께: 바닥 두께 + 남은 단계 x 단 높이
-const BLOCK_BASE := 6.0
-const BLOCK_STEP := 11.0
-const LAWN_LIFT := 1.4
+## 건물 몸통의 높이: 바닥 + 남은 단계 x 한 단의 높이
+const BODY_BASE := 8.0
+const BODY_FLOOR := 15.0
+const PARK_HEIGHT := 9.0
+const KIND_PARK := "park"
+const KIND_HOUSE := "house"
+const KIND_TIERED := "tiered"
+const KIND_FLAT := "flat"
+const KIND_LANDMARK := "landmark"
+const BADGE_RADIUS := 15.0
 ## 실제 윤곽을 그대로 쓰는 건물의 최소 넓이 (㎡)
 const KEEP_REAL_AREA := 1200.0
 ## 블록 위에 큼직한 것을 놓는 자리의 간격 (m)
@@ -38,8 +42,16 @@ const SHORE_SPACING := 40.0
 
 const ROAD := Color("F7ECD8")
 const WATER := Color("63CFE0")
-## 남은 단계별 블록 옆면 색. 1단계(곧 부서짐)부터 4단계까지.
-const TIER_SIDE: Array[Color] = [Color("F4D9A8"), Color("F2B880"), Color("E88F6E"), Color("B9789E")]
+## 건물 벽과 지붕의 색. 블록마다 하나씩 고른다.
+const WALL_TINTS: Array[Color] = [Color("FFF4E3"), Color("FFE3E0"), Color("E3F4EA"), Color("E2EEFB"), Color("FFF3C9"), Color("EEE4F8")]
+const ROOF_TINTS: Array[Color] = [Color("E8785A"), Color("F2A65A"), Color("4FB0A5"), Color("E56B8C"), Color("5E8FD6"), Color("8A78D6")]
+const WINDOW := Color("8CCBF2")
+const STONE := Color("D8D2C4")
+const DECK := Color("F1ECE1")
+const WALL_TOP := Color("B9C1CE")
+const WALL_SIDE := Color("8792A3")
+## 숫자 표지의 색. 2, 3, 4, 5 이상 순서.
+const BADGE_COLORS: Array[Color] = [Color("3DBE8B"), Color("F5A623"), Color("F0645A"), Color("8A78D6")]
 const GRASS: Array[Color] = [Color("BFE3A8"), Color("B4DC9E"), Color("C9E9B3")]
 const WALLS: Array[Color] = [Color("FFF7EC"), Color("FDEFDC"), Color("F7EEF6"), Color("EEF6F3")]
 const PITCHED: Array[Color] = [Color("E8785A"), Color("F2A65A"), Color("5BB5A6"), Color("E56B8C"), Color("6F9BD8"), Color("F0C24B")]
@@ -86,10 +98,14 @@ var _outline: Array[PackedVector2Array] = []
 var _lawn: Array[PackedVector2Array] = []
 var _is_landmark: Array[bool] = []
 var _plinths: Array[MeshInstance3D] = []
+var _kind: Array[String] = []
+var _wall_tint: Array[Color] = []
+var _roof_tint: Array[Color] = []
+var _badges: Array[Dictionary] = []
+var _font: Font
 var _tops: Array[Node3D] = []
 ## 셀마다 지붕 숫자를 띄울 자리. (지도 x, 블록 윗면에서의 높이, 지도 y). 없으면 Vector3.INF.
 var _label_at: Array[Vector3] = []
-var _labels: Array[Label3D] = []
 var _boxes: Array[Rect2] = []
 var _design := {}
 
@@ -129,34 +145,37 @@ func build(stage: StageData, river_width: float, near_bank_y: float, design: Dic
 		var node := Node3D.new()
 		add_child(node)
 		cell_nodes.append(node)
-		var tier := _tier(cell["hp"], cell["hp"], cell["landmark"])
+		_kind.append(_classify(cell, real[ci], _area(outline)))
+		var pick := _hash(ci, 5, 23)
+		_wall_tint.append(GOLD_WALL if cell["landmark"] else WALL_TINTS[pick % WALL_TINTS.size()])
+		_roof_tint.append(GOLD if cell["landmark"] else ROOF_TINTS[(pick >> 4) % ROOF_TINTS.size()])
+		var start_hp: int = hp[ci] if ci < hp.size() else int(cell["hp"])
+		var tier := _tier(start_hp, start_hp, cell["landmark"])
 		var plinth := MeshInstance3D.new()
 		plinth.material_override = _material
 		node.add_child(plinth)
 		_plinths.append(plinth)
-		plinth.mesh = _plinth_mesh(ci, tier)
+		plinth.mesh = _body_mesh(ci, tier)
 		var st := _begin()
 		_label_at.append(Vector3.INF)
 		_furnish(st, ci, cell, lawn, real[ci], stage)
 		var tops := _mesh_child(node, st, true)
-		tops.position.y = _block_height(tier) + LAWN_LIFT
+		tops.position.y = _body_height(ci, tier)
 		_tops.append(tops)
-		_labels.append(_add_label(ci, tops, hp[ci] if ci < hp.size() else int(cell["hp"])))
+		_badges.append(_add_badge(ci, tops, start_hp))
 	_add_props(stage)
 
 
-## 셀이 맞았을 때. 블록이 한 단 낮아지고 옆면 색이 바뀌며 지붕 숫자가 준다.
+## 셀이 맞았을 때. 건물이 한 단 낮아지고 숫자가 준다.
 func show_hit(cell: int, hp: int, max_hp: int) -> void:
 	var node := cell_nodes[cell]
 	if node == null:
 		return
-	if _labels[cell] != null:
-		_labels[cell].text = str(hp)
-		_labels[cell].visible = hp >= 2
+	_set_badge(_badges[cell], hp)
 	var tier := _tier(hp, max_hp, _is_landmark[cell])
-	_plinths[cell].mesh = _plinth_mesh(cell, tier)
+	_plinths[cell].mesh = _body_mesh(cell, tier)
 	var tween := node.create_tween()
-	tween.tween_property(_tops[cell], "position:y", _block_height(tier) + LAWN_LIFT, 0.14)
+	tween.tween_property(_tops[cell], "position:y", _body_height(cell, tier), 0.14)
 	tween.parallel().tween_property(node, "scale:y", 0.88, 0.05)
 	tween.tween_property(node, "scale:y", 1.0, 0.12)
 
@@ -172,25 +191,139 @@ func show_destroyed(cell: int) -> void:
 	tween.tween_callback(node.queue_free)
 
 
-## 지붕 위의 숫자. 앞으로 몇 번 맞아야 부서지는지를 보여 준다. 한 번 남은 블록에는 띄우지 않는다.
-func _add_label(ci: int, tops: Node3D, hp: int) -> Label3D:
+## 숫자 표지. 앞으로 몇 번 맞아야 부서지는지를 색 풍선 안의 숫자로 보여 준다. 한 번 남은 블록에는 띄우지 않는다.
+func _add_badge(ci: int, tops: Node3D, hp: int) -> Dictionary:
 	if _label_at[ci] == Vector3.INF:
-		return null
+		return {}
+	var node := Node3D.new()
+	tops.add_child(node)
+	var at := _label_at[ci]
+	node.position = _at(Vector2(at.x, at.z), at.y)
+	var rim_mat := StandardMaterial3D.new()
+	rim_mat.albedo_color = Color.WHITE
+	rim_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	rim_mat.no_depth_test = true
+	rim_mat.render_priority = 1
+	var rim := MeshInstance3D.new()
+	rim.mesh = _sphere(BADGE_RADIUS + 3.5)
+	rim.material_override = rim_mat
+	rim.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	node.add_child(rim)
+	var fill_mat := StandardMaterial3D.new()
+	fill_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	fill_mat.no_depth_test = true
+	fill_mat.render_priority = 2
+	var fill := MeshInstance3D.new()
+	fill.mesh = _sphere(BADGE_RADIUS)
+	fill.material_override = fill_mat
+	fill.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	node.add_child(fill)
 	var label := Label3D.new()
-	label.text = str(hp)
-	label.visible = hp >= 2
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	label.no_depth_test = true
+	label.render_priority = 3
 	label.shaded = false
+	label.font = _badge_font()
 	label.font_size = 96
-	label.outline_size = 28
-	label.pixel_size = 0.42
+	label.outline_size = 0
+	label.pixel_size = BADGE_RADIUS * 0.0165
 	label.modulate = Color.WHITE
+	node.add_child(label)
+	var badge := {"node": node, "label": label, "fill": fill_mat}
+	_set_badge(badge, hp)
+	return badge
+
+
+func _set_badge(badge: Dictionary, hp: int) -> void:
+	if badge.is_empty():
+		return
+	badge["node"].visible = hp >= 2
+	badge["label"].text = str(hp)
+	badge["fill"].albedo_color = BADGE_COLORS[clampi(hp - 2, 0, BADGE_COLORS.size() - 1)]
+
+
+func _badge_font() -> Font:
+	if _font == null:
+		var f := SystemFont.new()
+		f.font_names = PackedStringArray(["SF Pro Rounded", "Arial Rounded MT Bold", "Nunito", "Roboto", "sans-serif"])
+		f.font_weight = 800
+		_font = f
+	return _font
+
+
+## 깨지지 않는 벽과 그 구멍의 문기둥을 세운다.
+func add_walls(walls: Array[PackedVector2Array], gates: Array[Array]) -> void:
+	if walls.is_empty():
+		return
+	var st := _begin()
+	for w in walls:
+		_add_prism(st, w, 0.0, 30.0, WALL_TOP, WALL_SIDE, 0.0)
+	for g in gates:
+		for post: Vector2 in g:
+			_add_lathe(st, post, [Vector2(15.0, 0.0), Vector2(15.0, 46.0), Vector2(18.0, 46.0), Vector2(18.0, 52.0), Vector2(0.0, 72.0)], 10,
+				[WALL_SIDE, WALL_TOP, WALL_TOP, Color("F0645A")])
+	_add_mesh(st, true)
+
+
+## 그 셀의 한가운데와 대표 색. 이펙트를 낼 때 쓴다.
+func cell_center(cell: int) -> Vector2:
+	return _center(_outline[cell])
+
+
+func cell_color(cell: int) -> Color:
+	return GRASS[cell % GRASS.size()] if _kind[cell] == KIND_PARK else _roof_tint[cell]
+
+
+## 부서지는 조각. 셀이 부서질 때 그 자리에서 튀어 오른다.
+func show_debris(map_pos: Vector2, color: Color, big: bool) -> void:
+	var bits := CPUParticles3D.new()
+	var bit := BoxMesh.new()
+	bit.size = Vector3.ONE * (11.0 if big else 8.0)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = color
+	mat.roughness = 1.0
+	bit.material = mat
+	bits.mesh = bit
+	bits.one_shot = true
+	bits.explosiveness = 1.0
+	bits.amount = 26 if big else 14
+	bits.lifetime = 0.75
+	bits.direction = Vector3.UP
+	bits.spread = 65.0
+	bits.initial_velocity_min = 140.0
+	bits.initial_velocity_max = 420.0 if big else 300.0
+	bits.angular_velocity_min = -400.0
+	bits.angular_velocity_max = 400.0
+	bits.gravity = Vector3(0, -900, 0)
+	bits.scale_amount_min = 0.4
+	bits.scale_amount_max = 1.1
+	add_child(bits)
+	bits.position = _at(map_pos, 20.0)
+	bits.emitting = true
+	get_tree().create_timer(1.3).timeout.connect(bits.queue_free)
+
+
+## 떠오르며 사라지는 글자. 얻은 점수 같은 것을 보여 준다.
+func show_popup(map_pos: Vector2, text: String, color: Color) -> void:
+	var label := Label3D.new()
+	label.text = text
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.no_depth_test = true
+	label.render_priority = 4
+	label.shaded = false
+	label.font = _badge_font()
+	label.font_size = 96
+	label.outline_size = 26
+	label.pixel_size = 0.36
+	label.modulate = color
 	label.outline_modulate = Color("14213D")
-	tops.add_child(label)
-	var at := _label_at[ci]
-	label.position = _at(Vector2(at.x, at.z), at.y)
-	return label
+	add_child(label)
+	label.position = _at(map_pos, 70.0)
+	var tween := label.create_tween()
+	tween.tween_property(label, "position:y", 190.0, 0.7).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(label, "modulate:a", 0.0, 0.7).set_ease(Tween.EASE_IN)
+	tween.parallel().tween_property(label, "outline_modulate:a", 0.0, 0.7).set_ease(Tween.EASE_IN)
+	tween.tween_callback(label.queue_free)
 
 
 ## 떨어지는 아이템 하나의 모습. 종류마다 색과 글자가 다르다.
@@ -236,20 +369,37 @@ static func _tier(hp: int, max_hp: int, landmark: bool) -> int:
 	return clampi(hp, 1, 4)
 
 
-static func _block_height(tier: int) -> float:
-	return BLOCK_BASE + tier * BLOCK_STEP
+## 블록 몸통의 높이. 건물은 남은 단계만큼 층이 쌓이고, 공원은 낮은 화단이다.
+func _body_height(ci: int, tier: int) -> float:
+	if _kind[ci] == KIND_PARK:
+		return PARK_HEIGHT
+	return BODY_BASE + tier * BODY_FLOOR
 
 
-## 블록 몸통. 옆면은 단계 색, 윗면 테두리는 그보다 밝은 색, 가운데는 잔디.
-func _plinth_mesh(ci: int, tier: int) -> ArrayMesh:
+## 블록 몸통. 블록의 윤곽이 그대로 건물의 벽이 된다. 층마다 창문 띠를 두른다.
+func _body_mesh(ci: int, tier: int) -> ArrayMesh:
 	var st := _begin()
-	var side := TIER_SIDE[tier - 1]
-	var top_y := _block_height(tier)
-	_add_prism(st, _outline[ci], 0.0, top_y, side.lightened(0.35), side, 0.0)
-	var lawn := LANDMARK_LOT if _is_landmark[ci] else GRASS[ci % GRASS.size()]
-	_add_prism(st, _lawn[ci], top_y, top_y + LAWN_LIFT, lawn, lawn.darkened(0.12), 0.0)
+	if _kind[ci] == KIND_PARK:
+		_add_prism(st, _outline[ci], 0.0, PARK_HEIGHT, GRASS[ci % GRASS.size()], STONE, 0.0)
+	else:
+		var wall := _wall_tint[ci]
+		_add_bands(st, _outline[ci], 0.0, _body_height(ci, tier), tier * 2, wall, WINDOW, wall.darkened(0.06), 1.0)
 	st.generate_normals()
 	return st.commit()
+
+
+## 블록의 종류를 정한다. 건물이 없던 낮은 구획은 공원, 나머지는 블록 전체가 건물 한 채다.
+static func _classify(cell: Dictionary, real: Array, area: float) -> String:
+	if cell["landmark"]:
+		return KIND_LANDMARK
+	var hp: int = cell["hp"]
+	if real.is_empty() and hp <= 1:
+		return KIND_PARK
+	if hp >= 3:
+		return KIND_FLAT
+	if hp == 2 and area >= 2600.0:
+		return KIND_TIERED
+	return KIND_HOUSE
 
 
 ## 윤곽을 안으로 들인다. 들일 수 없을 만큼 좁으면 그대로 돌려준다.
@@ -282,98 +432,98 @@ func _assign_buildings(stage: StageData, boxes: Array[Rect2]) -> Array[Array]:
 	return out
 
 
-## 블록 위를 꾸민다. 높이는 블록 윗면을 0으로 한다.
+## 블록 위를 꾸민다. 높이는 블록 몸통의 윗면을 0으로 한다.
 ##
-## 블록 하나에 건물 하나를 들어가는 만큼 크게 올린다. 넓은 건물과 랜드마크는 실제 윤곽대로 세운다.
-## 건물의 종류는 구획의 HP를 따른다. 1은 집이나 나무 무리, 2는 낮은 건물이나 돔, 3은 유리 빌딩, 4는 층층이 좁아지는 고층이다.
-## 지붕 숫자를 띄울 자리(지도 좌표와 높이)를 _label_at 에 남긴다.
+## 블록 자체가 건물이므로 여기서는 지붕만 얹는다. 종류마다 지붕이 다르다.
+## 집은 뾰족지붕과 굴뚝, 낮은 건물은 층층이 좁아지는 기와지붕, 높은 건물은 옥상 정원과 물탱크가 있는 평지붕이다.
+## 공원은 큰 나무를 심고, 랜드마크는 유리 탑을 세운다.
+## 숫자 표지를 띄울 자리(지도 좌표와 높이)를 _label_at 에 남긴다.
 func _furnish(st: SurfaceTool, ci: int, cell: Dictionary, lawn: PackedVector2Array, real: Array, stage: StageData) -> void:
-	var kept: Array[Dictionary] = []
-	var tower := {}
-	var biggest := {}
-	for b: Dictionary in real:
-		if b["landmark"]:
-			kept.append(b)
-			if tower.is_empty() or b["area"] > tower["area"]:
-				tower = b
-		elif b["area"] >= KEEP_REAL_AREA:
-			var h := display_height(b["levels"], false)
-			_add_bands(st, b["points"], 0.0, h, clampi(int(h / 6.5), 2, 12), WHITE_WALL, GLASS[b["seed"] % GLASS.size()], ROOFS[b["seed"] % ROOFS.size()], 1.0)
-			kept.append(b)
-			object_count += 1
-			if biggest.is_empty() or b["area"] > biggest["area"]:
-				biggest = b
-	if not tower.is_empty():
-		for b: Dictionary in real:
-			if b["landmark"] and b["seed"] != tower["seed"]:
-				_add_bands(st, b["points"], 0.0, 16.0, 2, WHITE_WALL, GLASS[0], ROOF_WHITE, 1.0)
-		# 랜드마크: 위로 갈수록 좁아지는 유리 탑
-		var top := display_height(tower["levels"], true)
-		_add_bands(st, tower["points"], 0.0, top, 18, GLASS_FRAME, GLASS_DEEP, GOLD, 0.36)
-		_label_at[ci] = Vector3(tower["center"].x, top + 62.0, tower["center"].y)
-		return
-	if cell["landmark"]:
-		return
-	if not biggest.is_empty():
-		_label_at[ci] = Vector3(biggest["center"].x, display_height(biggest["levels"], false) + 16.0, biggest["center"].y)
-
+	var outline := _outline[ci]
+	var area := _area(outline)
+	var roof := _roof_tint[ci]
+	var wall := _wall_tint[ci]
+	var h := _hash(ci, 0, 17)
 	var axis := _longest_edge(cell["points"])
 	var side := Vector2(-axis.y, axis.x)
-	var hp: int = cell["hp"]
-	var h := _hash(ci, 0, 17)
-	var footprint := Vector2.ZERO
-	var spot := Vector2.ZERO
-	if kept.is_empty():
-		# 건물 하나를 블록 안에서 가장 넓은 자리에 가장 크게 놓는다
-		var base := _base_half(hp, h)
-		spot = _roomiest_point(lawn)
-		var size := MAX_BUILDING_SCALE
-		while size >= MIN_BUILDING_SCALE and not _rect_fits(_rect(spot, axis, side, base.x * size, base.y * size), lawn):
-			size -= 0.12
-		if size >= MIN_BUILDING_SCALE:
-			footprint = base * size
-			var top_y := 0.0
-			if hp <= 1 and real.is_empty():
-				_add_clump(st, spot, h, size)
-				top_y = 30.0 * size
-			else:
-				top_y = _add_house(st, spot, axis, side, hp, h, size, minf(size, MAX_HEIGHT_SCALE))
+	match _kind[ci]:
+		KIND_LANDMARK:
+			var tower := {}
+			for b: Dictionary in real:
+				if b["landmark"] and (tower.is_empty() or b["area"] > tower["area"]):
+					tower = b
+			_add_prism(st, outline, 0.0, 2.5, LANDMARK_LOT, GOLD_WALL, 0.0)
+			if not tower.is_empty():
+				var top := display_height(tower["levels"], true)
+				_add_bands(st, tower["points"], 2.5, top, 18, GLASS_FRAME, GLASS_DEEP, GOLD, 0.36)
+				_label_at[ci] = Vector3(tower["center"].x, top + 66.0, tower["center"].y)
+		KIND_PARK:
+			var spot := _roomiest_point(lawn)
+			_label_at[ci] = Vector3(spot.x, 44.0, spot.y)
+			var box := _bounds(lawn)
+			var origin := box.get_center()
+			var reach := int(ceil(box.size.length() / 2.0 / TREE_SPACING))
+			var planted := 0
+			for ix in range(-reach, reach + 1):
+				for iy in range(-reach, reach + 1):
+					var t := _hash(ci, ix * 31 + 7, iy)
+					var at := origin + axis * (ix * TREE_SPACING) + side * (iy * TREE_SPACING) + Vector2((t >> 4) % 13 - 6.0, (t >> 8) % 13 - 6.0)
+					if not _tree_fits(at, lawn):
+						continue
+					var lakeside := false
+					for lake in stage.lakes:
+						if _closest_on_ring(lake["points"], at).distance_to(at) < 52.0:
+							lakeside = true
+					var round_tree := lakeside or (t >> 12) % 3 != 0
+					_add_tree(st, {"at": at, "round": round_tree, "size": 1.5 + ((t >> 14) % 5) * 0.12, "base": 0.0,
+						"color": (BLOSSOM if lakeside else (LEAF if round_tree else PINE))[(t >> 17) % 3]})
+					planted += 1
+			if planted == 0 and Geometry2D.is_point_in_polygon(spot, lawn):
+				_add_tree(st, {"at": spot, "round": true, "size": 1.2, "base": 0.0, "color": LEAF[h % 3]})
+		KIND_HOUSE:
+			# 처마 위에 뾰족지붕
+			var peak := clampf(sqrt(area) * 0.3, 10.0, 26.0)
+			_add_prism(st, outline, 0.0, 2.2, roof.lightened(0.18), roof.darkened(0.12), 0.0)
+			_add_prism(st, _inset(outline, 1.5), 2.2, 2.2, roof, roof, peak)
+			var spot := _roomiest_point(lawn)
+			var chimney := spot + axis * minf(9.0, sqrt(area) * 0.12)
+			if Geometry2D.is_point_in_polygon(chimney, lawn):
+				_add_prism(st, _rect(chimney, axis, side, 2.6, 2.6), 2.2, peak * 0.75 + 6.0, wall.darkened(0.1), WARM, 0.0)
+			_label_at[ci] = Vector3(spot.x, peak + 20.0, spot.y)
 			object_count += 1
-			_label_at[ci] = Vector3(spot.x, top_y + 14.0, spot.y)
-
-	# 남는 자리에 나무를 몇 그루 심는다
-	var box := _bounds(lawn)
-	var origin := box.get_center()
-	var reach := int(ceil(box.size.length() / 2.0 / TREE_SPACING))
-	for ix in range(-reach, reach + 1):
-		for iy in range(-reach, reach + 1):
-			var t := _hash(ci, ix * 31 + 7, iy)
-			if t % 5 > 1:
-				continue
-			var at := origin + axis * (ix * TREE_SPACING) + side * (iy * TREE_SPACING) + Vector2((t >> 4) % 15 - 7.0, (t >> 8) % 15 - 7.0)
-			if not _tree_fits(at, lawn, kept):
-				continue
-			var rel := at - spot
-			if footprint != Vector2.ZERO and absf(rel.dot(axis)) < footprint.x + 13.0 and absf(rel.dot(side)) < footprint.y + 13.0:
-				continue
-			var lakeside := false
-			for lake in stage.lakes:
-				if _closest_on_ring(lake["points"], at).distance_to(at) < 46.0:
-					lakeside = true
-			var round_tree := lakeside or (t >> 12) % 3 != 0
-			_add_tree(st, {"at": at, "round": round_tree, "size": 1.15 + ((t >> 14) % 5) * 0.1, "base": 0.0,
-				"color": (BLOSSOM if lakeside else (LEAF if round_tree else PINE))[(t >> 17) % 3]})
-
-
-## 건물 종류별 바닥의 반폭과 반깊이. size 1일 때의 값이다.
-static func _base_half(hp: int, h: int) -> Vector2:
-	if hp <= 1:
-		return Vector2(17.0, 13.0)
-	if hp == 2:
-		return Vector2(19.0, 19.0) if (h >> 8) % 4 == 0 else Vector2(19.0, 14.0)
-	if hp == 3:
-		return Vector2(17.0, 13.0)
-	return Vector2(15.0, 15.0)
+		KIND_TIERED:
+			# 층층이 좁아지는 기와지붕
+			var step := clampf(sqrt(area) * 0.11, 5.0, 12.0)
+			_add_prism(st, outline, 0.0, 2.5, roof.lightened(0.2), roof.darkened(0.12), 0.0)
+			var ring := outline
+			var top := 2.5
+			for k in 3:
+				var next := _inset(ring, step)
+				if next.size() < 3 or _area(next) > _area(ring) * 0.96 or _area(next) < 120.0:
+					break
+				_add_prism(st, next, top, top + 6.0, roof.lightened(0.07 * (k + 1)), roof.darkened(0.1), 0.0)
+				ring = next
+				top += 6.0
+			var spot := _roomiest_point(ring)
+			_label_at[ci] = Vector3(spot.x, top + 18.0, spot.y)
+			object_count += 1
+		_:
+			# 평지붕: 색 테두리 안에 밝은 옥상, 그 위에 표지판과 옥탑, 물탱크, 화분
+			_add_prism(st, outline, 0.0, 2.2, roof, roof.darkened(0.12), 0.0)
+			_add_prism(st, lawn, 2.2, 3.6, DECK, DECK.darkened(0.1), 0.0)
+			var spot := _roomiest_point(lawn)
+			_add_lathe(st, spot, [Vector2(15.0, 3.6), Vector2(15.0, 4.6), Vector2(11.0, 4.6), Vector2(11.0, 5.0), Vector2(0.0, 5.0)], 16, [roof, roof, ROOF_WHITE, ROOF_WHITE])
+			var hut := spot + axis * 30.0
+			if _rect_fits(_rect(hut, axis, side, 8.0, 6.0), lawn):
+				_add_prism(st, _rect(hut, axis, side, 8.0, 6.0), 3.6, 12.0, roof.lightened(0.15), wall, 0.0)
+			var tank := spot - axis * 28.0 + side * 6.0
+			if _tree_fits(tank, lawn):
+				_add_lathe(st, tank, [Vector2(5.5, 3.6), Vector2(5.5, 12.0), Vector2(0.0, 14.5)], 8, [STONE, STONE.lightened(0.15)])
+			for off: Vector2 in [side * 24.0, side * -24.0 + axis * 10.0]:
+				if _tree_fits(spot + off, lawn):
+					_add_tree(st, {"at": spot + off, "round": true, "size": 0.75, "base": 3.6, "color": LEAF[(h >> 6) % 3]})
+			_label_at[ci] = Vector3(spot.x, 24.0, spot.y)
+			object_count += 1
 
 
 ## 다각형 안에서 가장자리로부터 가장 먼 점을 대강 찾는다.
@@ -414,46 +564,11 @@ static func _rect_fits(rect: PackedVector2Array, poly: PackedVector2Array) -> bo
 	return true
 
 
-func _tree_fits(at: Vector2, lawn: PackedVector2Array, kept: Array[Dictionary]) -> bool:
+func _tree_fits(at: Vector2, lawn: PackedVector2Array) -> bool:
 	for off: Vector2 in [Vector2(9, 0), Vector2(-9, 0), Vector2(0, 9), Vector2(0, -9)]:
 		if not Geometry2D.is_point_in_polygon(at + off, lawn):
 			return false
-	for b in kept:
-		if Geometry2D.is_point_in_polygon(at, b["points"]) or _closest_on_ring(b["points"], at).distance_to(at) < 12.0:
-			return false
 	return true
-
-
-## 구획의 HP에 맞는 건물 하나. 블록의 긴 변과 나란히 선다. 꼭대기의 높이를 돌려준다.
-## size 는 바닥 크기의 배율, tall 은 높이의 배율이다.
-func _add_house(st: SurfaceTool, at: Vector2, axis: Vector2, side: Vector2, hp: int, h: int, size: float, tall: float) -> float:
-	var glass := GLASS[(h >> 5) % GLASS.size()]
-	if hp <= 1:
-		# 집: 파스텔 벽에 색 지붕
-		_add_prism(st, _rect(at, axis, side, 17.0 * size, 13.0 * size), 0.0, 15.0 * tall, PITCHED[(h >> 5) % PITCHED.size()], WALLS[(h >> 2) % WALLS.size()], 11.0 * size)
-		return 15.0 * tall + 11.0 * size
-	if hp == 2:
-		if (h >> 8) % 4 == 0:
-			# 돔: 낮은 원통 위에 유리 지붕
-			var r := 19.0 * size
-			_add_lathe(st, at, [Vector2(r, 0.0), Vector2(r, 11.0 * tall), Vector2(r * 0.92, 13.0 * tall), Vector2(r * 0.8, 13.0 * tall + r * 0.45), Vector2(r * 0.5, 13.0 * tall + r * 0.8), Vector2(0.0, 13.0 * tall + r * 0.95)],
-				14, [WHITE_WALL, ROOF_WHITE, DOME, DOME.lightened(0.18), DOME.lightened(0.32)])
-			return 13.0 * tall + r * 0.95
-		var warm := (h >> 11) % 4 == 0
-		_add_bands(st, _rect(at, axis, side, 19.0 * size, 14.0 * size), 0.0, 31.0 * tall, 5, WARM if warm else WHITE_WALL, WARM_WINDOW if warm else glass, ROOFS[(h >> 14) % ROOFS.size()], 1.0)
-		_add_prism(st, _rect(at - axis * 6.0 * size, axis, side, 6.0 * size, 5.0 * size), 31.0 * tall, 31.0 * tall + 5.0 * size, ROOF_WHITE, glass, 0.0)
-		return 31.0 * tall + 5.0 * size
-	if hp == 3:
-		# 유리 빌딩
-		_add_bands(st, _rect(at, axis, side, 17.0 * size, 13.0 * size), 0.0, 58.0 * tall, 10, WHITE_WALL, glass, ROOFS[(h >> 14) % ROOFS.size()], 1.0)
-		_add_prism(st, _rect(at, axis, side, 7.0 * size, 5.0 * size), 58.0 * tall, 58.0 * tall + 6.0 * size, ROOF_WHITE, glass.darkened(0.1), 0.0)
-		return 58.0 * tall + 6.0 * size
-	# 고층: 세 단으로 좁아진다
-	_add_bands(st, _rect(at, axis, side, 15.0 * size, 15.0 * size), 0.0, 44.0 * tall, 8, GLASS_FRAME, glass, glass.lightened(0.35), 1.0)
-	_add_bands(st, _rect(at, axis, side, 11.0 * size, 11.0 * size), 44.0 * tall, 76.0 * tall, 6, GLASS_FRAME, glass, glass.lightened(0.35), 1.0)
-	_add_bands(st, _rect(at, axis, side, 7.0 * size, 7.0 * size), 76.0 * tall, 98.0 * tall, 4, GLASS_FRAME, glass, glass.lightened(0.35), 1.0)
-	_add_prism(st, _rect(at, axis, side, 1.6 * size, 1.6 * size), 98.0 * tall, 112.0 * tall, ROOF_WHITE, ROOF_WHITE, 0.0)
-	return 98.0 * tall
 
 
 ## 큰 나무 하나와 작은 나무 둘.

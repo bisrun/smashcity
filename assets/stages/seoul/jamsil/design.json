@@ -97,5 +97,22 @@
       "type": "wide",
       "from": "임시 배치"
     }
+  ],
+  "walls": [
+    {
+      "around": [
+        504,
+        961
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 190,
+      "offset": 10,
+      "thickness": 12,
+      "_note": "롯데월드타워가 선 구획을 두른 깨지지 않는 벽. 구멍은 한강 쪽으로 낸다.",
+      "radius": 260
+    }
   ]
 }

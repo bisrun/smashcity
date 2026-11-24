@@ -20,6 +20,8 @@ const MAX_STEPS_PER_FRAME := 8
 const SKY := Color("BFE6F2")
 const INK := Color("14213D")
 const FIRE := Color("FF7A3C")
+## 끌기의 민감도. 1이면 손가락이 움직인 만큼 패들이 움직인다.
+const DRAG_GAIN := 1.25
 const ITEM_NAMES := {"multi": "멀티볼", "wide": "넓은 패들", "fire": "불공", "life": "공 +1"}
 
 var _stage: StageData
@@ -42,6 +44,12 @@ var _river := 0.0
 var _acc := 0.0
 var _paddle_target := 0.0
 var _info_timer := 0.0
+## 끌기를 시작한 화면 x와 그때의 패들 위치. 끌지 않는 동안은 NAN.
+var _drag_from := NAN
+var _drag_paddle := 0.0
+var _shake := 0.0
+var _camera_home := Vector3.ZERO
+var _trail_mesh: SphereMesh
 
 
 func _ready() -> void:
@@ -57,6 +65,7 @@ func _ready() -> void:
 	_board = BoardViewScript.new()
 	add_child(_board)
 	_board.build(_stage, _river, float(_cfg["paddle_y"]) - float(_cfg["fall_margin"]), design, _sim.cell_max_hp)
+	_board.add_walls(_sim.walls, _sim.gates)
 	_setup_camera()
 	_setup_paddle_and_ball()
 	_setup_hud()
@@ -80,21 +89,35 @@ func _process(delta: float) -> void:
 			"hit":
 				_board.show_hit(e["cell"], e["hp"], e["max_hp"])
 			"destroyed":
+				var at := _board.cell_center(e["cell"])
+				_board.show_debris(at, _board.cell_color(e["cell"]), e["landmark"] or e["chained"])
+				_board.show_popup(at, "+%d" % e["points"], Color("FFE27A") if e["chained"] else Color.WHITE)
 				_board.show_destroyed(e["cell"])
+				_shake = maxf(_shake, 16.0 if e["chained"] else 9.0)
+				Input.vibrate_handheld(18)
 			"splash":
 				_board.show_splash(e["pos"], false)
 			"emerge":
 				_board.show_splash(e["pos"], true)
 			"item_caught":
-				_toast.text = ITEM_NAMES.get(e["type_of"], "")
-				_toast.visible = true
-				_toast_left = 1.4
+				_say(ITEM_NAMES.get(e["type_of"], ""))
+				Input.vibrate_handheld(30)
+			"fever":
+				_say("피버! 연쇄 폭발")
+			"finale":
+				_say("마무리! 공이 건물을 쫓아간다")
+			"lost":
+				_shake = maxf(_shake, 26.0)
+				Input.vibrate_handheld(120)
 			"cleared":
 				_banner.text = "클리어\n%d점  남은 공 %d  %d초\n화면을 누르면 다시 시작" % [_sim.score, _sim.lives, int(_sim.elapsed)]
 				_banner.visible = true
 			"over":
 				_banner.text = "게임 오버\n%d점  부순 벽돌 %d\n화면을 누르면 다시 시작" % [_sim.score, _sim.destroyed]
 				_banner.visible = true
+	# 화면 흔들림
+	_shake = maxf(0.0, _shake - delta * 60.0)
+	_camera.position = _camera_home + Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0), 0.0) * _shake
 	_sync_paddle()
 	_sync_balls()
 	_sync_items()
@@ -113,26 +136,39 @@ func _process(delta: float) -> void:
 			_sim.destroyed, _sim.breakable_count(), Engine.get_frames_per_second()]
 
 
+## 패들은 손가락이 닿은 자리로 튀지 않는다. 닿은 곳을 기준으로 끈 만큼만 움직인다.
 func _unhandled_input(event: InputEvent) -> void:
-	var x := NAN
-	var pressed := false
-	if event is InputEventScreenTouch:
-		x = event.position.x
-		pressed = event.pressed
-	elif event is InputEventScreenDrag:
-		x = event.position.x
-	elif event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_LEFT:
-		x = event.position.x
-	elif event is InputEventMouseButton and event.pressed:
-		x = event.position.x
-		pressed = true
-	if is_nan(x) or _sim == null:
-		return
-	if (_sim.cleared or _sim.over) and pressed:
-		get_tree().reload_current_scene()
+	if _sim == null:
 		return
 	var view_w := get_viewport().get_visible_rect().size.x
-	_paddle_target = (x / view_w - 0.5) * _camera.size + _stage.width / 2.0
+	var per_pixel := _camera.size / view_w * DRAG_GAIN
+	if event is InputEventScreenTouch or (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT):
+		if event.pressed:
+			if _sim.cleared or _sim.over:
+				get_tree().reload_current_scene()
+				return
+			_drag_from = event.position.x
+			_drag_paddle = _sim.paddle_x
+		else:
+			_drag_from = NAN
+	elif event is InputEventScreenDrag or (event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_LEFT):
+		if is_nan(_drag_from):
+			_drag_from = event.position.x
+			_drag_paddle = _sim.paddle_x
+		_paddle_target = _drag_paddle + (event.position.x - _drag_from) * per_pixel
+		# 판 끝에 닿은 뒤 더 끌어도 반대로 돌아올 때 바로 반응하도록 기준을 다시 잡는다
+		var half := _sim.paddle_width() / 2.0
+		var clamped := clampf(_paddle_target, half, _stage.width - half)
+		if clamped != _paddle_target:
+			_paddle_target = clamped
+			_drag_from = event.position.x
+			_drag_paddle = clamped
+
+
+func _say(text: String) -> void:
+	_toast.text = text
+	_toast.visible = true
+	_toast_left = 1.4
 
 
 ## 자동 플레이용: 패들에 가장 먼저 닿을 공의 x.
@@ -156,7 +192,7 @@ func _sync_paddle() -> void:
 
 
 func _sync_balls() -> void:
-	_ball_mat.albedo_color = FIRE if _sim.fire_left > 0.0 else Color.WHITE
+	_ball_mat.albedo_color = FIRE if _sim.fire_left > 0.0 else (Color("FFE27A") if _sim.any_fever() else Color.WHITE)
 	var seen := {}
 	for b in _sim.balls:
 		seen[b.id] = true
@@ -169,6 +205,7 @@ func _sync_balls() -> void:
 			core.mesh = _ball_mesh
 			core.material_override = _ball_mat
 			node.add_child(core)
+			node.add_child(_make_trail())
 			add_child(node)
 			_ball_nodes[b.id] = node
 		node.position = _to_scene(b.pos, _sim.ball_radius)
@@ -177,6 +214,23 @@ func _sync_balls() -> void:
 		if not seen.has(id):
 			_ball_nodes[id].queue_free()
 			_ball_nodes.erase(id)
+
+
+## 공 뒤에 남는 꼬리.
+func _make_trail() -> CPUParticles3D:
+	var trail := CPUParticles3D.new()
+	trail.mesh = _trail_mesh
+	trail.local_coords = false
+	trail.amount = 16
+	trail.lifetime = 0.2
+	trail.gravity = Vector3.ZERO
+	trail.initial_velocity_min = 0.0
+	trail.initial_velocity_max = 0.0
+	var shrink := Curve.new()
+	shrink.add_point(Vector2(0.0, 1.0))
+	shrink.add_point(Vector2(1.0, 0.0))
+	trail.scale_amount_curve = shrink
+	return trail
 
 
 func _sync_items() -> void:
@@ -245,6 +299,7 @@ func _frame_camera() -> void:
 	var bottom_z := _stage.height / 2.0 + _river
 	var target := Vector3(0.0, 0.0, bottom_z - visible_v / (2.0 * sin(e)))
 	_camera.look_at_from_position(target + Vector3(0.0, sin(e), cos(e)) * CAMERA_DISTANCE, target, Vector3.UP)
+	_camera_home = _camera.position
 
 
 func _setup_paddle_and_ball() -> void:
@@ -267,6 +322,12 @@ func _setup_paddle_and_ball() -> void:
 	_ball_mesh.radius = r
 	_ball_mesh.height = r * 2.0
 	_ball_mat = _flat(Color.WHITE, true)
+	_trail_mesh = SphereMesh.new()
+	_trail_mesh.radius = r * 0.8
+	_trail_mesh.height = r * 1.6
+	_trail_mesh.radial_segments = 8
+	_trail_mesh.rings = 4
+	_trail_mesh.material = _ball_mat
 
 
 func _add_box(parent: Node3D, size: Vector3, at: Vector3, color: Color, unshaded: bool) -> void:
