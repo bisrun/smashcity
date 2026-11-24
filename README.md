@@ -71,3 +71,13 @@ adb install -r build/smashcity.apk
 나무, 덤불, 꽃, 바위, 카누, 수련, 조각상, 파라솔, 차, 가로등 모델은 Kenney(www.kenney.nl)의 Nature Kit, City Kit (Commercial), City Kit (Roads), Car Kit, Watercraft Kit에서 가져왔다. 모두 CC0.
 
 글꼴은 Jua다. SIL Open Font License 1.1 (`assets/fonts/OFL.txt`).
+
+## 맵 에디터
+
+스테이지를 눈으로 보고 기획(`design.json`)을 고치는 PC용 도구다.
+
+```
+python3 tools/map_editor/server.py     # 브라우저에서 http://127.0.0.1:8765
+```
+
+쓰는 법은 `docs/13_data_pipeline.md`에 있다.

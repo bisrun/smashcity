@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SmashCity 맵 에디터</title>
+<style>
+  :root { --ink:#14213d; --line:#dfe4ec; --bg:#f4f6fa; --panel:#fff; --accent:#f0645a; --mint:#3dbe8b; --muted:#7b8798; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; font: 13px/1.45 -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; color: var(--ink); background: var(--bg); }
+  #app { display: grid; grid-template: "top top" auto "left map" 1fr "msg msg" 132px / 300px 1fr; height: 100%; }
+  #top { grid-area: top; background: var(--panel); border-bottom: 1px solid var(--line); padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
+  #top h1 { font-size: 15px; margin: 0 8px 0 0; }
+  .group { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+  .group > span.label { color: var(--muted); font-size: 11px; margin-right: 2px; }
+  button, select, input[type=number], input[type=text] { font: inherit; color: inherit; border: 1px solid var(--line); background: #fff; border-radius: 7px; padding: 4px 9px; }
+  button { cursor: pointer; }
+  button:hover { border-color: #b9c1ce; }
+  button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+  button:disabled { opacity: .45; cursor: default; }
+  label.chk { display: inline-flex; gap: 4px; align-items: center; padding: 3px 7px; border: 1px solid var(--line); border-radius: 7px; background: #fff; cursor: pointer; user-select: none; }
+  #left { grid-area: left; background: var(--panel); border-right: 1px solid var(--line); overflow: auto; display: flex; flex-direction: column; }
+  #left section { padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  #left h2 { font-size: 12px; margin: 0 0 6px; color: var(--muted); font-weight: 600; letter-spacing: .02em; }
+  #stages { max-height: 34vh; overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
+  .stage { display: flex; gap: 6px; padding: 4px 8px; cursor: pointer; align-items: center; }
+  .stage:hover { background: #f1f4f9; }
+  .stage.sel { background: #ffe9e6; }
+  .stage.off { color: #b4bcc8; cursor: default; }
+  .stage .n { width: 18px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .stage .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .stage .g { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 11px; }
+  .stage .g.bad { color: var(--accent); font-weight: 600; }
+  .row { display: flex; gap: 6px; align-items: center; margin: 4px 0; }
+  .row > span:first-child { width: 92px; color: var(--muted); flex: none; }
+  .row input, .row select { flex: 1; min-width: 0; }
+  table.kv { width: 100%; border-collapse: collapse; }
+  table.kv td { padding: 2px 0; vertical-align: top; }
+  table.kv td:first-child { color: var(--muted); width: 96px; }
+  .list div { display: flex; gap: 6px; align-items: center; padding: 2px 4px; border-radius: 6px; cursor: pointer; }
+  .list div:hover { background: #f1f4f9; }
+  .list div.sel { background: #ffe9e6; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  #mapwrap { grid-area: map; position: relative; overflow: hidden; background: #e9edf3; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #hint { position: absolute; left: 10px; bottom: 8px; background: rgba(255,255,255,.88); padding: 3px 8px; border-radius: 6px; color: var(--muted); font-size: 11px; pointer-events: none; }
+  #legend { position: absolute; right: 10px; top: 10px; background: rgba(255,255,255,.92); padding: 8px 10px; border-radius: 8px; font-size: 11px; line-height: 1.7; }
+  #legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 5px; }
+  #msg { grid-area: msg; background: #101827; color: #d7deea; font: 12px/1.5 ui-monospace, Menlo, monospace; overflow: auto; padding: 8px 12px; }
+  #msg .e { color: #ff9a8f; } #msg .ok { color: #8fe3b8; } #msg .t { color: #6f7d92; margin-right: 8px; }
+  .muted { color: var(--muted); }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="top">
+    <h1>SmashCity 맵 에디터</h1>
+    <div class="group"><span class="label">지역</span><select id="region"></select></div>
+    <div class="group" id="tools"><span class="label">도구</span>
+      <button data-tool="select" class="on" title="셀, 아이템, 벽을 골라 본다. 아이템은 끌어서 옮긴다">선택</button>
+      <button data-tool="item" title="누른 자리의 셀에 아이템을 넣는다">아이템 넣기</button>
+      <select id="itemType" title="넣을 아이템"></select>
+      <button data-tool="wall" title="누른 자리의 구획을 두르는 깨지지 않는 벽을 세운다">벽 세우기</button>
+      <button id="del" title="고른 아이템이나 벽을 지운다 (Delete)">지우기</button>
+    </div>
+    <div class="group" id="layers"><span class="label">표시</span></div>
+    <div class="group" style="margin-left:auto">
+      <button id="fit" title="판 전체가 보이게">맞춤</button>
+      <button id="measure" title="봇 세 가지로 이 스테이지의 난이도를 잰다. 저장한 내용으로 잰다">난이도 재기</button>
+      <button id="play" title="저장한 내용으로 게임 창을 띄운다">게임에서 보기</button>
+      <button id="save" class="primary" disabled>저장</button>
+    </div>
+  </div>
+  <div id="left">
+    <section><h2>스테이지</h2><div id="stages"></div></section>
+    <section><h2>스테이지 속성</h2><div id="props" class="muted">스테이지를 고르세요</div></section>
+    <section><h2>고른 것</h2><div id="sel" class="muted">맵에서 셀, 아이템, 벽을 누르세요</div></section>
+    <section><h2>아이템</h2><div id="items" class="list"></div></section>
+    <section><h2>벽</h2><div id="walls" class="list"></div></section>
+  </div>
+  <div id="mapwrap"><canvas id="cv"></canvas><div id="legend"></div><div id="hint">휠: 확대 · 끌기: 이동 · 누르기: 선택</div></div>
+  <div id="msg"></div>
+</div>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const ITEMS = { multi:["멀티볼","#6fb8ff"], wide:["넓은 패들","#7cd992"], fire:["불공","#ff8a5b"], life:["공 +1","#ff6fa3"], shield:["방어막","#5ac8e0"], wreck:["레킹볼","#8a78d6"] };
+const HP_COLORS = ["#cfeedd","#bfe0f2","#ffe2a8","#ffc2ba","#d9c8f5","#c9b3f0"];
+const LAYERS = [
+  ["cells","블록",true,"구획(벽돌)을 종류별 색으로 칠한다"], ["hp","숫자",true,"부서지기까지 맞아야 하는 횟수"],
+  ["collision","충돌 영역",false,"판정 코드가 실제로 쓰는 것: 셀 윤곽, 깨지지 않는 벽, 판 테두리, 패들 선, 공을 잃는 선"],
+  ["corridors","통로",false,"공이 다니는 큰 도로의 면"], ["roads","도로선",false,"도로 중심선"], ["water","물",true,"호수, 강, 바다"],
+  ["parks","녹지",false,"OSM 의 공원과 숲"], ["buildings","건물",false,"OSM 의 실제 건물 바닥"], ["items","아이템",true,"블록에 숨긴 아이템"],
+  ["pois","시설",false,"주유소, 약국, 주차장, 경찰서, 은행"], ["grid","눈금",false,"100m 눈금"],
+];
+const S = { world:null, id:null, map:null, design:null, col:null, dirty:false, tool:"select", sel:null, view:{x:0,y:0,k:1}, show:{}, hover:-1, cellPolys:[], colTimer:0 };
+
+function log(text, cls) {
+  const m = $("msg"), d = document.createElement("div");
+  const t = new Date().toTimeString().slice(0,8);
+  d.innerHTML = '<span class="t">' + t + '</span>';
+  const s = document.createElement("span"); s.textContent = text; if (cls) s.className = cls; d.appendChild(s);
+  m.appendChild(d); m.scrollTop = m.scrollHeight;
+}
+async function api(path, body) {
+  const r = await fetch(path, body === undefined ? {} : { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) });
+  const j = await r.json();
+  if (!r.ok || j.error) throw new Error(j.error || r.statusText);
+  return j;
+}
+function setDirty(v) { S.dirty = v; $("save").disabled = !v; document.title = (v ? "● " : "") + "SmashCity 맵 에디터"; }
+
+// ---------- 목록 ----------
+async function loadWorld(keep) {
+  S.world = await api("/api/world");
+  const sel = $("region"), cur = keep ? sel.value : null;
+  sel.innerHTML = "";
+  S.world.cities.forEach((c, i) => { const o = document.createElement("option"); o.value = c.id; o.textContent = (i + 1) + ". " + c.name; sel.appendChild(o); });
+  if (cur) sel.value = cur;
+  renderStages();
+}
+function renderStages() {
+  const city = S.world.cities.find(c => c.id === $("region").value), box = $("stages");
+  box.innerHTML = "";
+  city.stages.forEach((s, i) => {
+    const d = document.createElement("div");
+    d.className = "stage" + (s.ready ? "" : " off") + (s.id === S.id ? " sel" : "");
+    const off = s.grade != null && s.grade_target != null && Math.abs(s.grade - s.grade_target) > 0.8;
+    d.innerHTML = '<span class="n">' + (i + 1) + '</span><span class="name"></span><span class="g' + (off ? " bad" : "") + '" title="목표 등급 → 봇으로 잰 등급"></span>';
+    d.children[1].textContent = s.name + (s.auto ? "" : " ✎");
+    d.children[1].title = s.auto ? "도구가 만든 초안" : "손으로 고친 기획";
+    d.children[2].textContent = s.ready ? ((s.grade_target ?? "-") + " → " + (s.grade ?? "-")) : "없음";
+    if (s.ready) d.onclick = () => openStage(s.id);
+    box.appendChild(d);
+  });
+}
+async function openStage(id) {
+  if (S.dirty && !confirm("저장하지 않은 변경이 있습니다. 버리고 다른 스테이지를 열까요?")) return;
+  try {
+    const j = await api("/api/stage?id=" + encodeURIComponent(id));
+    S.id = id; S.map = j.map; S.design = j.design; S.report = j.report; S.sel = null; S.col = null;
+    S.design.items = S.design.items || []; S.design.walls = S.design.walls || [];
+    S.cellPolys = S.map.cells.map(c => c.p);
+    setDirty(false); renderStages(); renderProps(); renderLists(); renderSel(); fit();
+    const r = S.map.report || {};
+    log("열었음: " + id + " · 셀 " + S.map.cells.length + "개 · 아이템 " + S.design.items.length + "개 · 벽 " + S.design.walls.length + "개" +
+        (r.corridor_share != null ? " · 통로 " + Math.round(r.corridor_share * 100) + "% · 물 " + Math.round((r.water_share || 0) * 100) + "%" : ""));
+    refreshCollision();
+  } catch (e) { log("열지 못함: " + e.message, "e"); }
+}
+
+// ---------- 판정에서 충돌 정보 받기 ----------
+function refreshCollision() {
+  clearTimeout(S.colTimer);
+  S.colTimer = setTimeout(async () => {
+    const id = S.id;
+    try {
+      const c = await api("/api/collision?id=" + encodeURIComponent(id), S.design);
+      if (id !== S.id) return;
+      S.col = c; draw(); renderSel();
+      log("판정 갱신: 부술 셀 " + c.breakable + "개 · 벽 조각 " + c.walls.length + "개 · 구멍 " + c.gates.length + "개 · 공 빠르기 " + c.ball_speed + " · 패들 폭 " + c.paddle_width);
+      validate();
+    } catch (e) { log("판정을 갱신하지 못함: " + e.message, "e"); }
+  }, 250);
+}
+function validate() {
+  const lm = S.map.cells.findIndex(c => c.lm);
+  let outside = 0;
+  S.design.items.forEach((it, i) => {
+    const ci = cellAt(it.at[0], it.at[1]);
+    if (ci < 0) outside++;
+    else if (ci === lm) log("아이템 " + (i + 1) + "(" + it.type + ")이 목표 건물에 있어 나오지 않습니다.", "e");
+    else if (S.map.cells[ci].s) log("아이템 " + (i + 1) + "(" + it.type + ")이 부서지지 않는 시설에 있어 꺼낼 수 없습니다.", "e");
+  });
+  if (outside) log("아이템 " + outside + "개가 길 위에 있습니다. 게임에서는 가장 가까운 셀에 들어갑니다.");
+  if (S.col && S.design.walls.length && !S.col.walls.length) log("벽이 만들어지지 않았습니다. 벽의 가운데를 블록 위로 옮겨 보세요.", "e");
+}
+
+// ---------- 좌표 ----------
+const cv = $("cv"), ctx = cv.getContext("2d");
+function toScreen(x, y) { return [S.view.x + x * S.view.k, S.view.y - y * S.view.k]; }   // 맵은 y 가 위로 자란다
+function toMap(px, py) { return [(px - S.view.x) / S.view.k, (S.view.y - py) / S.view.k]; }
+function fit() {
+  if (!S.map) return;
+  const r = cv.getBoundingClientRect(), below = 760, pad = 24;
+  const k = Math.min((r.width - pad * 2) / S.map.W, (r.height - pad * 2) / (S.map.H + below));
+  S.view = { k, x: (r.width - S.map.W * k) / 2, y: pad + S.map.H * k };
+  draw();
+}
+function inPoly(p, x, y) {
+  let inside = false;
+  for (let i = 0, j = p.length - 2; i < p.length; j = i, i += 2) {
+    const xi = p[i], yi = p[i + 1], xj = p[j], yj = p[j + 1];
+    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+function cellAt(x, y) { for (let i = 0; i < S.cellPolys.length; i++) if (inPoly(S.cellPolys[i], x, y)) return i; return -1; }
+function centre(p) { let x = 0, y = 0; for (let i = 0; i < p.length; i += 2) { x += p[i]; y += p[i + 1]; } return [x / (p.length / 2), y / (p.length / 2)]; }
+function area(p) { let a = 0; for (let i = 0, j = p.length - 2; i < p.length; j = i, i += 2) a += p[j] * p[i + 1] - p[i] * p[j + 1]; return Math.abs(a) / 2; }
+
+// ---------- 그리기 ----------
+function path(p) { ctx.beginPath(); for (let i = 0; i < p.length; i += 2) { const [x, y] = toScreen(p[i], p[i + 1]); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.closePath(); }
+function kindOf(c) { return c.lm ? "목표 건물" : c.s ? "부수지 않는 시설" : c.e ? "숲" : "건물"; }
+function cellColor(c, hp) { return c.lm ? "#f6c53b" : c.s ? "#9aa5b4" : c.e ? "#a8dc93" : HP_COLORS[Math.min(hp, 6) - 1]; }
+function draw() {
+  const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  if (cv.width !== Math.round(r.width * dpr) || cv.height !== Math.round(r.height * dpr)) { cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr); }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, r.width, r.height);
+  if (!S.map) return;
+  const m = S.map, k = S.view.k, show = S.show, col = S.col;
+  // 판 바닥과 패들 자리
+  let [x0, y0] = toScreen(0, m.H), [x1, y1] = toScreen(m.W, 0);
+  ctx.fillStyle = "#f7ecd8"; ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
+  const river = col ? col.river_width : 760, road = S.design.base === "road";
+  ctx.fillStyle = road ? "#d9d4de" : "#8fd8e6"; ctx.fillRect(x0, y1, x1 - x0, river * k);
+  ctx.fillStyle = "rgba(20,33,61,.5)"; ctx.font = "12px sans-serif"; ctx.textAlign = "left";
+  ctx.fillText(road ? "패들 자리: 큰 도로 (버스)" : "패들 자리: 강 (배)", x0 + 8, y1 + 18);
+  if (show.grid) { ctx.strokeStyle = "rgba(20,33,61,.08)"; ctx.lineWidth = 1; ctx.beginPath();
+    for (let x = 0; x <= m.W; x += 100) { const a = toScreen(x, 0), b = toScreen(x, m.H); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }
+    for (let y = 0; y <= m.H; y += 100) { const a = toScreen(0, y), b = toScreen(m.W, y); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); } ctx.stroke(); }
+  if (show.corridors) { ctx.fillStyle = "rgba(255,255,255,.9)"; (m.corridors || []).forEach(c => { path(c.p); ctx.fill(); }); }
+  if (show.parks) { ctx.fillStyle = "rgba(120,200,110,.35)"; (m.parks || []).forEach(p => { path(p); ctx.fill(); }); }
+  if (show.water) { ctx.fillStyle = "#63cfe0"; (m.lake || []).forEach(l => { path(l.p); ctx.fill(); }); }
+  if (show.cells) m.cells.forEach((c, i) => {
+    path(c.p); ctx.fillStyle = cellColor(c, col ? col.hp[i] : c.hp); ctx.fill();
+    ctx.strokeStyle = "rgba(20,33,61,.28)"; ctx.lineWidth = 1; ctx.stroke();
+  });
+  if (show.buildings) { ctx.fillStyle = "rgba(20,33,61,.22)"; (m.buildings || []).forEach(b => { path(b.p); ctx.fill(); }); }
+  if (show.roads) { ctx.strokeStyle = "rgba(120,110,140,.8)"; (m.roads || []).forEach(rd => { ctx.lineWidth = Math.max(1, (rd.w || 8) * k * .5); ctx.beginPath();
+    for (let i = 0; i < rd.l.length; i += 2) { const [x, y] = toScreen(rd.l[i], rd.l[i + 1]); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke(); }); }
+  if (show.collision) {
+    // 셀 윤곽: 공이 튕기는 면. 부서지는 것은 붉은 선, 부서지지 않는 것은 굵은 검은 선.
+    m.cells.forEach((c, i) => { path(c.p); const solid = col ? col.solid[i] : c.s; ctx.strokeStyle = solid ? "#14213d" : "#e0483c"; ctx.lineWidth = solid ? 3 : 1.5; ctx.stroke(); });
+    ctx.strokeStyle = "#14213d"; ctx.lineWidth = 3; ctx.strokeRect(x0, y0, x1 - x0, y1 - y0 + river * k);   // 옆과 위의 벽
+    ctx.clearRect(x0 - 2, y1 + river * k - 2, x1 - x0 + 4, 4);
+    if (col) {
+      const [ , py] = toScreen(0, col.paddle_y), [ , fy] = toScreen(0, col.fall_y);
+      ctx.setLineDash([8, 6]); ctx.lineWidth = 2;
+      ctx.strokeStyle = "#2b7de9"; ctx.beginPath(); ctx.moveTo(x0, py); ctx.lineTo(x1, py); ctx.stroke();
+      ctx.strokeStyle = "#e0483c"; ctx.beginPath(); ctx.moveTo(x0, fy); ctx.lineTo(x1, fy); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = "#2b7de9"; ctx.fillText("패들이 다니는 선 (폭 " + col.paddle_width + ")", x0 + 8, py - 6);
+      ctx.fillStyle = "#e0483c"; ctx.fillText("이 선 아래로 내려가면 공을 잃는다", x0 + 8, fy - 6);
+      const [pcx] = toScreen(m.W / 2, 0); ctx.fillStyle = "rgba(43,125,233,.55)";
+      ctx.fillRect(pcx - col.paddle_width * k / 2, py - col.paddle_thickness * k / 2, col.paddle_width * k, col.paddle_thickness * k);
+      ctx.beginPath(); ctx.arc(pcx, py - (col.paddle_thickness / 2 + col.ball_radius + 2) * k, col.ball_radius * k, 0, 7); ctx.fillStyle = "#fff"; ctx.fill(); ctx.strokeStyle = "#14213d"; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+  }
+  if (col) {   // 깨지지 않는 벽은 늘 보인다. 판을 바꾸는 큰 요소라서.
+    ctx.fillStyle = "#56627a"; col.walls.forEach(w => { path(w); ctx.fill(); });
+    ctx.strokeStyle = "#f5a623"; ctx.lineWidth = 3; ctx.setLineDash([5, 5]);
+    col.gates.forEach(g => { const a = toScreen(g[0], g[1]), b = toScreen(g[2], g[3]); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); });
+    ctx.setLineDash([]);
+  }
+  S.design.walls.forEach((w, i) => {
+    const [x, y] = toScreen(w.around[0], w.around[1]), on = S.sel && S.sel.kind === "wall" && S.sel.i === i;
+    if (w.radius) { ctx.beginPath(); ctx.arc(x, y, w.radius * k, 0, 7); ctx.strokeStyle = on ? "rgba(240,100,90,.8)" : "rgba(86,98,122,.35)"; ctx.lineWidth = 1; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]); }
+    const t = w.gap_toward || [0, -1], n = Math.hypot(t[0], t[1]) || 1;
+    ctx.strokeStyle = "#f5a623"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + t[0] / n * 46, y - t[1] / n * 46); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x, y, 7, 0, 7); ctx.fillStyle = on ? "#f0645a" : "#56627a"; ctx.fill(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+  });
+  if (show.hp && k > 0.16) { ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    m.cells.forEach((c, i) => { if (c.s) return; const [cx, cy] = centre(c.p), [x, y] = toScreen(cx, cy);
+      ctx.font = "600 " + Math.max(9, Math.min(15, 34 * k)) + "px sans-serif"; ctx.fillStyle = "rgba(20,33,61,.75)"; ctx.fillText(col ? col.hp[i] : c.hp, x, y); });
+    ctx.textBaseline = "alphabetic"; }
+  if (show.pois) (m.pois || []).forEach(p => { const [x, y] = toScreen(p.x, p.y); ctx.fillStyle = "#14213d"; ctx.fillRect(x - 3, y - 3, 6, 6);
+    if (k > 0.3) { ctx.font = "10px sans-serif"; ctx.textAlign = "left"; ctx.fillText(p.k + (p.n ? " " + p.n : ""), x + 6, y + 3); } });
+  if (show.items) S.design.items.forEach((it, i) => {
+    const [x, y] = toScreen(it.at[0], it.at[1]), on = S.sel && S.sel.kind === "item" && S.sel.i === i, d = ITEMS[it.type] || [it.type, "#999"];
+    ctx.beginPath(); ctx.arc(x, y, on ? 11 : 8, 0, 7); ctx.fillStyle = d[1]; ctx.fill(); ctx.strokeStyle = on ? "#f0645a" : "#14213d"; ctx.lineWidth = on ? 3 : 1.5; ctx.stroke();
+  });
+  if (S.sel && S.sel.kind === "cell") { path(m.cells[S.sel.i].p); ctx.strokeStyle = "#f0645a"; ctx.lineWidth = 3; ctx.stroke(); }
+  if (S.hover >= 0 && !(S.sel && S.sel.kind === "cell" && S.sel.i === S.hover)) { path(m.cells[S.hover].p); ctx.strokeStyle = "rgba(240,100,90,.6)"; ctx.lineWidth = 2; ctx.stroke(); }
+}
+
+// ---------- 왼쪽 패널 ----------
+function field(label, el) { const d = document.createElement("div"); d.className = "row"; const s = document.createElement("span"); s.textContent = label; d.append(s, el); return d; }
+function numInput(v, step, on) { const i = document.createElement("input"); i.type = "number"; i.step = step; i.value = v; i.onchange = () => on(parseFloat(i.value)); return i; }
+function select(options, v, on) { const s = document.createElement("select"); options.forEach(o => { const e = document.createElement("option"); e.value = o[0]; e.textContent = o[1]; s.appendChild(e); }); s.value = v; s.onchange = () => on(s.value); return s; }
+function changed(what, redoCollision) { setDirty(true); renderLists(); renderSel(); draw(); if (what) log(what); if (redoCollision) refreshCollision(); }
+function renderProps() {
+  const box = $("props"), d = S.design, region = S.world.region_index[S.id.split("/")[0]];
+  box.className = ""; box.innerHTML = "";
+  box.append(field("테마", select(S.world.themes.map(t => [t, t]), d.theme || "seoul", v => { d.theme = v; changed("테마: " + v); })));
+  box.append(field("패들 자리", select([["river", "강 (배)"], ["road", "큰 도로 (버스)"]], d.base || "river", v => { d.base = v; changed("패들 자리: " + v); })));
+  box.append(field("목표 등급", numInput(d.grade_target ?? 1, 0.1, v => { d.grade_target = v; changed("목표 등급: " + v); })));
+  box.append(field("난이도 손잡이", numInput(d.level ?? 0, 0.01, async v => {
+    try { d.level = v; d.balance = await api("/api/balance?level=" + v + "&region=" + region); renderProps(); changed("난이도 손잡이 " + v + " → 공 빠르기 " + d.balance.ball_speed + ", 패들 폭 " + d.balance.paddle_width + ", 목표 HP " + d.balance.landmark_hp, true); }
+    catch (e) { log("값을 계산하지 못함: " + e.message, "e"); } })));
+  const b = d.balance || {}, t = document.createElement("table"); t.className = "kv";
+  [["공 빠르기", "ball_speed", 10], ["패들 폭", "paddle_width", 5], ["목표 건물 HP", "landmark_hp", 1], ["건물 HP 덧값", "cell_hp_bonus", 1]].forEach(([name, key, step]) => {
+    const tr = t.insertRow(), a = tr.insertCell(), c = tr.insertCell(); a.textContent = name;
+    const i = numInput(b[key] ?? "", step, v => { d.balance = d.balance || {}; d.balance[key] = v; changed(name + ": " + v, true); }); i.style.width = "100%"; c.append(i); });
+  box.append(t);
+  const r = S.report, p = document.createElement("div"); p.className = "muted"; p.style.marginTop = "6px";
+  p.textContent = r ? "봇 클리어율(저장된 측정): 초보 " + Math.round(r.novice.clear * 100) + "% · 보통 " + Math.round(r.average.clear * 100) + "% · 고수 " + Math.round(r.expert.clear * 100) + "%" : "측정 기록 없음";
+  box.append(p);
+}
+function renderLists() {
+  const ib = $("items"); ib.innerHTML = "";
+  S.design.items.forEach((it, i) => { const d = document.createElement("div"), def = ITEMS[it.type] || [it.type, "#999"];
+    d.className = S.sel && S.sel.kind === "item" && S.sel.i === i ? "sel" : "";
+    d.innerHTML = '<span class="dot" style="background:' + def[1] + '"></span><span></span>'; d.children[1].textContent = def[0] + (it.from ? " · " + it.from : "");
+    d.onclick = () => { S.sel = { kind: "item", i }; renderLists(); renderSel(); draw(); }; ib.append(d); });
+  if (!S.design.items.length) ib.innerHTML = '<span class="muted">없음</span>';
+  const wb = $("walls"); wb.innerHTML = "";
+  S.design.walls.forEach((w, i) => { const d = document.createElement("div"); d.className = S.sel && S.sel.kind === "wall" && S.sel.i === i ? "sel" : "";
+    d.textContent = "벽 " + (i + 1) + " · 구멍 " + (w.gap_width ?? 170) + "m"; d.onclick = () => { S.sel = { kind: "wall", i }; renderLists(); renderSel(); draw(); }; wb.append(d); });
+  if (!S.design.walls.length) wb.innerHTML = '<span class="muted">없음</span>';
+}
+function renderSel() {
+  const box = $("sel"); box.className = ""; box.innerHTML = "";
+  if (!S.sel) { box.className = "muted"; box.textContent = "맵에서 셀, 아이템, 벽을 누르세요"; return; }
+  if (S.sel.kind === "cell") {
+    const c = S.map.cells[S.sel.i], t = document.createElement("table"); t.className = "kv";
+    const it = S.col ? S.col.items[S.sel.i] : null;
+    [["셀 번호", S.sel.i], ["종류", kindOf(c)], ["맞아야 하는 횟수", c.s ? "부서지지 않음" : (S.col ? S.col.hp[S.sel.i] : c.hp)], ["지도의 HP", c.hp],
+     ["넓이", Math.round(area(c.p)).toLocaleString() + "㎡"], ["꼭짓점", c.p.length / 2], ["가운데", centre(c.p).map(Math.round).join(", ")], ["숨은 아이템", it ? (ITEMS[it] || [it])[0] : "없음"]]
+      .forEach(([k, v]) => { const tr = t.insertRow(); tr.insertCell().textContent = k; tr.insertCell().textContent = v; });
+    box.append(t); const n = document.createElement("div"); n.className = "muted"; n.textContent = "셀의 모양과 종류는 map.json 에서 오므로 여기서 고치지 않습니다."; box.append(n);
+  } else if (S.sel.kind === "item") {
+    const it = S.design.items[S.sel.i];
+    box.append(field("종류", select(Object.entries(ITEMS).map(([k, v]) => [k, v[0]]), it.type, v => { it.type = v; changed("아이템 종류: " + v, true); })));
+    box.append(field("x", numInput(it.at[0], 1, v => { it.at[0] = v; changed("아이템 옮김", true); })));
+    box.append(field("y", numInput(it.at[1], 1, v => { it.at[1] = v; changed("아이템 옮김", true); })));
+    const f = document.createElement("input"); f.type = "text"; f.value = it.from || ""; f.onchange = () => { it.from = f.value; changed("아이템의 출처 메모를 고침"); };
+    box.append(field("출처 메모", f));
+  } else {
+    const w = S.design.walls[S.sel.i], ang = Math.round(Math.atan2(w.gap_toward[1], w.gap_toward[0]) * 180 / Math.PI);
+    box.append(field("가운데 x", numInput(w.around[0], 1, v => { w.around[0] = v; changed("벽 옮김", true); })));
+    box.append(field("가운데 y", numInput(w.around[1], 1, v => { w.around[1] = v; changed("벽 옮김", true); })));
+    box.append(field("구멍 방향(도)", numInput(ang, 5, v => { const r = v * Math.PI / 180; w.gap_toward = [+Math.cos(r).toFixed(2), +Math.sin(r).toFixed(2)]; changed("구멍 방향: " + v + "도 (0 오른쪽, 90 위, -90 패들 쪽)", true); })));
+    box.append(field("구멍 폭", numInput(w.gap_width ?? 170, 5, v => { w.gap_width = v; changed("구멍 폭: " + v, true); })));
+    box.append(field("두르는 범위", numInput(w.radius ?? 240, 10, v => { w.radius = v; changed("벽이 두르는 범위: " + v, true); })));
+    box.append(field("두께", numInput(w.thickness ?? 12, 1, v => { w.thickness = v; changed("벽 두께: " + v, true); })));
+  }
+}
+
+// ---------- 마우스 ----------
+let drag = null;
+function pick(px, py) {
+  const hit = (x, y, r) => Math.hypot(px - x, py - y) <= r;
+  if (S.show.items) for (let i = S.design.items.length - 1; i >= 0; i--) { const [x, y] = toScreen(...S.design.items[i].at); if (hit(x, y, 11)) return { kind: "item", i }; }
+  for (let i = S.design.walls.length - 1; i >= 0; i--) { const [x, y] = toScreen(...S.design.walls[i].around); if (hit(x, y, 10)) return { kind: "wall", i }; }
+  const [mx, my] = toMap(px, py), ci = cellAt(mx, my);
+  return ci >= 0 ? { kind: "cell", i: ci } : null;
+}
+cv.addEventListener("mousedown", e => {
+  if (!S.map) return;
+  const r = cv.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top, [mx, my] = toMap(px, py);
+  if (S.tool === "item") {
+    const ci = cellAt(mx, my); if (ci < 0) { log("셀이 없는 자리입니다. 블록 위를 누르세요.", "e"); return; }
+    const at = centre(S.map.cells[ci].p).map(Math.round); S.design.items.push({ at, type: $("itemType").value, from: "맵 에디터" });
+    S.sel = { kind: "item", i: S.design.items.length - 1 }; changed("아이템 넣음: " + ITEMS[$("itemType").value][0] + " → 셀 " + ci, true); return;
+  }
+  if (S.tool === "wall") {
+    S.design.walls.push({ around: [Math.round(mx), Math.round(my)], gap_toward: [0.3, -1.0], gap_width: 180, offset: 10, thickness: 12, radius: 240 });
+    S.sel = { kind: "wall", i: S.design.walls.length - 1 }; setTool("select"); changed("벽 세움: (" + Math.round(mx) + ", " + Math.round(my) + ") 둘레", true); return;
+  }
+  const p = pick(px, py);
+  drag = { px, py, vx: S.view.x, vy: S.view.y, target: p && p.kind !== "cell" ? p : null, moved: false, picked: p };
+});
+window.addEventListener("mousemove", e => {
+  if (!S.map) return;
+  const r = cv.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+  if (drag) {
+    if (Math.hypot(px - drag.px, py - drag.py) > 3) drag.moved = true;
+    if (drag.moved) {
+      if (drag.target) { const [mx, my] = toMap(px, py), o = drag.target.kind === "item" ? S.design.items[drag.target.i].at : S.design.walls[drag.target.i].around; o[0] = Math.round(mx); o[1] = Math.round(my); S.sel = drag.target; }
+      else { S.view.x = drag.vx + px - drag.px; S.view.y = drag.vy + py - drag.py; }
+      draw();
+    }
+    return;
+  }
+  if (e.target !== cv) return;
+  const [mx, my] = toMap(px, py), h = cellAt(mx, my);
+  $("hint").textContent = "x " + Math.round(mx) + ", y " + Math.round(my) + (h >= 0 ? " · 셀 " + h + " (" + kindOf(S.map.cells[h]) + ")" : "") + " · 휠: 확대 · 끌기: 이동";
+  if (h !== S.hover) { S.hover = h; draw(); }
+});
+window.addEventListener("mouseup", () => {
+  if (!drag) return;
+  const d = drag; drag = null;
+  if (d.moved && d.target) { changed((d.target.kind === "item" ? "아이템" : "벽") + " 옮김", true); return; }
+  if (!d.moved) { S.sel = d.picked; renderLists(); renderSel(); draw(); }
+});
+cv.addEventListener("wheel", e => {
+  e.preventDefault(); if (!S.map) return;
+  const r = cv.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top, [mx, my] = toMap(px, py);
+  S.view.k = Math.max(0.05, Math.min(6, S.view.k * Math.exp(-e.deltaY * 0.0015)));
+  S.view.x = px - mx * S.view.k; S.view.y = py + my * S.view.k; draw();
+}, { passive: false });
+
+// ---------- 상단 ----------
+function setTool(t) { S.tool = t; document.querySelectorAll("#tools button[data-tool]").forEach(b => b.classList.toggle("on", b.dataset.tool === t)); cv.style.cursor = t === "select" ? "default" : "crosshair"; }
+document.querySelectorAll("#tools button[data-tool]").forEach(b => b.onclick = () => setTool(b.dataset.tool));
+Object.entries(ITEMS).forEach(([k, v]) => { const o = document.createElement("option"); o.value = k; o.textContent = v[0]; $("itemType").appendChild(o); });
+LAYERS.forEach(([key, name, on, tip]) => { S.show[key] = on; const l = document.createElement("label"); l.className = "chk"; l.title = tip;
+  l.innerHTML = '<input type="checkbox"' + (on ? " checked" : "") + '>' + name; l.firstChild.onchange = e => { S.show[key] = e.target.checked; draw(); }; $("layers").appendChild(l); });
+$("legend").innerHTML = HP_COLORS.slice(0, 5).map((c, i) => '<i style="background:' + c + '"></i>' + (i + 1) + (i === 4 ? "번 이상" : "번")).join(" &nbsp;") +
+  '<br><i style="background:#f6c53b"></i>목표 건물 &nbsp;<i style="background:#a8dc93"></i>숲 &nbsp;<i style="background:#9aa5b4"></i>부수지 않는 시설<br><i style="background:#56627a"></i>깨지지 않는 벽 &nbsp;<i style="background:#f5a623"></i>벽의 구멍';
+function removeSelected() {
+  if (!S.sel || S.sel.kind === "cell") { log("지울 아이템이나 벽을 먼저 고르세요.", "e"); return; }
+  const what = S.sel.kind === "item" ? "아이템" : "벽"; (S.sel.kind === "item" ? S.design.items : S.design.walls).splice(S.sel.i, 1); S.sel = null; changed(what + " 지움", true);
+}
+$("del").onclick = removeSelected;
+$("fit").onclick = fit;
+$("region").onchange = renderStages;
+$("save").onclick = async () => {
+  try { const j = await api("/api/save?id=" + encodeURIComponent(S.id), S.design); delete S.design._auto; setDirty(false); log("저장함: " + j.saved, "ok"); await loadWorld(true); }
+  catch (e) { log("저장하지 못함: " + e.message, "e"); }
+};
+$("measure").onclick = async () => {
+  if (!S.id) return; if (S.dirty) { log("저장한 내용으로 잽니다. 먼저 저장하세요.", "e"); return; }
+  const b = $("measure"); b.disabled = true; log("난이도를 재는 중… 봇 세 가지 × 6판 (30초쯤 걸립니다)");
+  try { const j = await api("/api/measure?id=" + encodeURIComponent(S.id) + "&runs=6", {}), r = j.row;
+    log("잰 등급 " + j.grade + " (지수 " + j.index + ", 목표 " + (S.design.grade_target ?? "-") + ") · 클리어율 초보 " + Math.round(r.novice.clear * 100) + "% / 보통 " + Math.round(r.average.clear * 100) + "% / 고수 " + Math.round(r.expert.clear * 100) +
+        "% · 보통 봇 " + r.average.time + "초" + (r.expert.clear < 0.5 ? " · 고수 봇도 절반을 못 깹니다" : ""), r.expert.clear < 0.5 ? "e" : "ok"); }
+  catch (e) { log("재지 못함: " + e.message, "e"); }
+  b.disabled = false;
+};
+$("play").onclick = async () => { if (!S.id) return; if (S.dirty) log("저장하지 않은 변경은 게임에 보이지 않습니다.", "e");
+  try { await api("/api/play?id=" + encodeURIComponent(S.id), {}); log("게임 창을 띄웠습니다: " + S.id, "ok"); } catch (e) { log("띄우지 못함: " + e.message, "e"); } };
+window.addEventListener("keydown", e => {
+  if (["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement.tagName)) return;
+  if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); removeSelected(); }
+  if (e.key === "Escape") setTool("select");
+  if ((e.metaKey || e.ctrlKey) && e.key === "s") { e.preventDefault(); if (S.dirty) $("save").click(); }
+});
+window.addEventListener("beforeunload", e => { if (S.dirty) { e.preventDefault(); e.returnValue = ""; } });
+new ResizeObserver(draw).observe($("mapwrap"));
+loadWorld().then(() => { log("준비됨. 왼쪽에서 스테이지를 고르세요. map.json 은 보기만 하고, design.json 을 고칩니다."); const first = S.world.cities[0].stages.find(s => s.ready); if (first) openStage(first.id); })
+  .catch(e => log("목록을 읽지 못함: " + e.message, "e"));
+</script>
+</body>
+</html>
