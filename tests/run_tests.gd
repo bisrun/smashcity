@@ -24,7 +24,7 @@ func _init() -> void:
 		_test_landmark_clears_stage, _test_item_drops_and_is_caught, _test_multiball, _test_wide_fire_life,
 		_test_extra_balls_do_not_cost_a_life, _test_speed_grows_with_progress, _test_idle_ball_is_pulled_to_a_cell,
 		_test_fever_chains_to_neighbors, _test_wall_blocks_but_gap_lets_through, _test_bolt_finishes_the_last_cells,
-		_test_models_load, _test_sim_is_deterministic, _test_jamsil_plays,
+		_test_models_load, _test_save_data_ranks_scores, _test_stage_list_is_valid, _test_sim_is_deterministic, _test_jamsil_plays,
 	]:
 		t.call()
 	print("%d개 확인, 실패 %d개" % [_checks, _failures])
@@ -467,6 +467,40 @@ func _test_models_load() -> void:
 				printerr("  모양이 이상한 모델: " + name)
 				loaded -= 1
 	_check(loaded == total, "가져온 모델을 모두 읽는다 (%d/%d)" % [loaded, total])
+
+
+func _test_save_data_ranks_scores() -> void:
+	var list: Array = []
+	var Save = load("res://src/meta/save_data.gd")
+	_check(Save.insert(list, {"score": 500}, 3) == 1, "첫 기록은 1위다")
+	_check(Save.insert(list, {"score": 900}, 3) == 1, "더 높은 점수는 위로 간다")
+	_check(Save.insert(list, {"score": 700}, 3) == 2, "가운데 점수는 가운데로 들어간다")
+	_check(Save.insert(list, {"score": 700}, 3) == 3, "같은 점수면 먼저 낸 기록이 위다")
+	_check(list.size() == 3 and int(list[2]["score"]) == 700, "정해진 수만큼만 남긴다")
+	_check(Save.insert(list, {"score": 100}, 3) == 0, "밀려난 기록은 순위가 없다")
+
+	var path := "user://test_save.json"
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	var save: SaveData = Save.new(path)
+	_check(save.best("seoul/jamsil") == 0 and save.cleared.is_empty(), "처음에는 기록이 없다")
+	_check(save.add_result("seoul/jamsil", 1200, false, 80, "11.24 10:00") == 1, "기록을 남기면 순위를 돌려준다")
+	_check(save.add_result("seoul/jamsil", 3400, true, 150, "11.24 10:05") == 1, "더 높은 기록이 1위가 된다")
+	var again: SaveData = Save.new(path)
+	_check(again.best("seoul/jamsil") == 3400 and again.top("seoul/jamsil", 5).size() == 2, "기록은 파일에 남아 다시 읽힌다")
+	_check(again.cleared.has("seoul/jamsil"), "클리어한 스테이지가 남는다")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+func _test_stage_list_is_valid() -> void:
+	var data: Dictionary = BalanceScript.load_file("res://assets/stages/stages.json")
+	_check(not data.is_empty() and data["cities"].size() >= 1, "스테이지 차례 파일을 읽는다")
+	var ready := 0
+	for s: Dictionary in data["cities"][0]["stages"]:
+		if bool(s["ready"]):
+			ready += 1
+			_check(FileAccess.file_exists("res://assets/stages/%s/map.json" % s["id"]), "만들어졌다고 한 스테이지는 파일이 있다 (%s)" % s["id"])
+	_check(ready >= 1, "플레이할 수 있는 스테이지가 하나 이상 있다")
 
 
 func _play(seconds: float) -> Sim:

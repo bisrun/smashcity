@@ -1,0 +1,17 @@
+{
+  "_comment": "도시와 스테이지의 차례. ready 가 false 인 스테이지는 아직 만들지 않은 것이다.",
+  "cities": [
+    {
+      "id": "seoul",
+      "name": "서울",
+      "stages": [
+        {"id": "seoul/jamsil", "name": "잠실", "ready": true},
+        {"id": "seoul/gangnam", "name": "강남", "ready": false},
+        {"id": "seoul/hongdae", "name": "홍대와 합정", "ready": false},
+        {"id": "seoul/yeouido", "name": "여의도", "ready": false},
+        {"id": "seoul/samseong", "name": "삼성과 종합운동장", "ready": false},
+        {"id": "seoul/myeongdong", "name": "명동과 남산", "ready": false}
+      ]
+    }
+  ]
+}

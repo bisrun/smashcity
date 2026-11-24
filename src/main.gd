@@ -1,66 +1,88 @@
 extends Node3D
-## 잠실 한 판을 플레이하는 장면.
+## 한 스테이지를 플레이하는 장면.
 ##
 ## 판정은 Sim 이 하고, 이 스크립트는 입력을 넘기고 결과를 화면에 옮긴다.
-## 터짐, 워프, 결과 화면은 아직 없다(docs/14_roadmap.md).
+## 흐름: 스테이지 지도 → 플레이 → (장면을 다시 불러) 결과가 얹힌 스테이지 지도.
+## 지금 플레이할 수 있는 스테이지는 잠실 하나다.
 
 const StageDataScript := preload("res://src/data/stage_data.gd")
 const BalanceScript := preload("res://src/data/balance.gd")
 const SimScript := preload("res://src/sim/sim.gd")
 const BoardViewScript := preload("res://src/render/board_view.gd")
+const SaveDataScript := preload("res://src/meta/save_data.gd")
+const HudScript := preload("res://src/ui/hud.gd")
+const StageMapScript := preload("res://src/ui/stage_map.gd")
 
-const STAGE_DIR := "res://assets/stages/seoul/jamsil/"
+const STAGES_PATH := "res://assets/stages/stages.json"
 ## 카메라가 내려다보는 각도
 const ELEVATION_DEG := 58.0
 const CAMERA_DISTANCE := 4200.0
 ## 화면 위쪽에서 HUD가 쓰는 비율
-const HUD_SHARE := 0.1
+const HUD_SHARE := 0.13
 ## 한 프레임에 따라잡을 판정 횟수의 한도. 프레임이 끊겨도 한꺼번에 몰아서 돌지 않게 한다.
 const MAX_STEPS_PER_FRAME := 8
+## 끌기의 민감도. 1이면 손가락이 움직인 만큼 패들이 움직인다.
+const DRAG_GAIN := 1.25
+## 판이 끝난 뒤 스테이지 지도로 넘어가기까지의 시간 (초)
+const END_PAUSE := 1.6
 const SKY := Color("BFE6F2")
 const INK := Color("14213D")
 const FIRE := Color("FF7A3C")
-## 끌기의 민감도. 1이면 손가락이 움직인 만큼 패들이 움직인다.
-const DRAG_GAIN := 1.25
 const ITEM_NAMES := {"multi": "멀티볼", "wide": "넓은 패들", "fire": "불공", "life": "공 +1", "bolt": "번개!"}
+
+## 방금 끝난 판의 결과. 장면을 다시 불러도 남아 있어 스테이지 지도에 보여 준다.
+static var last_result := {}
 
 var _stage: StageData
 var _cfg: Dictionary
 var _sim: Sim
 var _board: BoardView
+var _save: SaveData
 var _camera: Camera3D
 var _paddle: Node3D
+var _hud: Hud
+var _map: StageMapScreen
 var _ball_nodes := {}
 var _item_nodes := {}
 var _ball_mesh: SphereMesh
 var _outline_mesh: SphereMesh
+var _trail_mesh: SphereMesh
 var _ball_mat: StandardMaterial3D
 var _outline_mat: StandardMaterial3D
-var _info: Label
-var _banner: Label
-var _toast: Label
-var _toast_left := 0.0
 var _river := 0.0
 var _acc := 0.0
 var _paddle_target := 0.0
-var _info_timer := 0.0
+var _fps_timer := 0.0
 ## 끌기를 시작한 화면 x와 그때의 패들 위치. 끌지 않는 동안은 NAN.
 var _drag_from := NAN
 var _drag_paddle := 0.0
 var _shake := 0.0
 var _camera_home := Vector3.ZERO
-var _trail_mesh: SphereMesh
+var _playing := false
+var _ending := -1.0
+var _stage_id := ""
+var _stage_name := ""
+var _city_name := ""
+var _stage_list: Array = []
+var _stage_index := 0
+var _landmark := -1
 
 
 func _ready() -> void:
-	_stage = StageDataScript.load_file(STAGE_DIR + "map.json")
 	_cfg = BalanceScript.load_file()
+	_pick_stage()
+	var dir := "res://assets/stages/%s/" % _stage_id
+	_stage = StageDataScript.load_file(dir + "map.json")
 	if _stage == null or _cfg.is_empty():
 		return
-	var design: Dictionary = BalanceScript.load_file(STAGE_DIR + "design.json")
+	var design: Dictionary = BalanceScript.load_file(dir + "design.json")
+	_save = SaveDataScript.new()
 	_river = float(_cfg["river_width"])
 	_sim = SimScript.new(_stage, _cfg, design)
 	_paddle_target = _sim.paddle_x
+	for i in _stage.cells.size():
+		if _stage.cells[i]["landmark"]:
+			_landmark = i
 	_setup_light()
 	_board = BoardViewScript.new()
 	add_child(_board)
@@ -68,22 +90,46 @@ func _ready() -> void:
 	_board.add_walls(_sim.walls, _sim.gates)
 	_setup_camera()
 	_setup_paddle_and_ball()
-	_setup_hud()
+	_setup_ui()
 	get_viewport().size_changed.connect(_frame_camera)
+	if OS.has_environment("SMASHCITY_AUTOPLAY"):
+		_start()
 	if OS.has_environment("SMASHCITY_SHOT"):
 		_save_screenshot.call_deferred(OS.get_environment("SMASHCITY_SHOT"))
+
+
+## 이번에 할 스테이지를 고른다. 만들어진 스테이지 가운데 아직 못 깬 첫 번째이고, 다 깼으면 첫 번째다.
+func _pick_stage() -> void:
+	var data: Dictionary = BalanceScript.load_file(STAGES_PATH)
+	var city: Dictionary = data["cities"][0]
+	_city_name = String(city["name"])
+	_stage_list = city["stages"]
+	var done := SaveDataScript.new().cleared
+	_stage_index = -1
+	for i in _stage_list.size():
+		if bool(_stage_list[i]["ready"]) and not done.has(String(_stage_list[i]["id"])):
+			_stage_index = i
+			break
+	if _stage_index < 0:
+		for i in _stage_list.size():
+			if bool(_stage_list[i]["ready"]):
+				_stage_index = i
+				break
+	_stage_id = String(_stage_list[_stage_index]["id"])
+	_stage_name = String(_stage_list[_stage_index]["name"])
 
 
 func _process(delta: float) -> void:
 	if _sim == null:
 		return
-	_acc = minf(_acc + delta, Sim.STEP * MAX_STEPS_PER_FRAME)
-	while _acc >= Sim.STEP:
-		_acc -= Sim.STEP
-		if OS.has_environment("SMASHCITY_AUTOPLAY"):
-			_paddle_target = _lowest_ball_x()
-		_sim.set_paddle(_paddle_target)
-		_sim.step()
+	if _playing:
+		_acc = minf(_acc + delta, Sim.STEP * MAX_STEPS_PER_FRAME)
+		while _acc >= Sim.STEP:
+			_acc -= Sim.STEP
+			if OS.has_environment("SMASHCITY_AUTOPLAY"):
+				_paddle_target = _lowest_ball_x()
+			_sim.set_paddle(_paddle_target)
+			_sim.step()
 	for e in _sim.take_events():
 		match e["type"]:
 			"hit":
@@ -100,12 +146,12 @@ func _process(delta: float) -> void:
 			"emerge":
 				_board.show_splash(e["pos"], true)
 			"item_caught":
-				_say(ITEM_NAMES.get(e["type_of"], ""))
+				_hud.say(ITEM_NAMES.get(e["type_of"], ""))
 				Input.vibrate_handheld(30)
 			"fever":
-				_say("피버! 연쇄 폭발")
+				_hud.say("피버! 연쇄 폭발")
 			"finale":
-				_say("마무리! 번개를 받아라")
+				_hud.say("마무리! 번개를 받아라")
 			"bolt":
 				_board.show_bolt(e["pos"])
 				_shake = maxf(_shake, 20.0)
@@ -113,43 +159,51 @@ func _process(delta: float) -> void:
 				_shake = maxf(_shake, 26.0)
 				Input.vibrate_handheld(120)
 			"cleared":
-				_banner.text = "클리어\n%d점  남은 공 %d  %d초\n화면을 누르면 다시 시작" % [_sim.score, _sim.lives, int(_sim.elapsed)]
-				_banner.visible = true
+				_hud.say("클리어!")
+				_finish(true)
 			"over":
-				_banner.text = "게임 오버\n%d점  부순 벽돌 %d\n화면을 누르면 다시 시작" % [_sim.score, _sim.destroyed]
-				_banner.visible = true
+				_hud.say("게임 오버")
+				_finish(false)
 	# 화면 흔들림
 	_shake = maxf(0.0, _shake - delta * 60.0)
 	_camera.position = _camera_home + Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0), 0.0) * _shake
 	_sync_paddle()
 	_sync_balls()
 	_sync_items()
-	_toast_left -= delta
-	if _toast_left <= 0.0:
-		_toast.visible = false
-	_info_timer -= delta
-	if _info_timer <= 0.0:
-		_info_timer = 0.2
-		var effects := ""
-		if _sim.fire_left > 0.0:
-			effects += "   불공 %d초" % ceili(_sim.fire_left)
-		if _sim.wide_left > 0.0:
-			effects += "   넓은 패들 %d초" % ceili(_sim.wide_left)
-		_info.text = "%d점   x%.1f   남은 공 %d%s\n부순 벽돌 %d/%d   %dfps" % [_sim.score, _sim.combo_multiplier(), _sim.lives, effects,
-			_sim.destroyed, _sim.breakable_count(), Engine.get_frames_per_second()]
+	_sync_hud(delta)
+	if _ending > 0.0:
+		_ending -= delta
+		if _ending <= 0.0:
+			get_tree().reload_current_scene()
+
+
+## 판이 끝났다. 기록을 남기고 잠시 뒤 스테이지 지도로 넘어간다.
+func _finish(cleared: bool) -> void:
+	var now := Time.get_datetime_dict_from_system()
+	var at := "%02d.%02d %02d:%02d" % [now["month"], now["day"], now["hour"], now["minute"]]
+	var rank := 0
+	if not OS.has_environment("SMASHCITY_AUTOPLAY"):
+		rank = _save.add_result(_stage_id, _sim.score, cleared, int(_sim.elapsed), at)
+	last_result = {"cleared": cleared, "score": _sim.score, "rank": rank, "stage": _stage_id}
+	_ending = END_PAUSE
+
+
+func _start() -> void:
+	if _map != null:
+		_map.queue_free()
+		_map = null
+	last_result = {}
+	_playing = true
 
 
 ## 패들은 손가락이 닿은 자리로 튀지 않는다. 닿은 곳을 기준으로 끈 만큼만 움직인다.
 func _unhandled_input(event: InputEvent) -> void:
-	if _sim == null:
+	if _sim == null or not _playing:
 		return
 	var view_w := get_viewport().get_visible_rect().size.x
 	var per_pixel := _camera.size / view_w * DRAG_GAIN
 	if event is InputEventScreenTouch or (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT):
 		if event.pressed:
-			if _sim.cleared or _sim.over:
-				get_tree().reload_current_scene()
-				return
 			_drag_from = event.position.x
 			_drag_paddle = _sim.paddle_x
 		else:
@@ -166,12 +220,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			_paddle_target = clamped
 			_drag_from = event.position.x
 			_drag_paddle = clamped
-
-
-func _say(text: String) -> void:
-	_toast.text = text
-	_toast.visible = true
-	_toast_left = 1.4
 
 
 ## 자동 플레이용: 패들에 가장 먼저 닿을 공의 x.
@@ -250,6 +298,47 @@ func _sync_items() -> void:
 		if not seen.has(id):
 			_item_nodes[id].queue_free()
 			_item_nodes.erase(id)
+
+
+func _sync_hud(delta: float) -> void:
+	var effects: Array = []
+	if _sim.fire_left > 0.0:
+		effects.append(["불공", _sim.fire_left, FIRE])
+	if _sim.wide_left > 0.0:
+		effects.append(["넓은 패들", _sim.wide_left, UiKit.MINT])
+	if _sim.finale:
+		effects.append(["마무리", 0.0, UiKit.CORAL])
+	var goal := 0.0
+	var goal_name := "남은 건물"
+	if _landmark >= 0:
+		goal = float(_sim.cell_hp[_landmark]) / float(_sim.cell_max_hp[_landmark])
+		goal_name = "타워"
+	else:
+		goal = 1.0 - float(_sim.destroyed) / maxf(1.0, _sim.breakable_count())
+	_hud.show_state(_sim.score, _sim.lives, _sim.combo_multiplier(), _sim.any_fever(), goal_name, goal, effects)
+	_fps_timer -= delta
+	if _fps_timer <= 0.0:
+		_fps_timer = 0.3
+		_hud.set_fps(int(Engine.get_frames_per_second()))
+
+
+func _setup_ui() -> void:
+	var layer := CanvasLayer.new()
+	add_child(layer)
+	_hud = HudScript.new()
+	layer.add_child(_hud)
+	_hud.set_stage(_city_name, _stage_index + 1, _stage_list.size(), _stage_name)
+	if OS.has_environment("SMASHCITY_AUTOPLAY"):
+		return
+	_map = StageMapScript.new()
+	layer.add_child(_map)
+	var result := last_result if String(last_result.get("stage", "")) == _stage_id else {}
+	# 방금 깬 스테이지의 결과는, 다음 스테이지가 골라진 뒤에도 보여 준다
+	if result.is_empty() and not last_result.is_empty():
+		result = last_result
+	var ranked := String(result.get("stage", _stage_id))
+	_map.setup(_city_name, _stage_list, _save.cleared, _stage_index, _save.top(ranked, 5), result)
+	_map.started.connect(_start)
 
 
 func _setup_light() -> void:
@@ -343,37 +432,6 @@ func _add_box(parent: Node3D, size: Vector3, at: Vector3, color: Color, unshaded
 	parent.add_child(mi)
 
 
-func _setup_hud() -> void:
-	var layer := CanvasLayer.new()
-	add_child(layer)
-	_info = Label.new()
-	_info.position = Vector2(24.0, 56.0)
-	_info.add_theme_font_size_override("font_size", 30)
-	_info.add_theme_color_override("font_color", INK)
-	layer.add_child(_info)
-	_banner = _centered_label(52, 0.0)
-	_banner.visible = false
-	layer.add_child(_banner)
-	_toast = _centered_label(44, 0.28)
-	_toast.visible = false
-	layer.add_child(_toast)
-
-
-## 화면 가운데에 놓이는 글자. shift 는 화면 높이에 대한 비율로, 양수면 아래로 내린다.
-func _centered_label(font_size: int, shift: float) -> Label:
-	var label := Label.new()
-	label.set_anchors_preset(Control.PRESET_FULL_RECT)
-	label.anchor_top = shift
-	label.anchor_bottom = 1.0 + shift
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", font_size)
-	label.add_theme_color_override("font_color", INK)
-	label.add_theme_color_override("font_outline_color", Color.WHITE)
-	label.add_theme_constant_override("outline_size", 14)
-	return label
-
-
 func _flat(color: Color, unshaded: bool) -> StandardMaterial3D:
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = color
@@ -384,9 +442,9 @@ func _flat(color: Color, unshaded: bool) -> StandardMaterial3D:
 
 
 ## 화면을 PNG로 저장하고 끝낸다. 환경 변수 SMASHCITY_SHOT 에 경로를 주면 실행된다.
-## SMASHCITY_SHOT_AFTER 에 초를 주면 그만큼 플레이한 뒤 찍는다.
+## SMASHCITY_SHOT_AFTER 에 초를 주면 그만큼 지난 뒤 찍는다.
 func _save_screenshot(path: String) -> void:
-	var wait := float(OS.get_environment("SMASHCITY_SHOT_AFTER")) if OS.has_environment("SMASHCITY_SHOT_AFTER") else 0.2
+	var wait := float(OS.get_environment("SMASHCITY_SHOT_AFTER")) if OS.has_environment("SMASHCITY_SHOT_AFTER") else 0.6
 	await get_tree().create_timer(wait).timeout
 	await RenderingServer.frame_post_draw
 	get_viewport().get_texture().get_image().save_png(path)

@@ -32,7 +32,10 @@ smashcity/
 ├─ assets/
 │  ├─ stages/<city>/<stage>/  map.json (OSM 가공) + design.json (수작업 기획과 상상)
 │  ├─ balance.json          속도, 폭, 점수 같은 밸런스 값
-│  ├─ models/  textures/  audio/  fonts/
+│  ├─ stages/stages.json    도시와 스테이지의 차례
+│  ├─ models/kenney/        가져온 3D 모델 (CC0)
+│  ├─ fonts/                Jua 글꼴 (OFL)
+│  ├─ textures/  audio/
 ├─ tests/
 │  └─ run_tests.gd          화면 없이 도는 테스트
 ├─ tools/
@@ -66,3 +69,5 @@ adb install -r build/smashcity.apk
 지도 데이터 © OpenStreetMap contributors, ODbL. `assets/stages/` 아래의 `map.json`은 OpenStreetMap 데이터를 가공한 것이다.
 
 나무, 덤불, 꽃, 바위, 파라솔 모델은 Kenney(www.kenney.nl)의 Nature Kit과 City Kit (Commercial)에서 가져왔다. CC0.
+
+글꼴은 Jua다. SIL Open Font License 1.1 (`assets/fonts/OFL.txt`).

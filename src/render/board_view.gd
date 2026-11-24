@@ -245,10 +245,7 @@ func _set_badge(badge: Dictionary, hp: int) -> void:
 
 func _badge_font() -> Font:
 	if _font == null:
-		var f := SystemFont.new()
-		f.font_names = PackedStringArray(["SF Pro Rounded", "Arial Rounded MT Bold", "Nunito", "Roboto", "sans-serif"])
-		f.font_weight = 800
-		_font = f
+		_font = load("res://assets/fonts/Jua-Regular.ttf") as Font
 	return _font
 
 
