@@ -17,12 +17,29 @@ var _shown_score := 0.0
 var _target_score := 0
 var _last_lives := -1
 var _fps: Label
+var _flash: ColorRect
+var _dim: ColorRect
+var _cheer: Label
+var _cheer_sub: Label
+var _confetti: CPUParticles2D
 
 
 func _ready() -> void:
 	theme = UiKit.theme()
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	# 화면 전체를 덮는 어둠과 번쩍임. 평소에는 보이지 않는다.
+	_dim = ColorRect.new()
+	_dim.color = Color(0.05, 0.07, 0.16, 0.0)
+	_dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_dim)
+	_flash = ColorRect.new()
+	_flash.color = Color(1, 1, 1, 0.0)
+	_flash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_flash)
 
 	var bar := UiKit.panel(UiKit.PAPER, 34, 18)
 	bar.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
@@ -82,6 +99,50 @@ func _ready() -> void:
 	_toast.visible = false
 	_toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_toast)
+
+	# 축하: 색종이와 큰 글자
+	_confetti = CPUParticles2D.new()
+	_confetti.emitting = false
+	_confetti.amount = 160
+	_confetti.lifetime = 3.2
+	_confetti.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	_confetti.emission_rect_extents = Vector2(380, 10)
+	_confetti.direction = Vector2(0, 1)
+	_confetti.spread = 35.0
+	_confetti.gravity = Vector2(0, 520)
+	_confetti.initial_velocity_min = 120.0
+	_confetti.initial_velocity_max = 420.0
+	_confetti.angular_velocity_min = -360.0
+	_confetti.angular_velocity_max = 360.0
+	_confetti.scale_amount_min = 10.0
+	_confetti.scale_amount_max = 22.0
+	var ramp := Gradient.new()
+	ramp.offsets = PackedFloat32Array([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
+	ramp.colors = PackedColorArray([UiKit.CORAL, UiKit.GOLD, UiKit.MINT, UiKit.SKY, Color("B58CF0"), Color("FF8FB8")])
+	_confetti.color_initial_ramp = ramp
+	add_child(_confetti)
+	_cheer = UiKit.label("", 150)
+	_cheer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_cheer.anchor_top = -0.08
+	_cheer.anchor_bottom = 0.92
+	_cheer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_cheer.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_cheer.add_theme_color_override("font_outline_color", Color.WHITE)
+	_cheer.add_theme_constant_override("outline_size", 34)
+	_cheer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_cheer.visible = false
+	add_child(_cheer)
+	_cheer_sub = UiKit.label("", 54)
+	_cheer_sub.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_cheer_sub.anchor_top = 0.02
+	_cheer_sub.anchor_bottom = 1.02
+	_cheer_sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_cheer_sub.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_cheer_sub.add_theme_color_override("font_outline_color", Color.WHITE)
+	_cheer_sub.add_theme_constant_override("outline_size", 20)
+	_cheer_sub.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_cheer_sub.visible = false
+	add_child(_cheer_sub)
 
 	_fps = UiKit.label("", 18, Color(0.08, 0.13, 0.24, 0.55))
 	_fps.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
@@ -150,6 +211,50 @@ func show_state(score: int, lives: int, combo: float, fever: bool, goal_name: St
 
 func set_fps(fps: int) -> void:
 	_fps.text = "%dfps" % fps
+
+
+## 화면 전체가 한 번 번쩍인다.
+func flash(color: Color, seconds: float) -> void:
+	_flash.color = Color(color, 0.85)
+	var tween := _flash.create_tween()
+	tween.tween_property(_flash, "color:a", 0.0, seconds).set_ease(Tween.EASE_OUT)
+
+
+## 화면을 어둡게 했다가 seconds 뒤에 되돌린다. 번개가 내리치는 동안 쓴다.
+func darken(seconds: float) -> void:
+	var tween := _dim.create_tween()
+	tween.tween_property(_dim, "color:a", 0.42, 0.15)
+	tween.tween_interval(seconds)
+	tween.tween_property(_dim, "color:a", 0.0, 0.5)
+
+
+## 판이 끝났음을 크게 알린다. 큰 글자가 튀어나오고, won 이면 색종이가 쏟아진다.
+func celebrate(text: String, sub: String, won: bool) -> void:
+	_toast.visible = false
+	_toast_left = 0.0
+	_cheer.text = text
+	_cheer.add_theme_color_override("font_color", UiKit.MINT if won else UiKit.CORAL)
+	_cheer.visible = true
+	_cheer.pivot_offset = _cheer.size / 2.0
+	_cheer.scale = Vector2.ONE * 0.2
+	var tween := _cheer.create_tween()
+	tween.tween_property(_cheer, "scale", Vector2.ONE * 1.18, 0.22).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_cheer, "scale", Vector2.ONE, 0.14)
+	tween.tween_property(_cheer, "scale", Vector2.ONE * 1.05, 0.5).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(_cheer, "scale", Vector2.ONE, 0.5).set_trans(Tween.TRANS_SINE)
+	_cheer_sub.text = sub
+	_cheer_sub.visible = true
+	_cheer_sub.modulate.a = 0.0
+	var sub_tween := _cheer_sub.create_tween()
+	sub_tween.tween_interval(0.4)
+	sub_tween.tween_property(_cheer_sub, "modulate:a", 1.0, 0.3)
+	if won:
+		_confetti.position = Vector2(size.x / 2.0, -20.0)
+		_confetti.emission_rect_extents = Vector2(size.x / 2.0, 10.0)
+		_confetti.emitting = true
+		flash(Color.WHITE, 0.5)
+	else:
+		_dim.create_tween().tween_property(_dim, "color:a", 0.35, 0.6)
 
 
 ## 화면 가운데에 잠깐 뜨는 한마디.

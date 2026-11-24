@@ -25,7 +25,9 @@ const MAX_STEPS_PER_FRAME := 8
 ## 끌기의 민감도. 1이면 손가락이 움직인 만큼 패들이 움직인다.
 const DRAG_GAIN := 1.25
 ## 판이 끝난 뒤 스테이지 지도로 넘어가기까지의 시간 (초)
-const END_PAUSE := 1.6
+## 클리어하면 축하를 충분히 보여 준 뒤에 넘어간다. 게임 오버는 그보다 짧다.
+const CLEAR_PAUSE := 4.2
+const OVER_PAUSE := 2.6
 const SKY := Color("BFE6F2")
 const INK := Color("14213D")
 const FIRE := Color("FF7A3C")
@@ -63,6 +65,9 @@ var _shake := 0.0
 ## 연달아 부술 때 올라가는 음의 계단과, 마지막으로 부순 뒤 지난 시간
 var _pop_step := 0
 var _since_pop := 99.0
+## 클리어 뒤에 판 위에서 터뜨릴 불꽃의 남은 수와 다음 불꽃까지의 시간
+var _fireworks := 0
+var _firework_in := 0.3
 var _camera_home := Vector3.ZERO
 var _playing := false
 var _ending := -1.0
@@ -106,6 +111,9 @@ func _ready() -> void:
 		_start()
 	if OS.has_environment("SMASHCITY_SHOT"):
 		_save_screenshot.call_deferred(OS.get_environment("SMASHCITY_SHOT"))
+	if OS.has_environment("SMASHCITY_DEMO_CLEAR"):
+		# 화면 확인용: 잠깐 뒤 클리어 축하를 띄운다. 기록에는 남기지 않는다.
+		get_tree().create_timer(1.5).timeout.connect(func() -> void: _finish(true))
 
 
 ## 이번에 할 스테이지를 고른다. 만들어진 스테이지 가운데 아직 못 깬 첫 번째이고, 다 깼으면 첫 번째다.
@@ -153,11 +161,21 @@ func _process(delta: float) -> void:
 				_board.show_popup(at, "+%d" % e["points"], Color("FFE27A") if e["chained"] else Color.WHITE)
 				_board.show_destroyed(e["cell"])
 				_shake = maxf(_shake, 16.0 if e["chained"] else 9.0)
+				if e["landmark"]:
+					# 랜드마크가 무너질 때는 크게 터뜨린다
+					_board.show_shockwave(at, 420.0, Color.WHITE)
+					for k in 4:
+						_board.show_debris(at + Vector2(cos(k * 1.6), sin(k * 1.6)) * 40.0, [Color("F6C53B"), Color("6FB3E8"), Color.WHITE, Color("F0645A")][k], true, 34)
+					_shake = maxf(_shake, 34.0)
+					Input.vibrate_handheld(260)
 				Input.vibrate_handheld(18)
 				# 연달아 부술수록 음이 올라간다
 				_pop_step = _pop_step + 1 if _since_pop < 1.2 else 0
 				_since_pop = 0.0
 				_sfx.play("pop", _pop_step)
+			"thud":
+				_board.show_thud(e["cell"], e["pos"])
+				_sfx.play("wall", 0, -3.0)
 			"paddle":
 				_sfx.play("paddle")
 			"wall":
@@ -176,6 +194,12 @@ func _process(delta: float) -> void:
 				_hud.say(ITEM_NAMES.get(e["type_of"], ""))
 				_sfx.play("bad" if e["type_of"] == "narrow" else "item")
 				Input.vibrate_handheld(30)
+				if e["type_of"] == "bolt":
+					# 번개: 화면 전체가 번쩍이고 어두워진 하늘 아래 건물이 차례로 무너진다
+					_hud.flash(Color("FFF7B0"), 0.6)
+					_hud.darken(float(_cfg["bolt_interval"]) * 14.0)
+					_shake = maxf(_shake, 30.0)
+					Input.vibrate_handheld(200)
 			"speed_up":
 				_hud.say("SPEED UP!")
 				_sfx.play("speed")
@@ -191,22 +215,33 @@ func _process(delta: float) -> void:
 				_sfx.play("fever")
 			"bolt":
 				_board.show_bolt(e["pos"])
+				_board.show_shockwave(e["pos"], 150.0, Color("FFF7B0"))
+				_board.show_debris(e["pos"], Color("FFE27A"), true, 30)
+				_hud.flash(Color("FFFBE0"), 0.12)
 				_sfx.play("bolt")
-				_shake = maxf(_shake, 20.0)
+				_shake = maxf(_shake, 22.0)
 			"lost":
 				_hud.say("MISS!")
 				_sfx.play("miss")
 				_shake = maxf(_shake, 26.0)
 				Input.vibrate_handheld(120)
 			"cleared":
-				_hud.say("CLEAR!")
 				_sfx.play("clear")
 				_finish(true)
 			"over":
-				_hud.say("GAME OVER")
 				_sfx.play("over")
 				_finish(false)
 	_since_pop += delta
+	# 클리어 축하: 판 곳곳에서 불꽃이 터진다
+	if _fireworks > 0:
+		_firework_in -= delta
+		if _firework_in <= 0.0:
+			_firework_in = 0.45
+			_fireworks -= 1
+			var spot := Vector2(randf_range(0.15, 0.85) * _stage.width, randf_range(0.2, 0.8) * _stage.height)
+			_board.show_debris(spot, [UiKit.CORAL, UiKit.GOLD, UiKit.MINT, UiKit.SKY][_fireworks % 4], true, 40)
+			_board.show_shockwave(spot, 200.0, Color.WHITE)
+			_sfx.play("pop", 4 + _fireworks % 5)
 	# 화면 흔들림
 	_shake = maxf(0.0, _shake - delta * 60.0)
 	_camera.position = _camera_home + Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0), 0.0) * _shake
@@ -228,7 +263,9 @@ func _finish(cleared: bool) -> void:
 	if not OS.has_environment("SMASHCITY_AUTOPLAY"):
 		rank = _save.add_result(_stage_id, _sim.score, cleared, int(_sim.elapsed), at)
 	last_result = {"cleared": cleared, "score": _sim.score, "rank": rank, "stage": _stage_id}
-	_ending = END_PAUSE
+	_ending = CLEAR_PAUSE if cleared else OVER_PAUSE
+	_hud.celebrate("CLEAR!" if cleared else "GAME OVER", "%s점" % UiKit.number(_sim.score), cleared)
+	_fireworks = 6 if cleared else 0
 
 
 func _start() -> void:
@@ -483,9 +520,7 @@ func _setup_paddle_and_ball() -> void:
 	_paddle = Node3D.new()
 	_paddle.position = Vector3(0.0, 0.0, _stage.height / 2.0 - float(_cfg["paddle_y"]))
 	add_child(_paddle)
-	_add_box(_paddle, Vector3(width, 22.0, thick), Vector3(0, 11, 0), INK, false)
-	_add_box(_paddle, Vector3(width - 14.0, 4.0, thick - 14.0), Vector3(0, 24, 0), Color.WHITE, true)
-	_add_box(_paddle, Vector3(46.0, 20.0, thick - 20.0), Vector3(0, 36, 0), Color("F0645A"), false)
+	_paddle.add_child(_boat(width, thick))
 
 	var r := _sim.ball_radius
 	_outline_mesh = SphereMesh.new()
@@ -508,6 +543,74 @@ func _setup_paddle_and_ball() -> void:
 	_trail_mesh.radial_segments = 8
 	_trail_mesh.rings = 4
 	_trail_mesh.material = _ball_mat
+
+
+## 패들로 쓰는 배. 앞뒤가 뾰족한 선체에 갑판, 선실, 굴뚝, 깃발을 얹는다. 길이가 패들의 폭이다.
+func _boat(length: float, beam: float) -> MeshInstance3D:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	st.set_smooth_group(-1)
+	var hl := length / 2.0
+	var hb := beam / 2.0 + 6.0
+	var nose := minf(46.0, hl * 0.32)
+	# 선체: 위에서 보면 양 끝이 뾰족하다. 물에 잠기는 아래쪽은 조금 좁다.
+	var deck_line := PackedVector2Array([Vector2(-hl, 0), Vector2(-hl + nose, -hb), Vector2(hl - nose, -hb), Vector2(hl, 0), Vector2(hl - nose, hb), Vector2(-hl + nose, hb)])
+	var keel := PackedVector2Array()
+	for p in deck_line:
+		keel.append(Vector2(p.x * 0.93, p.y * 0.72))
+	_hull(st, keel, deck_line, 0.0, 18.0, INK, INK.lightened(0.12))
+	var rim := PackedVector2Array()
+	var floor_line := PackedVector2Array()
+	for p in deck_line:
+		rim.append(p * 1.0)
+		floor_line.append(Vector2(p.x * 0.94, p.y * 0.8))
+	_slab(st, rim, 18.0, 21.0, Color("F0645A"), Color("F0645A").darkened(0.15))
+	_slab(st, floor_line, 21.0, 22.5, Color("FFF4E3"), Color("E8D9C0"))
+	# 선실과 지붕
+	var cabin_half := minf(hl * 0.36, 52.0)
+	_slab(st, _box2(-cabin_half * 0.2, 0.0, cabin_half, hb * 0.55), 22.5, 42.0, Color.WHITE, Color("F7FAFC"))
+	_slab(st, _box2(-cabin_half * 0.2, 0.0, cabin_half * 0.88, hb * 0.56), 30.0, 37.0, Color("8CCBF2"), Color("8CCBF2"))
+	_slab(st, _box2(-cabin_half * 0.2, 0.0, cabin_half + 5.0, hb * 0.62), 42.0, 45.0, Color("F0645A"), Color("F0645A").darkened(0.15))
+	# 굴뚝
+	_slab(st, _box2(-cabin_half * 0.55, 0.0, 9.0, 8.0), 45.0, 66.0, Color("FFD23F"), Color("FFD23F").darkened(0.12))
+	_slab(st, _box2(-cabin_half * 0.55, 0.0, 10.5, 9.5), 60.0, 66.0, INK, INK)
+	# 뱃머리의 깃대와 깃발
+	_slab(st, _box2(hl - nose * 0.9, 0.0, 1.6, 1.6), 21.0, 52.0, Color.WHITE, Color.WHITE)
+	_slab(st, _box2(hl - nose * 0.9 - 9.0, 0.0, 9.0, 1.2), 42.0, 52.0, Color("6FB8FF"), Color("6FB8FF"))
+	st.generate_normals()
+	var mat := StandardMaterial3D.new()
+	mat.vertex_color_use_as_albedo = true
+	mat.vertex_color_is_srgb = true
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.roughness = 1.0
+	var mi := MeshInstance3D.new()
+	mi.mesh = st.commit()
+	mi.material_override = mat
+	return mi
+
+
+## 배 안에서 쓰는 네모. (x, z)가 가운데이고 half_x, half_z 가 반폭이다.
+static func _box2(x: float, z: float, half_x: float, half_z: float) -> PackedVector2Array:
+	return PackedVector2Array([Vector2(x - half_x, z - half_z), Vector2(x + half_x, z - half_z), Vector2(x + half_x, z + half_z), Vector2(x - half_x, z + half_z)])
+
+
+## (x, z) 윤곽을 y0 에서 y1 까지 올린 덩어리.
+func _slab(st: SurfaceTool, ring: PackedVector2Array, y0: float, y1: float, top: Color, side: Color) -> void:
+	_hull(st, ring, ring, y0, y1, side, top)
+
+
+## 아래 윤곽과 위 윤곽을 이은 덩어리. 두 윤곽의 점 수는 같아야 한다.
+func _hull(st: SurfaceTool, low: PackedVector2Array, high: PackedVector2Array, y0: float, y1: float, side: Color, top: Color) -> void:
+	var n := low.size()
+	st.set_color(side)
+	for i in n:
+		var j := (i + 1) % n
+		for v: Vector3 in [Vector3(low[i].x, y0, low[i].y), Vector3(low[j].x, y0, low[j].y), Vector3(high[j].x, y1, high[j].y),
+				Vector3(low[i].x, y0, low[i].y), Vector3(high[j].x, y1, high[j].y), Vector3(high[i].x, y1, high[i].y)]:
+			st.add_vertex(v)
+	st.set_color(top)
+	for idx in Geometry2D.triangulate_polygon(high):
+		st.add_vertex(Vector3(high[idx].x, y1, high[idx].y))
 
 
 func _add_box(parent: Node3D, size: Vector3, at: Vector3, color: Color, unshaded: bool) -> void:

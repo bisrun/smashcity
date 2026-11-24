@@ -68,6 +68,6 @@ adb install -r build/smashcity.apk
 
 지도 데이터 © OpenStreetMap contributors, ODbL. `assets/stages/` 아래의 `map.json`은 OpenStreetMap 데이터를 가공한 것이다.
 
-나무, 덤불, 꽃, 바위, 파라솔 모델은 Kenney(www.kenney.nl)의 Nature Kit과 City Kit (Commercial)에서 가져왔다. CC0.
+나무, 덤불, 꽃, 바위, 카누, 수련, 조각상, 파라솔, 차, 가로등 모델은 Kenney(www.kenney.nl)의 Nature Kit, City Kit (Commercial), City Kit (Roads), Car Kit에서 가져왔다. 모두 CC0.
 
 글꼴은 Jua다. SIL Open Font License 1.1 (`assets/fonts/OFL.txt`).
