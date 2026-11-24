@@ -24,26 +24,29 @@ OSM 지도를 뼈대로 삼아 상상으로 꾸민 도시에서 하는 2.5D 벽�
 
 폴더 구조는 `README.md`에 있다. 구조에서 지켜야 하는 규칙은 다음과 같다.
 
-- **판정과 렌더를 나눈다.** `lib/game/sim`은 Flutter를 import하지 않는다. 판정 결과에 영향을 주는 계산(충돌, 점수, 아이템 효과, 터짐 판정)은 sim 쪽에 둔다. render는 상태를 읽고 이벤트를 받아 그리기만 한다. 봇 검증과 리플레이가 이 분리에 의존한다.
+- **판정과 렌더를 나눈다.** `src/sim`과 `src/data`는 장면에 의존하지 않는다. `RefCounted`를 상속하고 `Node`, 장면 트리, 렌더링과 입력 API를 쓰지 않는다. 판정 결과에 영향을 주는 계산(충돌, 점수, 아이템 효과, 터짐 판정)은 sim 쪽에 둔다. `src/render`는 상태를 읽고 이벤트를 받아 그리기만 한다. 봇 검증과 리플레이가 이 분리에 의존한다.
 - **판정은 결정적이다.** 같은 입력이면 같은 결과가 나와야 한다. sim 안에서 실제 시각이나 시드 없는 난수를 쓰지 않는다.
 - **밸런스 값은 데이터에 둔다.** 속도, HP, 점수, 지속 시간을 코드에 숫자로 쓰지 않는다.
 - **스테이지 데이터는 두 파일이다.** `map.json`은 OSM에서 자동 생성하고 손으로 고치지 않는다. 수작업 내용은 `design.json`에만 쓴다. OSM 라이선스(ODbL)의 공개 의무가 수작업 부분으로 번지지 않게 하려는 것이다.
 - **뼈대는 실제, 그 위는 상상이다.** 큰 도로, 물, 랜드마크의 자리는 실제 지도를 따른다. 색, 건물 모양, 숲, 지도에 없는 도시 아이템은 지어내도 된다(`docs/03_map_conversion.md`). 지어낸 것은 `design.json`에만 두고 `map.json`에는 넣지 않는다.
 - **부수지 않는 시설이 있다.** 종교시설, 추모시설, 병원, 문화재는 벽돌에서 제외하거나 파괴 불가로 둔다(`docs/03_map_conversion.md`).
 
-엔진은 Godot 4로 확정됐다. 저장소는 아직 Flutter 뼈대(`lib/`, `android/`, `pubspec.yaml`)이고 Godot 프로젝트로 바꿀 예정이다. 전환 전에는 Flutter 코드를 늘리지 않는다. 전환하면 이 문서의 구조 규칙과 검증 명령, `/verify`, `rule-reviewer`의 Flutter 관련 부분을 함께 고친다.
+엔진은 Godot 4(개발 PC는 4.7.2)이고 스크립트는 GDScript다. 들여쓰기는 탭을 쓴다. 다른 스크립트를 가리킬 때는 `preload`로 경로를 적는다. 전역 클래스 이름만 쓰면 화면 없이 도는 테스트에서 찾지 못할 수 있다.
 
 ## 검증
 
 작업을 마쳤다고 말하기 전에 `/verify`를 실행한다. 아래 세 가지를 돌린다.
 
 ```
-flutter analyze
-flutter test
+godot --headless --path . --import
+godot --headless --path . -s tests/run_tests.gd
 python3 tools/check_docs.py
 ```
 
-- 코드를 바꿨으면 판정 로직에 테스트를 붙인다. `test/game/sim` 아래에 둔다.
+- 첫 줄은 스크립트 오류를 잡는다. 출력에 `ERROR`나 `SCRIPT ERROR`가 없어야 한다.
+- 코드를 바꿨으면 테스트를 붙인다. `tests/run_tests.gd`에 `_test_`로 시작하는 함수를 더하고 목록에 넣는다.
+- 화면이 바뀌는 변경이면 직접 본다. `SMASHCITY_SHOT=<저장할 경로.png> godot --path . --resolution 540x1200`을 실행하면 창이 잠깐 떴다가 화면을 저장하고 닫힌다.
+- 단말기 확인은 `godot --headless --path . --export-debug Android build/smashcity.apk` 뒤 `adb install -r build/smashcity.apk`로 한다. 내보내기 템플릿이 설치되어 있어야 한다.
 - 문서만 바꿨어도 `check_docs.py`는 돌린다. 스테이지 번호나 파일 이름을 바꾸면 다른 문서의 링크와 표가 낡는다.
 - 실패하면 원인을 조사한다. 테스트를 끄거나 건너뛰어 통과시키지 않는다.
 - 실제 지도 데이터나 기기에서 확인하지 않은 숫자는 문서에 "확인 전"이라고 적는다.

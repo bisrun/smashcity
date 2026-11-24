@@ -1,6 +1,6 @@
 ---
 name: rule-reviewer
-description: SmashCity 게임 코드의 변경이 기획서와 구조 규칙에 맞는지 검토한다. lib/game, lib/data, tools/stage_baker를 고친 뒤에 쓴다. 일반적인 코드 품질이 아니라 이 프로젝트 고유의 규칙을 본다. 고치지 않고 보고만 한다.
+description: SmashCity 게임 코드의 변경이 기획서와 구조 규칙에 맞는지 검토한다. src/, tools/stage_baker를 고친 뒤에 쓴다. 일반적인 코드 품질이 아니라 이 프로젝트 고유의 규칙을 본다. 고치지 않고 보고만 한다.
 tools: Read, Grep, Glob, Bash
 ---
 
@@ -17,13 +17,14 @@ SmashCity는 OSM 지도를 배경으로 한 벽돌깨기 게임이다. 너는 �
 
 **판정과 렌더의 분리.** 봇 검증과 리플레이가 여기에 의존한다.
 
-- `lib/game/sim`이 Flutter나 렌더 쪽 코드를 import하는가. `grep -rn "package:flutter" lib/game/sim`으로 확인한다.
+- `src/sim`과 `src/data`의 스크립트가 `Node`를 상속하거나 장면 트리, 렌더링, 입력 API(`get_tree`, `get_viewport`, `RenderingServer`, `Input`, `MeshInstance3D` 등)를 쓰는가. `grep -rnE "extends Node|get_tree|get_viewport|RenderingServer|Input\.|MeshInstance" src/sim src/data`로 확인한다.
+- sim이 `src/render`나 `src/ui`의 스크립트를 불러오는가.
 - 판정 결과에 영향을 주는 계산(충돌, 피해, 점수, 아이템 효과, 터짐과 도미노의 판정)이 render나 ui 쪽에 있는가.
 - render가 sim의 상태를 바꾸는가.
 
 **결정성.** 같은 입력이면 같은 결과가 나와야 한다.
 
-- sim 안에서 실제 시각, 시드 없는 난수, 순서가 보장되지 않는 컬렉션 순회를 쓰는가.
+- sim 안에서 실제 시각(`Time`), 시드 없는 난수(`randf`, `randi`), `_process`의 `delta`에 기대는 계산을 쓰는가.
 - 프레임 간격에 따라 결과가 달라지는 계산이 있는가. sim은 고정 간격으로 돈다.
 
 **밸런스 값의 위치.** 속도, HP, 점수, 지속 시간, 개수 상한이 코드에 숫자로 박혀 있는가. 데이터 파일에서 읽어야 한다.
@@ -41,7 +42,7 @@ SmashCity는 OSM 지도를 배경으로 한 벽돌깨기 게임이다. 너는 �
 - 지도에 없는 상상 아이템이나 꾸밈이 `map.json`에 들어갔는가. 이런 것은 `design.json`에 둔다.
 - 큰 도로, 물, 랜드마크의 자리를 실제와 다르게 옮겼는가.
 
-**테스트.** 바뀐 판정 로직에 `test/game/sim` 아래 테스트가 있는가. 테스트를 끄거나 기대값을 결과에 맞춰 바꾼 흔적이 있는가.
+**테스트.** 바뀐 판정 로직에 `tests/run_tests.gd`의 테스트가 있는가. 테스트를 끄거나 기대값을 결과에 맞춰 바꾼 흔적이 있는가.
 
 ## 보고
 

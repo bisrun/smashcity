@@ -5,13 +5,15 @@ description: 작업을 마치기 전에 정적 분석, 테스트, 기획서 점�
 
 # 검증
 
-아래 세 가지를 실행한다. 서로 독립적이므로 함께 돌린다.
+아래 세 가지를 실행한다. 첫 줄을 먼저 돌리고 나머지는 함께 돌려도 된다.
 
 ```
-flutter analyze
-flutter test
+godot --headless --path . --import
+godot --headless --path . -s tests/run_tests.gd
 python3 tools/check_docs.py
 ```
+
+첫 줄은 종료 코드가 0이어도 스크립트 오류가 있을 수 있다. 출력에서 `ERROR`와 `SCRIPT ERROR`를 찾는다.
 
 ## 결과 다루기
 
@@ -22,6 +24,6 @@ python3 tools/check_docs.py
 
 ## 이것으로 확인되지 않는 것
 
-이 검증은 화면에서의 실제 동작, 기기 성능, 플레이의 재미를 확인하지 않는다. 그런 변경이었다면 무엇을 직접 확인하지 못했는지 함께 알린다.
+이 검증은 화면에서의 실제 동작, 기기 성능, 플레이의 재미를 확인하지 않는다. 화면이 바뀌는 변경이면 `SMASHCITY_SHOT=<경로.png> godot --path . --resolution 540x1200`으로 화면을 저장해 직접 본다. 그래도 확인하지 못한 것은 함께 알린다.
 
 게임 코드를 바꿨다면 `rule-reviewer` 에이전트로 기획과 구조 규칙에 맞는지 추가로 볼 수 있다. 기획서를 여러 개 고쳤다면 `doc-keeper` 에이전트로 문서 간 어긋남을 본다.
