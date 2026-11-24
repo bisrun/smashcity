@@ -30,7 +30,7 @@ smashcity/
 │     ├─ hud/               플레이 중 HUD
 │     └─ widgets/           공용 위젯
 ├─ assets/
-│  ├─ stages/<city>/<district>/<stage>/  map.json (OSM 가공) + design.json (수작업 기획)
+│  ├─ stages/<city>/<stage>/  map.json (OSM 가공) + design.json (수작업 기획)
 │  ├─ models/  textures/  audio/  fonts/
 ├─ tools/
 │  └─ stage_baker/          OSM → 스테이지 파일 변환 (오프라인 도구)
