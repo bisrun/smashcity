@@ -45,6 +45,7 @@
   "narrow_factor": 0.6,
   "narrow_seconds": 10,
   "landmark_hp": 12,
+  "forest_hp": 10,
   "score_hit": 10,
   "score_destroy_per_hp": 100,
   "combo_step": 0.1,

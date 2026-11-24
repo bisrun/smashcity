@@ -58,7 +58,7 @@ var cfg: Dictionary
 
 var cell_hp := PackedInt32Array()
 var cell_max_hp := PackedInt32Array()
-## 부서지지 않는 셀인지. 숲과 공원이 그렇다. 공은 튕겨 나오기만 한다.
+## 부서지지 않는 셀인지. 지금은 그런 셀이 없다. 숲은 여러 번 맞아야 부서지는 보통 셀이다.
 var cell_solid := PackedByteArray()
 var balls: Array[Ball] = []
 ## 떨어지고 있는 아이템. 각 원소: {id: int, type: String, pos: Vector2}
@@ -145,8 +145,10 @@ func _init(p_stage: StageData, p_cfg: Dictionary, design: Dictionary = {}) -> vo
 	cell_solid.resize(stage.cells.size())
 	for i in stage.cells.size():
 		var c := stage.cells[i]
-		cell_solid[i] = 1 if is_park(c) else 0
+		cell_solid[i] = 0
 		var hp: int = int(cfg["landmark_hp"]) if c["landmark"] else c["hp"]
+		if is_park(c):
+			hp = int(cfg["forest_hp"])  # 숲은 오래 버틴다
 		cell_hp[i] = hp
 		cell_max_hp[i] = hp
 		if c["landmark"]:
@@ -215,6 +217,7 @@ func breakable_count() -> int:
 
 
 ## 숲이나 공원인 셀인지. 실제로 건물이 없던 낮은 구획이 그렇다. 화면도 같은 기준으로 그린다.
+## 숲은 여러 번 맞아야 부서진다.
 static func is_park(cell: Dictionary) -> bool:
 	return bool(cell.get("empty", false)) and int(cell.get("hp", 1)) <= 1 and not bool(cell.get("landmark", false))
 
@@ -656,8 +659,8 @@ func _collide_cells(b: Ball) -> void:
 			best = idx
 	if best < 0:
 		return
-	# 불공은 보통 셀을 한 번에 부수고 그대로 지나간다. 랜드마크에서는 보통 공처럼 튕긴다.
-	if fire_left > 0.0 and not stage.cells[best]["landmark"] and cell_solid[best] == 0:
+	# 불공은 보통 셀을 한 번에 부수고 그대로 지나간다. 랜드마크와 숲에서는 보통 공처럼 튕긴다.
+	if fire_left > 0.0 and not stage.cells[best]["landmark"] and cell_solid[best] == 0 and not is_park(stage.cells[best]):
 		_damage(b, best, cell_hp[best])
 		return
 	b.pos += best_n * best_depth

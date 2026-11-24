@@ -25,7 +25,7 @@ const RIM := 6.0
 ## 한 단을 높게 잡아, 맞을 때마다 건물이 눈에 띄게 줄어든다.
 const BODY_BASE := 8.0
 const BODY_FLOOR := 26.0
-const PARK_HEIGHT := 9.0
+const PARK_HEIGHT := 12.0
 const KIND_PARK := "park"
 const KIND_HOUSE := "house"
 const KIND_TIERED := "tiered"
@@ -68,6 +68,10 @@ const WINDOW := Color("8CCBF2")
 const WINDOWS: Array[Color] = [Color("8CCBF2"), Color("7FD6D8"), Color("9DB8F2"), Color("6FB3E8"), Color("A9D9F5")]
 const LIT := Color("FFE9A8")
 const STONE := Color("D8D2C4")
+## 숲을 두른 돌 테두리의 색, 많이 맞은 숲의 풀빛, 많이 맞은 숲의 나무에 입히는 색
+const CURB := Color("F5EFE2")
+const AUTUMN := Color("E0B45C")
+const AUTUMN_TINT := Color(1.0, 0.72, 0.42)
 ## 부서진 자리에 남는 터의 색. 길보다 조금 어둡다.
 const TRACE_EDGE := Color("E6D4B4")
 ## 건물 밑동에 깔리는 그늘의 색
@@ -129,6 +133,8 @@ var _lawn: Array[PackedVector2Array] = []
 var _is_landmark: Array[bool] = []
 var _plinths: Array[MeshInstance3D] = []
 var _kind: Array[String] = []
+## 셀마다 남은 HP의 비율 (1이면 멀쩡). 숲의 색을 정한다.
+var _health: Array[float] = []
 var _wall_tint: Array[Color] = []
 var _roof_tint: Array[Color] = []
 var _badges: Array[Dictionary] = []
@@ -193,6 +199,7 @@ func build(stage: StageData, river_width: float, near_bank_y: float, design: Dic
 				_fit[ci] = fit
 				kind = KIND_MODEL
 		_kind.append(kind)
+		_health.append(1.0)
 		var pick := _hash(ci, 5, 23)
 		_wall_tint.append(GOLD_WALL if cell["landmark"] else WALL_TINTS[pick % WALL_TINTS.size()])
 		_roof_tint.append(GOLD if cell["landmark"] else ROOF_TINTS[(pick >> 4) % ROOF_TINTS.size()])
@@ -209,6 +216,8 @@ func build(stage: StageData, river_width: float, near_bank_y: float, design: Dic
 		_label_at.append(Vector3.INF)
 		_furnish(st, ci, cell, lawn, real[ci], stage)
 		var tops := _mesh_child(node, st, true)
+		if _kind[ci] == KIND_PARK:
+			tops.material_override = _material.duplicate()
 		tops.position.y = _body_height(ci, tier)
 		_tops.append(tops)
 		_badges.append(_add_badge(ci, tops, start_hp))
@@ -223,7 +232,17 @@ func show_hit(cell: int, hp: int, max_hp: int) -> void:
 		return
 	_set_badge(_badges[cell], hp)
 	var tier := _tier(hp, max_hp, _is_landmark[cell])
+	_health[cell] = float(hp) / float(max_hp)
 	_plinths[cell].mesh = _body_mesh(cell, tier)
+	if _kind[cell] == KIND_PARK:
+		# 숲은 낮아지지 않는다. 출렁이고 잎이 흩날리며, 맞을수록 가을빛으로 물든다.
+		var tint := Color.WHITE.lerp(AUTUMN_TINT, 1.0 - _health[cell])
+		((_tops[cell] as MeshInstance3D).material_override as StandardMaterial3D).albedo_color = tint
+		var sway := node.create_tween()
+		sway.tween_property(node, "scale", Vector3(1.03, 0.88, 1.03), 0.06)
+		sway.tween_property(node, "scale", Vector3(0.99, 1.06, 0.99), 0.08)
+		sway.tween_property(node, "scale", Vector3.ONE, 0.08)
+		return
 	var tween := node.create_tween()
 	# 쿵 하고 눌렸다가 한 단 낮아진 높이로 튀어 오른다
 	tween.tween_property(_tops[cell], "position:y", _body_height(cell, tier), 0.12).set_ease(Tween.EASE_IN)
@@ -603,9 +622,9 @@ static func display_height(levels: int, landmark: bool) -> float:
 	return maxf(9.0, h)
 
 
-## 남은 HP를 1~4단계로 옮긴다. 보통 셀은 HP가 곧 단계이고, HP가 큰 랜드마크는 4단계로 나눈다.
-static func _tier(hp: int, max_hp: int, landmark: bool) -> int:
-	if landmark and max_hp > 4:
+## 남은 HP를 1~4단계로 옮긴다. 보통 셀은 HP가 곧 단계이고, HP가 큰 랜드마크와 숲은 4단계로 나눈다.
+static func _tier(hp: int, max_hp: int, _landmark: bool) -> int:
+	if max_hp > 4:
 		return clampi(ceili(hp * 4.0 / max_hp), 1, 4)
 	return clampi(hp, 1, 4)
 
@@ -624,7 +643,10 @@ func _body_height(ci: int, tier: int) -> float:
 func _body_mesh(ci: int, tier: int) -> ArrayMesh:
 	var st := _begin()
 	if _kind[ci] == KIND_PARK:
-		_add_prism(st, _outline[ci], 0.0, PARK_HEIGHT, GRASS[ci % GRASS.size()], STONE, 0.0)
+		# 숲: 돌 테두리를 두른 화단. 테두리가 숲의 경계를 또렷하게 보여 준다. 맞을수록 풀빛이 가을빛으로 바뀐다.
+		_add_skirt(st, _outline[ci])
+		_add_prism(st, _outline[ci], 0.0, PARK_HEIGHT, CURB, CURB.darkened(0.18), 0.0)
+		_add_prism(st, _lawn[ci], PARK_HEIGHT, PARK_HEIGHT + 1.6, GRASS[ci % GRASS.size()].lerp(AUTUMN, 1.0 - _health[ci]), CURB.darkened(0.1), 0.0)
 	elif _kind[ci] == KIND_MODEL:
 		# 받침은 그대로 남고 건물만 내려앉는다
 		_add_skirt(st, _outline[ci])

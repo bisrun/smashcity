@@ -164,6 +164,25 @@ cells = [c.buffer(-2.0).simplify(1.5) for c in cells]
 cells = [max(getattr(c, "geoms", [c]), key=lambda x: x.area) for c in cells if not c.is_empty]
 cells = [c for c in cells if c.geom_type == "Polygon" and c.area > 600]
 
+# 너무 큰 구획은 쪼갠다. 긴 쪽을 가로지르는 선으로 반씩 나누기를 되풀이한다.
+MAX_AREA = 15000
+def split_big(c, depth=0):
+    if c.area <= MAX_AREA or depth > 6: return [c]
+    r = c.minimum_rotated_rectangle
+    xs, ys = r.exterior.coords.xy
+    e1 = (xs[1] - xs[0], ys[1] - ys[0]); e2 = (xs[2] - xs[1], ys[2] - ys[1])
+    long = e1 if math.hypot(*e1) >= math.hypot(*e2) else e2
+    n = math.hypot(*long)
+    if n < 1: return [c]
+    px, py = -long[1] / n, long[0] / n
+    cx, cy = c.centroid.x, c.centroid.y
+    cut = LineString([(cx - px * 3000, cy - py * 3000), (cx + px * 3000, cy + py * 3000)]).buffer(2.0)
+    out = []
+    for g in getattr(c.difference(cut), "geoms", [c.difference(cut)]):
+        if g.geom_type == "Polygon" and g.area > 900: out += split_big(g, depth + 1)
+    return out or [c]
+cells = [part for c in cells for part in split_big(c)]
+
 def hp_of(lv): return 1 if lv <= 3 else 2 if lv <= 10 else 3 if lv <= 25 else 4
 cell_out = []
 tower = max(buildings, key=lambda b: b["lv"])
