@@ -1,4 +1,4 @@
-"""잠실 OSM 데이터로 통로와 네모 벽돌을 만들고 수치를 재는 실험 스크립트.
+"""잠실 OSM 데이터로 통로와 셀을 만들어 보고 수치를 재는 실험 스크립트.
 
 docs/03_map_conversion.md 와 docs/stages/seoul_jamsil.md 의 수치가 여기서 나왔다.
 stage_baker 의 정식 구현이 아니다. shapely 가 필요하다.
@@ -121,76 +121,56 @@ for cls in ("trunk", "primary", "secondary", "tertiary", "residential"):
         report.setdefault("real_px", {})[cls] = dict(len_km=round(sum(r["line"].length for r in rs) / 1000, 1),
             one_way_w=round(sum(real_w(r) * r["line"].length for r in rs) / sum(r["line"].length for r in rs), 1))
 
-# --- 셀: 큰 도로 사이의 블록을 네모로 차곡차곡 채운다 ---
-# 블록의 긴 쪽에 맞춰 줄을 나누고, 줄마다 들어가는 만큼 네모를 놓는다. 네모 사이에는 골목만큼 틈을 둔다.
-# 블록의 굽은 가장자리에 남는 자투리는 벽돌이 아닌 빈 땅으로 둔다.
-from shapely import affinity
-ROW_H, BRICK_W, ALLEY, MIN_W, MIN_H = 88.0, 118.0, 9.0, 54.0, 40.0
+# --- 셀: 대로 사이 블록을 작은 길로 쪼갠다 ---
 solid = board.difference(corr)
 if lake is not None: solid = solid.difference(lake.buffer(2))
-blocks = [g for g in getattr(solid, "geoms", [solid]) if g.geom_type == "Polygon" and g.area > 400]
-
-def spans(poly, y):
-    """가로선 y 가 다각형 안을 지나는 x 구간들."""
-    hit = poly.intersection(LineString([(poly.bounds[0] - 5, y), (poly.bounds[2] + 5, y)]))
-    out = []
-    for g in getattr(hit, "geoms", [hit]):
-        if g.geom_type == "LineString" and not g.is_empty:
-            xs = [c[0] for c in g.coords]; out.append((min(xs), max(xs)))
-    return sorted(out)
-
-def overlap(a, b):
-    out = []
-    for x0, x1 in a:
-        for u0, u1 in b:
-            lo, hi = max(x0, u0), min(x1, u1)
-            if hi - lo > 1: out.append((lo, hi))
-    return out
-
-def pack(block):
-    mrr = block.minimum_rotated_rectangle
-    xs, ys = mrr.exterior.coords.xy
-    e1 = (xs[1] - xs[0], ys[1] - ys[0]); e2 = (xs[2] - xs[1], ys[2] - ys[1])
-    long = e1 if math.hypot(*e1) >= math.hypot(*e2) else e2
-    ang = math.degrees(math.atan2(long[1], long[0]))
-    c = block.centroid
-    inner = affinity.rotate(block, -ang, origin=c).buffer(-ALLEY * 0.55)
-    out = []
-    for part in getattr(inner, "geoms", [inner]):
-        if part.is_empty or part.geom_type != "Polygon": continue
-        minx, miny, maxx, maxy = part.bounds
-        if maxy - miny < MIN_H: continue
-        rows = max(1, round((maxy - miny) / ROW_H)); rh = (maxy - miny) / rows
-        for r in range(rows):
-            y0 = miny + r * rh + ALLEY / 2; y1 = miny + (r + 1) * rh - ALLEY / 2
-            if y1 - y0 < MIN_H * 0.7: continue
-            free = spans(part, y0 + 0.5)
-            for y in (y0 + (y1 - y0) * 0.25, (y0 + y1) / 2, y0 + (y1 - y0) * 0.75, y1 - 0.5):
-                free = overlap(free, spans(part, y))
-            for x0, x1 in free:
-                if x1 - x0 < MIN_W: continue
-                n = max(1, round((x1 - x0) / BRICK_W)); w = (x1 - x0) / n
-                for k in range(n):
-                    rect = box(x0 + k * w + ALLEY / 2, y0, x0 + (k + 1) * w - ALLEY / 2, y1)
-                    if part.buffer(1.5).contains(rect):
-                        out.append(affinity.rotate(rect, ang, origin=c))
-    return out
-
-cells = []
-for blk in blocks:
-    cells += pack(blk)
+cuts = unary_union([r["line"].buffer(2.0) for r in roads if r["cls"] in MINOR and r["cls"] != "service"])
+pieces = []
+for g in getattr(solid.difference(cuts), "geoms", [solid.difference(cuts)]):
+    if g.geom_type == "Polygon" and g.area > 30: pieces.append(g)
+# 큰 조각은 건물 중심으로 다시 나눈다 (아파트 단지)
+BIG = 28000
+split = []
+for g in pieces:
+    inside = [b for b in buildings if g.contains(b["poly"].representative_point())]
+    if g.area > BIG and len(inside) >= 2:
+        vor = voronoi_polygons(MultiPoint([b["poly"].centroid for b in inside]), extend_to=g)
+        for v in vor.geoms:
+            c = v.intersection(g)
+            for cc in getattr(c, "geoms", [c]):
+                if cc.geom_type == "Polygon" and cc.area > 30: split.append(cc)
+    else: split.append(g)
+# 작은 셀은 가장 길게 맞닿은 이웃에 합친다
+MIN = 5200
+cells = [c.buffer(2.2).buffer(-0.2) for c in split]   # 틈 메우기
+changed = True
+while changed:
+    changed = False
+    cells.sort(key=lambda c: c.area)
+    for i, c in enumerate(cells):
+        if c.area >= MIN: break
+        best, bl = None, 0
+        for j, o in enumerate(cells):
+            if j == i or not c.intersects(o): continue
+            l = c.intersection(o).area
+            if l > bl: best, bl = j, l
+        if best is not None:
+            m = unary_union([c, cells[best]])
+            if m.geom_type == "Polygon":
+                cells[best] = m; cells.pop(i); changed = True; break
+        # 이웃이 없으면 그대로 둔다
+    else: break
+cells = [c.buffer(-2.0).simplify(1.5) for c in cells]
+cells = [max(getattr(c, "geoms", [c]), key=lambda x: x.area) for c in cells if not c.is_empty]
+cells = [c for c in cells if c.geom_type == "Polygon" and c.area > 600]
 
 def hp_of(lv): return 1 if lv <= 3 else 2 if lv <= 10 else 3 if lv <= 25 else 4
 cell_out = []
 tower = max(buildings, key=lambda b: b["lv"])
 for c in cells:
-    reach = c.buffer(ALLEY)
-    inside = [b for b in buildings if reach.contains(b["poly"].representative_point())]
+    inside = [b for b in buildings if c.contains(b["poly"].representative_point())]
     lv = max([b["lv"] for b in inside], default=1)
-    cell_out.append(dict(poly=c, hp=hp_of(lv), n=len(inside), landmark=False))
-# 랜드마크는 타워에 가장 가까운 네모 하나다
-tp = tower["poly"].representative_point()
-min(cell_out, key=lambda c: c["poly"].distance(tp))["landmark"] = True
+    cell_out.append(dict(poly=c, hp=hp_of(lv), n=len(inside), landmark=tower in inside))
 areas = sorted(c["poly"].area for c in cell_out)
 report["cells"] = dict(count=len(cell_out), median_area=round(areas[len(areas) // 2]), min=round(areas[0]), max=round(areas[-1]),
                        hp=dict(collections.Counter(c["hp"] for c in cell_out)), empty=sum(1 for c in cell_out if c["n"] == 0))
@@ -214,7 +194,6 @@ out = dict(
     roads=[dict(l=l, c=r["cls"], w=round(real_w(r), 1)) for r in roads if r["cls"] in DRIVE for l in lines(r["line"])],
     cells=[dict(p=ring(c["poly"]), hp=c["hp"], lm=1 if c["landmark"] else 0, e=1 if c["n"] == 0 else 0) for c in cell_out],
     corridors=[dict(p=ring(g), h=[ring(Polygon(i)) for i in g.interiors]) for g in getattr(corr, "geoms", [corr])],
-    blocks=[ring(g.simplify(1.5)) for g in blocks],
     lake=[dict(p=ring(g), h=[ring(Polygon(i)) for i in g.interiors]) for g in getattr(lake, "geoms", [lake])] if lake is not None else [],
     parks=[ring(g) for p in parks for g in getattr(p, "geoms", [p]) if g.geom_type == "Polygon"],
     pois=[dict(x=round(p["x"]), y=round(p["y"]), k=p["kind"], n=p["name"]) for p in pois if p["kind"] in ("fuel", "police", "pharmacy", "station")],
