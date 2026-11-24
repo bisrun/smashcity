@@ -60,9 +60,13 @@ const SHORE_SPACING := 40.0
 const ROAD := Color("F7ECD8")
 const WATER := Color("63CFE0")
 ## 건물 벽과 지붕의 색. 블록마다 하나씩 고른다.
-const WALL_TINTS: Array[Color] = [Color("FFF4E3"), Color("FFE3E0"), Color("E3F4EA"), Color("E2EEFB"), Color("FFF3C9"), Color("EEE4F8")]
+const WALL_TINTS: Array[Color] = [Color("FFF4E3"), Color("FFE3E0"), Color("E3F4EA"), Color("E2EEFB"), Color("FFF3C9"), Color("EEE4F8"),
+	Color("F3C9AE"), Color("EDB8A0"), Color("CFE6D8"), Color("C9DDF2"), Color("FFFFFF"), Color("F6DDB6")]
 const ROOF_TINTS: Array[Color] = [Color("E8785A"), Color("F2A65A"), Color("4FB0A5"), Color("E56B8C"), Color("5E8FD6"), Color("8A78D6")]
 const WINDOW := Color("8CCBF2")
+## 건물마다 고르는 창의 색, 불이 켜진 창의 색
+const WINDOWS: Array[Color] = [Color("8CCBF2"), Color("7FD6D8"), Color("9DB8F2"), Color("6FB3E8"), Color("A9D9F5")]
+const LIT := Color("FFE9A8")
 const STONE := Color("D8D2C4")
 ## 부서진 자리에 남는 터의 색. 길보다 조금 어둡다.
 const TRACE_EDGE := Color("E6D4B4")
@@ -628,7 +632,7 @@ func _body_mesh(ci: int, tier: int) -> ArrayMesh:
 	else:
 		var wall := _wall_tint[ci]
 		_add_skirt(st, _outline[ci])
-		_add_bands(st, _outline[ci], 0.0, _body_height(ci, tier), tier * 3, wall, WINDOW, wall.darkened(0.06), 1.0, true)
+		_add_facade(st, _outline[ci], 0.0, _body_height(ci, tier), tier * 3, wall, _roof_tint[ci], wall.darkened(0.06), _hash(ci, 11, 3))
 	st.generate_normals()
 	return st.commit()
 
@@ -926,6 +930,84 @@ func _add_bands(st: SurfaceTool, pts: PackedVector2Array, y0: float, y1: float, 
 		top.append(center + (p - center) * taper)
 	for idx in Geometry2D.triangulate_polygon(top):
 		st.add_vertex(_at(top[idx], y1))
+
+
+## 건물의 벽. 건물마다 다른 생김새를 고르고, 1층은 가게처럼 꾸미고, 창문 몇 개에는 불을 켠다.
+##
+## 생김새는 다섯 가지다. 0 격자 창, 1 가로로 이어진 띠 창, 2 세로 기둥 사이의 통유리, 3 작은 창이 띄엄띄엄 난 주택 벽, 4 엇갈린 창.
+## 층마다 벽의 밝기를 조금씩 달리해 줄무늬가 지게 하고, 맨 아래는 어둡게 해 건물이 땅에 붙어 보이게 한다.
+func _add_facade(st: SurfaceTool, pts: PackedVector2Array, y0: float, y1: float, floors: int, wall: Color, accent: Color, roof: Color, seed: int) -> void:
+	var n := pts.size()
+	if n < 3:
+		return
+	var style := seed % 5
+	# 창이 시작하고 끝나는 높이(층 높이에 대한 비율), 창 하나의 폭, 창 양옆 벽의 비율
+	var sill: float = [0.34, 0.42, 0.1, 0.4, 0.34][style]
+	var head: float = [0.9, 0.9, 0.95, 0.8, 0.9][style]
+	var pitch: float = [12.0, 0.0, 9.0, 13.0, 12.0][style]
+	var pier: float = [0.19, 0.0, 0.12, 0.3, 0.19][style]
+	var floor_h := (y1 - y0) / floors
+	var glass := WINDOWS[(seed >> 3) % WINDOWS.size()]
+	for f in floors:
+		var base := y0 + f * floor_h
+		var shade := wall if f % 2 == 0 else wall.darkened(0.045)
+		var lo := sill
+		var hi := head
+		var gap := pier
+		var step := pitch
+		var pane := glass
+		if f == 0:
+			# 1층: 큰 진열창과 그 위의 차양
+			lo = 0.12
+			hi = 0.66
+			gap = 0.1
+			step = 14.0
+			pane = glass.darkened(0.28)
+		for k in n:
+			var a := pts[k]
+			var b := pts[(k + 1) % n]
+			var length := a.distance_to(b)
+			_wall_quad(st, a, b, a, b, base, base + floor_h * lo, 0.0, 1.0, shade.darkened(0.16) if f == 0 else shade)
+			if f == 0:
+				_wall_quad(st, a, b, a, b, base + floor_h * hi, base + floor_h * 0.84, 0.0, 1.0, accent)
+				_wall_quad(st, a, b, a, b, base + floor_h * 0.84, base + floor_h, 0.0, 1.0, shade)
+			elif hi < 1.0:
+				_wall_quad(st, a, b, a, b, base + floor_h * hi, base + floor_h, 0.0, 1.0, shade)
+			var w0 := base + floor_h * lo
+			var w1 := base + floor_h * hi
+			if step <= 0.0:
+				# 띠 창: 모서리만 남기고 가로로 이어진다
+				var edge := minf(0.12, 3.0 / maxf(1.0, length))
+				_wall_quad(st, a, b, a, b, w0, w1, 0.0, edge, shade)
+				_wall_quad(st, a, b, a, b, w0, w1, edge, 1.0 - edge, pane)
+				_wall_quad(st, a, b, a, b, w0, w1, 1.0 - edge, 1.0, shade)
+				continue
+			if length < step * 0.9:
+				_wall_quad(st, a, b, a, b, w0, w1, 0.0, 1.0, shade)
+				continue
+			var count := maxi(1, int(length / step))
+			for w in count:
+				var t0 := float(w) / count
+				var t1 := float(w + 1) / count
+				var side := (t1 - t0) * gap
+				var h := _hash(seed + f * 31, k * 17 + w, 91)
+				var open := not (style == 4 and f > 0 and (w + f) % 2 == 1)
+				if not open:
+					_wall_quad(st, a, b, a, b, w0, w1, t0, t1, shade)
+					continue
+				var color := pane
+				if f > 0:
+					# 창 몇 개에는 불이 켜져 있고, 몇 개는 커튼이 쳐져 있다
+					if h % 9 == 0:
+						color = LIT
+					elif h % 7 == 0:
+						color = pane.darkened(0.2)
+				_wall_quad(st, a, b, a, b, w0, w1, t0, t0 + side, shade)
+				_wall_quad(st, a, b, a, b, w0, w1, t0 + side, t1 - side, color)
+				_wall_quad(st, a, b, a, b, w0, w1, t1 - side, t1, shade)
+	st.set_color(roof)
+	for idx in Geometry2D.triangulate_polygon(pts):
+		st.add_vertex(_at(pts[idx], y1))
 
 
 ## 벽의 한 변에서 t0~t1 구간만큼의 네모.
