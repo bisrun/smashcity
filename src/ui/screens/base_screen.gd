@@ -14,6 +14,8 @@ func _fill(bg: Color) -> void:
 	var back := ColorRect.new()
 	back.color = bg
 	back.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# 바탕이 누름을 삼키면 화면 자신이 받지 못한다(시작 화면의 TAP TO START). 화면이 직접 받아 뒤의 것을 가린다.
+	back.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(back)
 
 

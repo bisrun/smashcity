@@ -13,6 +13,7 @@ func setup() -> void:
 	words.add_theme_constant_override("separation", -30)
 	words.add_child(_centered("SMASH", 150, Kit.CORAL))
 	words.add_child(_centered("CITY", 150, Kit.INK))
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title.add_child(words)
 	v.add_child(title)
 	v.add_child(_spacer())

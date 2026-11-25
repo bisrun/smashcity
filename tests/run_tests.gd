@@ -735,6 +735,14 @@ func _test_account_is_kept() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
+## 누름을 삼키는 자식 부품을 모은다.
+func _stoppers(node: Node, out: Array) -> void:
+	for c in node.get_children():
+		if c is Control and c.mouse_filter == Control.MOUSE_FILTER_STOP:
+			out.append(c)
+		_stoppers(c, out)
+
+
 ## 누를 수 있는 단추를 모은다.
 func _buttons(node: Node, out: Array) -> void:
 	if node is Button and not node.disabled:
@@ -961,9 +969,25 @@ func _test_more_screens_build() -> void:
 	ranking._open(-1)
 	_check(ranking._region == cities.size() - 1, "순위는 지역을 넘기면 끝에서 처음으로 돈다")
 	ranking.free()
+	# 시작 화면은 어디를 눌러도 넘어가야 한다. 화면 안의 어떤 부품도 누름을 삼키면 안 된다.
 	var title: Control = load("res://src/ui/screens/title_screen.gd").new()
 	title.setup()
+	var blockers: Array = []
+	_stoppers(title, blockers)
+	_check(blockers.is_empty(), "시작 화면에 누름을 삼키는 부품이 없다 (%d개)" % blockers.size())
+	went.clear()
+	title.go.connect(note)
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	title._gui_input(press)
+	_check(went == ["title_done:"], "시작 화면은 누르면 넘어간다")
 	title.free()
+	# 다른 화면의 바탕도 누름을 삼키지 않는다. 화면 자신이 받아 뒤의 것을 가린다.
+	var any: Control = load("res://src/ui/screens/login_screen.gd").new()
+	any.setup()
+	_check(any.mouse_filter == Control.MOUSE_FILTER_STOP and (any.get_child(0) as Control).mouse_filter == Control.MOUSE_FILTER_IGNORE, "화면은 누름을 직접 받고 바탕은 받지 않는다")
+	any.free()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
