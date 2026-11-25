@@ -677,8 +677,8 @@ func _collide_cells(b: Ball) -> void:
 			best = idx
 	if best < 0:
 		return
-	# 불공은 보통 셀을 한 번에 부수고 그대로 지나간다. 랜드마크와 숲에서는 보통 공처럼 튕긴다.
-	if fire_left > 0.0 and not stage.cells[best]["landmark"] and cell_solid[best] == 0 and not is_park(stage.cells[best]):
+	# 불공은 보통 셀과 숲을 한 번에 부수고 그대로 지나간다. 랜드마크와 보호 시설에서는 보통 공처럼 튕긴다.
+	if fire_left > 0.0 and not stage.cells[best]["landmark"] and cell_solid[best] == 0:
 		_damage(b, best, cell_hp[best])
 		return
 	b.pos += best_n * best_depth
@@ -686,12 +686,20 @@ func _collide_cells(b: Ball) -> void:
 		b.vel = b.vel.bounce(best_n)
 		_keep_min_angle(b)
 		_bounced(b)
-	_damage(b, best, 2 if wreck_left > 0.0 else 1)
+	_damage(b, best, hit_power(b, best))
+
+
+## 공이 셀을 한 번 때릴 때 깎는 양. 공과 벽돌의 관계는 docs/02_core_gameplay.md 의 표에 있다.
+func hit_power(b: Ball, idx: int) -> int:
+	# 달아오른 공은 숲을 한 번에 태운다
+	if is_fever(b) and is_park(stage.cells[idx]) and not stage.cells[idx]["landmark"]:
+		return cell_hp[idx]
+	return 2 if wreck_left > 0.0 else 1
 
 
 func _damage(b: Ball, idx: int, amount: int) -> void:
 	if cell_solid[idx] == 1:
-		# 숲은 부서지지 않는다. 공이 튕겨 나올 뿐이다.
+		# 보호 시설은 부서지지 않는다. 공이 튕겨 나올 뿐이다.
 		_events.append({"type": "thud", "cell": idx, "pos": b.pos})
 		return
 	b.idle = 0.0

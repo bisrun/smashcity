@@ -46,6 +46,7 @@ const OVER_PAUSE := 2.6
 const SKY := Color("BFE6F2")
 const INK := Color("14213D")
 const FIRE := Color("FF7A3C")
+const WRECK := Color("5B6577")
 ## 순간의 효과를 알리는 말은 영어로 쓴다.
 const ITEM_NAMES := {"shield": "SHIELD!", "wreck": "WRECKING BALL!", "multi": "MULTI BALL!", "wide": "WIDE PADDLE!", "fire": "FIRE BALL!", "life": "1 UP!", "bolt": "LIGHTNING!", "narrow": "OOPS! NARROW"}
 
@@ -370,7 +371,8 @@ func _sync_paddle() -> void:
 
 
 func _sync_balls() -> void:
-	_ball_mat.albedo_color = FIRE if _sim.fire_left > 0.0 else (Color("FFE27A") if _sim.any_fever() else Color.WHITE)
+	# 공의 색은 지금의 힘을 알린다: 주황 불공, 쇳빛 레킹볼, 노랑 달아오른 공, 흰 보통 공
+	_ball_mat.albedo_color = FIRE if _sim.fire_left > 0.0 else (WRECK if _sim.wreck_left > 0.0 else (Color("FFE27A") if _sim.any_fever() else Color.WHITE))
 	var seen := {}
 	for b in _sim.balls:
 		seen[b.id] = true

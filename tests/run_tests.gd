@@ -180,7 +180,7 @@ func _test_forest_lasts_several_hits() -> void:
 	forest["e"] = 1
 	var sim: Sim = SimScript.new(_stage({"cells": [forest, _square(100, 1700, 100, 2)]}), _no_gravity())
 	var tough := int(sim.cfg["forest_hp"])
-	_check(tough == 5 and sim.cell_hp[0] == tough, "건물이 없던 낮은 구획은 숲이고, 다섯 번 맞아야 부서진다")
+	_check(tough == 3 and sim.cell_hp[0] == tough, "건물이 없던 낮은 구획은 숲이고, 세 번 맞아야 부서진다")
 	_check(sim.breakable_count() == 2, "숲도 부술 셀로 센다")
 	for i in tough - 1:
 		_place(sim, Vector2(500, 900), Vector2(0, 1))
@@ -194,7 +194,17 @@ func _test_forest_lasts_several_hits() -> void:
 	fire.fire_left = 5.0
 	_place(fire, Vector2(500, 900), Vector2(0, 1))
 	_run(fire, 0.3)
-	_check(fire.cell_hp[0] == tough - 1 and fire.ball_vel.y < 0.0, "불공도 숲은 한 번에 뚫지 못한다")
+	_check(fire.cell_hp[0] == 0 and fire.ball_vel.y > 0.0, "불공은 숲을 한 번에 태우고 지나간다")
+	var hot: Sim = SimScript.new(_stage({"cells": [forest, _square(100, 1700, 100, 2)]}), _no_gravity())
+	_place(hot, Vector2(500, 900), Vector2(0, 1))
+	hot.balls[0].combo = int(hot.cfg["fever_combo"])
+	_run(hot, 0.3)
+	_check(hot.cell_hp[0] == 0 and hot.ball_vel.y < 0.0, "달아오른 공은 숲을 한 번에 태우고 튕겨 나온다")
+	var heavy: Sim = SimScript.new(_stage({"cells": [forest, _square(100, 1700, 100, 2)]}), _no_gravity())
+	heavy.wreck_left = 5.0
+	_place(heavy, Vector2(500, 900), Vector2(0, 1))
+	_run(heavy, 0.3)
+	_check(heavy.cell_hp[0] == tough - 2, "레킹볼은 숲을 두 칸 깎는다")
 
 
 func _test_protected_facility_never_breaks() -> void:
