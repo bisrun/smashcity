@@ -76,7 +76,14 @@ def trim_spurs(c):
         return c
 
 
+# 보호 시설을 부서지지 않게 둘지. 사용자가 보호하지 말라고 정했다(2026-11-25): 모든 것이 부서질 수 있다.
+# 켜면 종교시설, 추모시설, 병원, 문화재가 깨지지 않는 셀이 된다.
+PROTECT = False
+
+
 def is_protected(t):
+    if not PROTECT:
+        return False
     if t.get("amenity") in ("place_of_worship", "hospital", "grave_yard"):
         return True
     if t.get("building") in PROTECTED_BUILDINGS:
@@ -416,7 +423,7 @@ def bake(stage, raw):
     # OSM 에서 이름으로 찾고, 못 찾으면 적어 둔 좌표를 쓴다. 문화재와 종교시설이면 부서지지 않게 둔다.
     sight = stage.get("sight") or {}
     sight_at, sight_cell, sight_how = None, None, ""
-    sight_guarded = bool(sight.get("protect"))
+    sight_guarded = PROTECT and bool(sight.get("protect"))
     pats = [h.lower() for h in sight.get("match", "").split("|") if h]
     hits = [(g, gd, bld) for names, g, gd, bld in named_areas if pats and any(h in names.lower() for h in pats)]
     if hits:

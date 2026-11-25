@@ -1014,6 +1014,8 @@ func _test_stage_list_is_valid() -> void:
 				if c["landmark"]:
 					goals += 1
 					_check(not c["solid"], "목표 건물은 부술 수 있다 (%s)" % s["id"])
+				# 보호하는 시설은 없다. 모든 셀이 부서질 수 있다 (2026-11-25 사용자 결정)
+				_check(not c["solid"], "깨지지 않는 셀이 없다 (%s)" % s["id"])
 			_check(goals == 1 and stage.cells.size() >= 40, "스테이지에 목표 건물이 하나 있고 셀이 넉넉하다 (%s)" % s["id"])
 			# 명소: 스테이지마다 이름과 그릴 줄 아는 모양이 있고, 지도의 자리가 판정과 맞는다
 			var sight: Dictionary = BalanceScript.load_file(dir + "design.json").get("sight", {})
