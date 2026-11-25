@@ -4,20 +4,20 @@
   "theme": "amsterdam",
   "base": "river",
   "grade_target": 8.1,
-  "level": 0.916,
+  "level": 0.996,
   "balance": {
-    "ball_speed": 1385,
-    "paddle_width": 188,
-    "landmark_hp": 32,
+    "ball_speed": 1418,
+    "paddle_width": 180,
+    "landmark_hp": 34,
     "cell_hp_bonus": 2,
-    "drop_interval_start": 21.3,
-    "drop_interval_end": 10.6,
+    "drop_interval_start": 22.0,
+    "drop_interval_end": 11.0,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 5.7,
+      "narrow": 6.0,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -57,24 +57,16 @@
     },
     {
       "at": [
-        365,
-        859
-      ],
-      "type": "wide",
-      "from": "주차장 P1 Parking Amsterdam Centraal"
-    },
-    {
-      "at": [
-        349,
-        599
+        397,
+        627
       ],
       "type": "multi",
       "from": "열기구 (상상)"
     },
     {
       "at": [
-        998,
-        1230
+        1228,
+        1191
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -83,14 +75,14 @@
   "walls": [
     {
       "around": [
-        758,
-        1421
+        760,
+        1416
       ],
       "gap_toward": [
         0.2,
         1.0
       ],
-      "gap_width": 127,
+      "gap_width": 120,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

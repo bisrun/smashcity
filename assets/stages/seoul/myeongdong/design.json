@@ -4,7 +4,7 @@
   "theme": "seoul",
   "base": "road",
   "grade_target": 3.7,
-  "level": -0.052,
+  "level": -0.066,
   "balance": {
     "ball_speed": 1000,
     "paddle_width": 280,
@@ -71,8 +71,8 @@
     },
     {
       "at": [
-        325,
-        673
+        378,
+        614
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -87,8 +87,8 @@
     },
     {
       "at": [
-        368,
-        1770
+        444,
+        1820
       ],
       "type": "multi",
       "from": "열기구 (상상)"

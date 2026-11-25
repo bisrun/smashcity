@@ -4,20 +4,20 @@
   "theme": "dubai",
   "base": "river",
   "grade_target": 8.1,
-  "level": 0.889,
+  "level": 0.949,
   "balance": {
-    "ball_speed": 1373,
-    "paddle_width": 191,
-    "landmark_hp": 32,
+    "ball_speed": 1399,
+    "paddle_width": 185,
+    "landmark_hp": 33,
     "cell_hp_bonus": 2,
-    "drop_interval_start": 21.1,
-    "drop_interval_end": 10.4,
+    "drop_interval_start": 21.6,
+    "drop_interval_end": 10.7,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 5.7,
+      "narrow": 5.8,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -41,8 +41,8 @@
     },
     {
       "at": [
-        370,
-        578
+        468,
+        589
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -57,16 +57,8 @@
     },
     {
       "at": [
-        338,
-        1635
-      ],
-      "type": "multi",
-      "from": "열기구 (상상)"
-    },
-    {
-      "at": [
-        694,
-        488
+        728,
+        546
       ],
       "type": "wide",
       "from": "임시 배치 (상상)"
@@ -84,13 +76,13 @@
     {
       "around": [
         461,
-        1378
+        1373
       ],
       "gap_toward": [
         0.2,
         1.0
       ],
-      "gap_width": 129,
+      "gap_width": 124,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

@@ -4,20 +4,20 @@
   "theme": "paris",
   "base": "river",
   "grade_target": 6.8,
-  "level": 0.544,
+  "level": 0.611,
   "balance": {
-    "ball_speed": 1228,
-    "paddle_width": 226,
-    "landmark_hp": 24,
+    "ball_speed": 1257,
+    "paddle_width": 219,
+    "landmark_hp": 25,
     "cell_hp_bonus": 1,
-    "drop_interval_start": 18.4,
-    "drop_interval_end": 8.7,
+    "drop_interval_start": 18.9,
+    "drop_interval_end": 9.1,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.6,
+      "narrow": 4.8,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -73,14 +73,6 @@
     },
     {
       "at": [
-        475,
-        537
-      ],
-      "type": "fire",
-      "from": "주유소 Total"
-    },
-    {
-      "at": [
         386,
         652
       ],
@@ -97,32 +89,24 @@
     },
     {
       "at": [
-        345,
-        1696
+        340,
+        1704
       ],
       "type": "multi",
       "from": "열기구 (상상)"
     },
     {
       "at": [
-        1044,
-        2274
-      ],
-      "type": "multi",
-      "from": "열기구 (상상)"
-    },
-    {
-      "at": [
-        782,
-        532
+        766,
+        557
       ],
       "type": "wide",
       "from": "임시 배치 (상상)"
     },
     {
       "at": [
-        712,
-        1477
+        829,
+        1579
       ],
       "type": "wide",
       "from": "임시 배치 (상상)"
@@ -131,14 +115,14 @@
   "walls": [
     {
       "around": [
-        658,
-        2055
+        674,
+        2071
       ],
       "gap_toward": [
         1.0,
         -0.2
       ],
-      "gap_width": 156,
+      "gap_width": 151,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

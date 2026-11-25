@@ -4,20 +4,20 @@
   "theme": "barcelona",
   "base": "river",
   "grade_target": 6.6,
-  "level": 0.422,
+  "level": 0.509,
   "balance": {
-    "ball_speed": 1177,
-    "paddle_width": 238,
-    "landmark_hp": 21,
-    "cell_hp_bonus": 0,
-    "drop_interval_start": 17.4,
-    "drop_interval_end": 8.1,
+    "ball_speed": 1214,
+    "paddle_width": 229,
+    "landmark_hp": 23,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 18.1,
+    "drop_interval_end": 8.5,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.3,
+      "narrow": 4.5,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -97,8 +97,8 @@
     },
     {
       "at": [
-        419,
-        1665
+        376,
+        1715
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -115,14 +115,14 @@
   "walls": [
     {
       "around": [
-        766,
-        1419
+        752,
+        1421
       ],
       "gap_toward": [
-        0.3,
-        -1.0
+        1.0,
+        -0.2
       ],
-      "gap_width": 166,
+      "gap_width": 159,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

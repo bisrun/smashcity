@@ -4,20 +4,20 @@
   "theme": "london",
   "base": "road",
   "grade_target": 4.4,
-  "level": 0.484,
+  "level": 0.571,
   "balance": {
-    "ball_speed": 1203,
-    "paddle_width": 232,
-    "landmark_hp": 23,
+    "ball_speed": 1240,
+    "paddle_width": 223,
+    "landmark_hp": 25,
     "cell_hp_bonus": 1,
-    "drop_interval_start": 17.9,
-    "drop_interval_end": 8.4,
+    "drop_interval_start": 18.6,
+    "drop_interval_end": 8.9,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.5,
+      "narrow": 4.7,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -81,8 +81,8 @@
     },
     {
       "at": [
-        404,
-        683
+        394,
+        667
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -90,7 +90,7 @@
     {
       "at": [
         1067,
-        1190
+        1193
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -105,8 +105,8 @@
     },
     {
       "at": [
-        1052,
-        2218
+        1054,
+        2221
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -122,7 +122,7 @@
         -1.0,
         -0.2
       ],
-      "gap_width": 161,
+      "gap_width": 154,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

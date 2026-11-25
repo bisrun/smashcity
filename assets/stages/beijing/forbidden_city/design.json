@@ -4,20 +4,20 @@
   "theme": "hutong",
   "base": "river",
   "grade_target": 6.2,
-  "level": 0.485,
+  "level": 0.345,
   "balance": {
-    "ball_speed": 1204,
-    "paddle_width": 232,
-    "landmark_hp": 23,
-    "cell_hp_bonus": 1,
-    "drop_interval_start": 17.9,
-    "drop_interval_end": 8.4,
+    "ball_speed": 1145,
+    "paddle_width": 246,
+    "landmark_hp": 20,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 16.8,
+    "drop_interval_end": 7.7,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.5,
+      "narrow": 4.0,
       "shield": 1.5
     }
   },
@@ -48,8 +48,8 @@
     },
     {
       "at": [
-        221,
-        675
+        216,
+        718
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -72,8 +72,8 @@
     },
     {
       "at": [
-        1020,
-        2269
+        1025,
+        2238
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -86,10 +86,10 @@
         2097
       ],
       "gap_toward": [
-        1.0,
-        -0.2
+        0.3,
+        -1.0
       ],
-      "gap_width": 161,
+      "gap_width": 172,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

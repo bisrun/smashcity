@@ -1,16 +1,16 @@
 {
  "amsterdam/amstel": {
   "average": {
-   "broken": 0.41,
-   "clear": 0.25,
+   "broken": 0.47,
+   "clear": 0.38,
    "lost": 2.38,
-   "time": 148.0
+   "time": 167.0
   },
   "expert": {
-   "broken": 0.99,
+   "broken": 1.0,
    "clear": 1.0,
-   "lost": 0.5,
-   "time": 227.0
+   "lost": 0.38,
+   "time": 170.0
   },
   "id": "amsterdam/amstel",
   "novice": {
@@ -23,194 +23,40 @@
  },
  "amsterdam/centraal": {
   "average": {
-   "broken": 0.42,
+   "broken": 0.54,
    "clear": 0.63,
-   "lost": 1.75,
-   "time": 73.0
+   "lost": 1.63,
+   "time": 83.0
   },
   "expert": {
-   "broken": 0.43,
-   "clear": 1.0,
-   "lost": 0.5,
-   "time": 63.0
+   "broken": 0.77,
+   "clear": 0.88,
+   "lost": 0.63,
+   "time": 74.0
   },
   "id": "amsterdam/centraal",
   "novice": {
-   "broken": 0.23,
-   "clear": 0.38,
-   "lost": 1.88,
-   "time": 57.0
+   "broken": 0.25,
+   "clear": 0.25,
+   "lost": 2.5,
+   "time": 76.0
   },
   "runs": 8
  },
  "amsterdam/dam": {
   "average": {
-   "broken": 0.73,
-   "clear": 0.75,
-   "lost": 1.25,
-   "time": 145.0
+   "broken": 0.56,
+   "clear": 0.63,
+   "lost": 1.63,
+   "time": 95.0
   },
   "expert": {
-   "broken": 0.99,
+   "broken": 0.79,
    "clear": 1.0,
    "lost": 0.25,
-   "time": 181.0
+   "time": 92.0
   },
   "id": "amsterdam/dam",
-  "novice": {
-   "broken": 0.03,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
-  },
-  "runs": 8
- },
- "amsterdam/de_pijp": {
-  "average": {
-   "broken": 0.78,
-   "clear": 0.63,
-   "lost": 1.5,
-   "time": 265.0
-  },
-  "expert": {
-   "broken": 0.89,
-   "clear": 0.88,
-   "lost": 0.75,
-   "time": 216.0
-  },
-  "id": "amsterdam/de_pijp",
-  "novice": {
-   "broken": 0.12,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
-  },
-  "runs": 8
- },
- "amsterdam/grachten": {
-  "average": {
-   "broken": 0.79,
-   "clear": 0.75,
-   "lost": 1.25,
-   "time": 157.0
-  },
-  "expert": {
-   "broken": 0.99,
-   "clear": 1.0,
-   "lost": 0.0,
-   "time": 153.0
-  },
-  "id": "amsterdam/grachten",
-  "novice": {
-   "broken": 0.01,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
-  },
-  "runs": 8
- },
- "amsterdam/ij": {
-  "average": {
-   "broken": 0.35,
-   "clear": 0.13,
-   "lost": 2.75,
-   "time": 91.0
-  },
-  "expert": {
-   "broken": 1.0,
-   "clear": 1.0,
-   "lost": 1.13,
-   "time": 169.0
-  },
-  "id": "amsterdam/ij",
-  "novice": {
-   "broken": 0.0,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
-  },
-  "runs": 8
- },
- "amsterdam/jordaan": {
-  "average": {
-   "broken": 0.94,
-   "clear": 0.88,
-   "lost": 0.38,
-   "time": 126.0
-  },
-  "expert": {
-   "broken": 0.99,
-   "clear": 1.0,
-   "lost": 0.13,
-   "time": 131.0
-  },
-  "id": "amsterdam/jordaan",
-  "novice": {
-   "broken": 0.3,
-   "clear": 0.25,
-   "lost": 2.25,
-   "time": 115.0
-  },
-  "runs": 8
- },
- "amsterdam/leidseplein": {
-  "average": {
-   "broken": 0.92,
-   "clear": 0.75,
-   "lost": 0.88,
-   "time": 132.0
-  },
-  "expert": {
-   "broken": 0.98,
-   "clear": 1.0,
-   "lost": 0.0,
-   "time": 158.0
-  },
-  "id": "amsterdam/leidseplein",
-  "novice": {
-   "broken": 0.16,
-   "clear": 0.13,
-   "lost": 2.63,
-   "time": 114.0
-  },
-  "runs": 8
- },
- "amsterdam/museumplein": {
-  "average": {
-   "broken": 0.62,
-   "clear": 0.63,
-   "lost": 1.5,
-   "time": 119.0
-  },
-  "expert": {
-   "broken": 0.6,
-   "clear": 0.63,
-   "lost": 1.5,
-   "time": 121.0
-  },
-  "id": "amsterdam/museumplein",
-  "novice": {
-   "broken": 0.26,
-   "clear": 0.25,
-   "lost": 2.38,
-   "time": 118.0
-  },
-  "runs": 8
- },
- "amsterdam/vondelpark": {
-  "average": {
-   "broken": 0.69,
-   "clear": 0.5,
-   "lost": 1.75,
-   "time": 151.0
-  },
-  "expert": {
-   "broken": 1.0,
-   "clear": 1.0,
-   "lost": 0.13,
-   "time": 177.0
-  },
-  "id": "amsterdam/vondelpark",
   "novice": {
    "broken": 0.04,
    "clear": 0.0,
@@ -219,62 +65,216 @@
   },
   "runs": 8
  },
- "barcelona/barceloneta": {
+ "amsterdam/de_pijp": {
   "average": {
-   "broken": 0.88,
-   "clear": 0.75,
-   "lost": 0.88,
-   "time": 139.0
-  },
-  "expert": {
-   "broken": 0.97,
-   "clear": 1.0,
-   "lost": 0.0,
-   "time": 146.0
-  },
-  "id": "barcelona/barceloneta",
-  "novice": {
-   "broken": 0.54,
-   "clear": 0.13,
-   "lost": 2.63,
-   "time": 93.0
-  },
-  "runs": 8
- },
- "barcelona/born": {
-  "average": {
-   "broken": 0.78,
+   "broken": 0.69,
    "clear": 0.5,
-   "lost": 2.13,
-   "time": 130.0
+   "lost": 1.63,
+   "time": 210.0
   },
   "expert": {
-   "broken": 0.76,
-   "clear": 1.0,
-   "lost": 0.88,
-   "time": 108.0
+   "broken": 0.88,
+   "clear": 0.88,
+   "lost": 0.63,
+   "time": 157.0
   },
-  "id": "barcelona/born",
+  "id": "amsterdam/de_pijp",
   "novice": {
-   "broken": 0.3,
+   "broken": 0.11,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
   },
   "runs": 8
  },
- "barcelona/camp_nou": {
+ "amsterdam/grachten": {
   "average": {
-   "broken": 0.42,
+   "broken": 0.99,
+   "clear": 1.0,
+   "lost": 0.38,
+   "time": 169.0
+  },
+  "expert": {
+   "broken": 0.99,
+   "clear": 1.0,
+   "lost": 0.13,
+   "time": 169.0
+  },
+  "id": "amsterdam/grachten",
+  "novice": {
+   "broken": 0.3,
+   "clear": 0.13,
+   "lost": 2.63,
+   "time": 111.0
+  },
+  "runs": 8
+ },
+ "amsterdam/ij": {
+  "average": {
+   "broken": 0.52,
+   "clear": 0.5,
+   "lost": 2.13,
+   "time": 158.0
+  },
+  "expert": {
+   "broken": 0.74,
+   "clear": 0.63,
+   "lost": 1.13,
+   "time": 198.0
+  },
+  "id": "amsterdam/ij",
+  "novice": {
+   "broken": 0.13,
+   "clear": 0.13,
+   "lost": 2.88,
+   "time": 44.0
+  },
+  "runs": 8
+ },
+ "amsterdam/jordaan": {
+  "average": {
+   "broken": 0.88,
+   "clear": 0.88,
+   "lost": 0.5,
+   "time": 111.0
+  },
+  "expert": {
+   "broken": 0.97,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 117.0
+  },
+  "id": "amsterdam/jordaan",
+  "novice": {
+   "broken": 0.31,
+   "clear": 0.25,
+   "lost": 2.25,
+   "time": 112.0
+  },
+  "runs": 8
+ },
+ "amsterdam/leidseplein": {
+  "average": {
+   "broken": 0.99,
+   "clear": 1.0,
+   "lost": 0.5,
+   "time": 154.0
+  },
+  "expert": {
+   "broken": 0.99,
+   "clear": 1.0,
+   "lost": 0.13,
+   "time": 191.0
+  },
+  "id": "amsterdam/leidseplein",
+  "novice": {
+   "broken": 0.04,
+   "clear": 0.0,
+   "lost": 3.0,
+   "time": 0.0
+  },
+  "runs": 8
+ },
+ "amsterdam/museumplein": {
+  "average": {
+   "broken": 0.63,
+   "clear": 0.63,
+   "lost": 1.25,
+   "time": 76.0
+  },
+  "expert": {
+   "broken": 0.78,
+   "clear": 0.88,
+   "lost": 0.63,
+   "time": 121.0
+  },
+  "id": "amsterdam/museumplein",
+  "novice": {
+   "broken": 0.13,
+   "clear": 0.13,
+   "lost": 2.63,
+   "time": 121.0
+  },
+  "runs": 8
+ },
+ "amsterdam/vondelpark": {
+  "average": {
+   "broken": 0.54,
    "clear": 0.38,
    "lost": 2.13,
-   "time": 192.0
+   "time": 167.0
+  },
+  "expert": {
+   "broken": 1.0,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 171.0
+  },
+  "id": "amsterdam/vondelpark",
+  "novice": {
+   "broken": 0.07,
+   "clear": 0.0,
+   "lost": 3.0,
+   "time": 0.0
+  },
+  "runs": 8
+ },
+ "barcelona/barceloneta": {
+  "average": {
+   "broken": 0.93,
+   "clear": 0.63,
+   "lost": 1.38,
+   "time": 127.0
   },
   "expert": {
    "broken": 0.98,
    "clear": 1.0,
-   "lost": 0.0,
-   "time": 278.0
+   "lost": 0.25,
+   "time": 136.0
+  },
+  "id": "barcelona/barceloneta",
+  "novice": {
+   "broken": 0.28,
+   "clear": 0.13,
+   "lost": 2.75,
+   "time": 145.0
+  },
+  "runs": 8
+ },
+ "barcelona/born": {
+  "average": {
+   "broken": 0.77,
+   "clear": 0.63,
+   "lost": 1.5,
+   "time": 122.0
+  },
+  "expert": {
+   "broken": 0.89,
+   "clear": 1.0,
+   "lost": 0.13,
+   "time": 88.0
+  },
+  "id": "barcelona/born",
+  "novice": {
+   "broken": 0.53,
+   "clear": 0.25,
+   "lost": 2.5,
+   "time": 158.0
+  },
+  "runs": 8
+ },
+ "barcelona/camp_nou": {
+  "average": {
+   "broken": 0.56,
+   "clear": 0.5,
+   "lost": 2.13,
+   "time": 186.0
+  },
+  "expert": {
+   "broken": 0.99,
+   "clear": 1.0,
+   "lost": 0.38,
+   "time": 227.0
   },
   "id": "barcelona/camp_nou",
   "novice": {
@@ -287,20 +287,20 @@
  },
  "barcelona/eixample": {
   "average": {
-   "broken": 0.67,
+   "broken": 0.96,
    "clear": 0.38,
-   "lost": 2.0,
-   "time": 215.0
+   "lost": 1.88,
+   "time": 238.0
   },
   "expert": {
    "broken": 0.99,
    "clear": 1.0,
-   "lost": 0.0,
-   "time": 199.0
+   "lost": 0.13,
+   "time": 225.0
   },
   "id": "barcelona/eixample",
   "novice": {
-   "broken": 0.0,
+   "broken": 0.1,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
@@ -309,60 +309,60 @@
  },
  "barcelona/gotic": {
   "average": {
-   "broken": 0.48,
-   "clear": 0.75,
-   "lost": 1.38,
-   "time": 84.0
+   "broken": 0.6,
+   "clear": 0.5,
+   "lost": 2.0,
+   "time": 95.0
   },
   "expert": {
-   "broken": 0.77,
-   "clear": 0.88,
-   "lost": 0.88,
-   "time": 103.0
+   "broken": 0.71,
+   "clear": 1.0,
+   "lost": 0.13,
+   "time": 77.0
   },
   "id": "barcelona/gotic",
   "novice": {
-   "broken": 0.4,
-   "clear": 0.13,
-   "lost": 2.88,
-   "time": 59.0
+   "broken": 0.27,
+   "clear": 0.25,
+   "lost": 2.38,
+   "time": 88.0
   },
   "runs": 8
  },
  "barcelona/gracia": {
   "average": {
-   "broken": 0.75,
-   "clear": 0.63,
-   "lost": 1.0,
-   "time": 271.0
+   "broken": 0.86,
+   "clear": 0.5,
+   "lost": 0.75,
+   "time": 270.0
   },
   "expert": {
-   "broken": 0.96,
+   "broken": 0.94,
    "clear": 1.0,
    "lost": 0.0,
-   "time": 236.0
+   "time": 223.0
   },
   "id": "barcelona/gracia",
   "novice": {
-   "broken": 0.0,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
+   "broken": 0.1,
+   "clear": 0.13,
+   "lost": 2.63,
+   "time": 53.0
   },
   "runs": 8
  },
  "barcelona/montjuic": {
   "average": {
-   "broken": 0.2,
-   "clear": 0.13,
-   "lost": 2.75,
-   "time": 320.0
+   "broken": 0.33,
+   "clear": 0.25,
+   "lost": 2.63,
+   "time": 360.0
   },
   "expert": {
-   "broken": 0.97,
-   "clear": 1.0,
+   "broken": 0.98,
+   "clear": 0.88,
    "lost": 0.0,
-   "time": 302.0
+   "time": 277.0
   },
   "id": "barcelona/montjuic",
   "novice": {
@@ -375,20 +375,20 @@
  },
  "barcelona/park_guell": {
   "average": {
-   "broken": 0.51,
+   "broken": 0.48,
    "clear": 0.13,
-   "lost": 2.25,
-   "time": 267.0
+   "lost": 2.63,
+   "time": 144.0
   },
   "expert": {
-   "broken": 0.99,
-   "clear": 1.0,
+   "broken": 0.95,
+   "clear": 0.75,
    "lost": 0.0,
-   "time": 261.0
+   "time": 286.0
   },
   "id": "barcelona/park_guell",
   "novice": {
-   "broken": 0.09,
+   "broken": 0.0,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
@@ -397,38 +397,38 @@
  },
  "barcelona/rambla": {
   "average": {
-   "broken": 0.84,
-   "clear": 0.88,
-   "lost": 0.88,
-   "time": 109.0
+   "broken": 0.71,
+   "clear": 0.63,
+   "lost": 1.38,
+   "time": 138.0
   },
   "expert": {
-   "broken": 0.86,
-   "clear": 1.0,
-   "lost": 0.25,
-   "time": 122.0
+   "broken": 0.82,
+   "clear": 0.88,
+   "lost": 0.75,
+   "time": 114.0
   },
   "id": "barcelona/rambla",
   "novice": {
-   "broken": 0.14,
+   "broken": 0.38,
    "clear": 0.13,
    "lost": 2.63,
-   "time": 33.0
+   "time": 47.0
   },
   "runs": 8
  },
  "barcelona/sagrada": {
   "average": {
-   "broken": 0.88,
-   "clear": 0.63,
-   "lost": 0.75,
-   "time": 157.0
+   "broken": 0.7,
+   "clear": 0.0,
+   "lost": 1.0,
+   "time": 0.0
   },
   "expert": {
-   "broken": 0.93,
-   "clear": 1.0,
+   "broken": 0.94,
+   "clear": 0.0,
    "lost": 0.0,
-   "time": 161.0
+   "time": 0.0
   },
   "id": "barcelona/sagrada",
   "novice": {
@@ -441,62 +441,238 @@
  },
  "beijing/art798": {
   "average": {
-   "broken": 0.92,
+   "broken": 0.91,
    "clear": 1.0,
-   "lost": 0.5,
-   "time": 91.0
+   "lost": 0.13,
+   "time": 100.0
   },
   "expert": {
-   "broken": 0.74,
+   "broken": 0.78,
    "clear": 1.0,
    "lost": 0.0,
-   "time": 59.0
+   "time": 64.0
   },
   "id": "beijing/art798",
   "novice": {
-   "broken": 0.67,
+   "broken": 0.69,
    "clear": 0.63,
-   "lost": 1.75,
-   "time": 74.0
+   "lost": 1.63,
+   "time": 73.0
   },
   "runs": 8
  },
  "beijing/beihai": {
   "average": {
-   "broken": 0.69,
-   "clear": 0.75,
-   "lost": 1.38,
-   "time": 99.0
+   "broken": 0.84,
+   "clear": 0.88,
+   "lost": 0.88,
+   "time": 123.0
   },
   "expert": {
-   "broken": 0.77,
-   "clear": 0.88,
-   "lost": 0.63,
-   "time": 100.0
+   "broken": 0.92,
+   "clear": 1.0,
+   "lost": 0.13,
+   "time": 99.0
   },
   "id": "beijing/beihai",
   "novice": {
-   "broken": 0.54,
-   "clear": 0.5,
-   "lost": 2.0,
-   "time": 75.0
+   "broken": 0.29,
+   "clear": 0.25,
+   "lost": 2.25,
+   "time": 84.0
   },
   "runs": 8
  },
  "beijing/cbd": {
   "average": {
-   "broken": 0.92,
+   "broken": 0.98,
+   "clear": 1.0,
+   "lost": 0.38,
+   "time": 105.0
+  },
+  "expert": {
+   "broken": 0.98,
+   "clear": 1.0,
+   "lost": 0.13,
+   "time": 122.0
+  },
+  "id": "beijing/cbd",
+  "novice": {
+   "broken": 0.21,
+   "clear": 0.25,
+   "lost": 2.25,
+   "time": 40.0
+  },
+  "runs": 8
+ },
+ "beijing/forbidden_city": {
+  "average": {
+   "broken": 0.64,
+   "clear": 0.25,
+   "lost": 2.5,
+   "time": 137.0
+  },
+  "expert": {
+   "broken": 0.96,
    "clear": 0.88,
-   "lost": 1.0,
-   "time": 136.0
+   "lost": 0.63,
+   "time": 131.0
+  },
+  "id": "beijing/forbidden_city",
+  "novice": {
+   "broken": 0.29,
+   "clear": 0.25,
+   "lost": 2.5,
+   "time": 93.0
+  },
+  "runs": 8
+ },
+ "beijing/olympic_green": {
+  "average": {
+   "broken": 0.81,
+   "clear": 1.0,
+   "lost": 0.5,
+   "time": 116.0
+  },
+  "expert": {
+   "broken": 0.87,
+   "clear": 1.0,
+   "lost": 0.13,
+   "time": 117.0
+  },
+  "id": "beijing/olympic_green",
+  "novice": {
+   "broken": 0.43,
+   "clear": 0.13,
+   "lost": 2.63,
+   "time": 198.0
+  },
+  "runs": 8
+ },
+ "beijing/qianmen": {
+  "average": {
+   "broken": 0.87,
+   "clear": 1.0,
+   "lost": 0.13,
+   "time": 62.0
   },
   "expert": {
    "broken": 0.96,
    "clear": 1.0,
-   "lost": 0.38,
-   "time": 135.0
+   "lost": 0.13,
+   "time": 67.0
   },
-  "id": "beijing/cbd",
+  "id": "beijing/qianmen",
+  "novice": {
+   "broken": 0.38,
+   "clear": 0.38,
+   "lost": 2.38,
+   "time": 71.0
+  },
+  "runs": 8
+ },
+ "beijing/sanlitun": {
+  "average": {
+   "broken": 0.95,
+   "clear": 1.0,
+   "lost": 0.25,
+   "time": 53.0
+  },
+  "expert": {
+   "broken": 0.89,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 43.0
+  },
+  "id": "beijing/sanlitun",
+  "novice": {
+   "broken": 0.73,
+   "clear": 0.75,
+   "lost": 1.0,
+   "time": 70.0
+  },
+  "runs": 8
+ },
+ "beijing/shichahai": {
+  "average": {
+   "broken": 0.78,
+   "clear": 0.75,
+   "lost": 1.25,
+   "time": 71.0
+  },
+  "expert": {
+   "broken": 0.84,
+   "clear": 1.0,
+   "lost": 0.13,
+   "time": 76.0
+  },
+  "id": "beijing/shichahai",
+  "novice": {
+   "broken": 0.34,
+   "clear": 0.25,
+   "lost": 2.63,
+   "time": 146.0
+  },
+  "runs": 8
+ },
+ "beijing/tiantan": {
+  "average": {
+   "broken": 0.7,
+   "clear": 0.5,
+   "lost": 1.88,
+   "time": 305.0
+  },
+  "expert": {
+   "broken": 0.98,
+   "clear": 1.0,
+   "lost": 0.25,
+   "time": 238.0
+  },
+  "id": "beijing/tiantan",
+  "novice": {
+   "broken": 0.23,
+   "clear": 0.25,
+   "lost": 2.63,
+   "time": 92.0
+  },
+  "runs": 8
+ },
+ "beijing/wangfujing": {
+  "average": {
+   "broken": 0.91,
+   "clear": 0.88,
+   "lost": 0.38,
+   "time": 82.0
+  },
+  "expert": {
+   "broken": 0.97,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 54.0
+  },
+  "id": "beijing/wangfujing",
+  "novice": {
+   "broken": 0.31,
+   "clear": 0.25,
+   "lost": 2.38,
+   "time": 119.0
+  },
+  "runs": 8
+ },
+ "dubai/burj_khalifa": {
+  "average": {
+   "broken": 0.2,
+   "clear": 0.13,
+   "lost": 2.63,
+   "time": 94.0
+  },
+  "expert": {
+   "broken": 0.47,
+   "clear": 0.38,
+   "lost": 2.0,
+   "time": 95.0
+  },
+  "id": "dubai/burj_khalifa",
   "novice": {
    "broken": 0.01,
    "clear": 0.0,
@@ -505,220 +681,44 @@
   },
   "runs": 8
  },
- "beijing/forbidden_city": {
-  "average": {
-   "broken": 0.77,
-   "clear": 0.75,
-   "lost": 1.38,
-   "time": 105.0
-  },
-  "expert": {
-   "broken": 0.83,
-   "clear": 0.88,
-   "lost": 0.5,
-   "time": 144.0
-  },
-  "id": "beijing/forbidden_city",
-  "novice": {
-   "broken": 0.15,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
-  },
-  "runs": 8
- },
- "beijing/olympic_green": {
-  "average": {
-   "broken": 0.96,
-   "clear": 1.0,
-   "lost": 0.75,
-   "time": 130.0
-  },
-  "expert": {
-   "broken": 0.87,
-   "clear": 1.0,
-   "lost": 0.38,
-   "time": 124.0
-  },
-  "id": "beijing/olympic_green",
-  "novice": {
-   "broken": 0.38,
-   "clear": 0.25,
-   "lost": 2.25,
-   "time": 122.0
-  },
-  "runs": 8
- },
- "beijing/qianmen": {
-  "average": {
-   "broken": 0.99,
-   "clear": 1.0,
-   "lost": 0.25,
-   "time": 99.0
-  },
-  "expert": {
-   "broken": 0.9,
-   "clear": 1.0,
-   "lost": 0.0,
-   "time": 107.0
-  },
-  "id": "beijing/qianmen",
-  "novice": {
-   "broken": 0.27,
-   "clear": 0.25,
-   "lost": 2.63,
-   "time": 72.0
-  },
-  "runs": 8
- },
- "beijing/sanlitun": {
-  "average": {
-   "broken": 0.87,
-   "clear": 1.0,
-   "lost": 0.13,
-   "time": 62.0
-  },
-  "expert": {
-   "broken": 0.86,
-   "clear": 1.0,
-   "lost": 0.0,
-   "time": 61.0
-  },
-  "id": "beijing/sanlitun",
-  "novice": {
-   "broken": 0.7,
-   "clear": 0.75,
-   "lost": 1.0,
-   "time": 59.0
-  },
-  "runs": 8
- },
- "beijing/shichahai": {
-  "average": {
-   "broken": 0.89,
-   "clear": 0.88,
-   "lost": 0.75,
-   "time": 99.0
-  },
-  "expert": {
-   "broken": 0.96,
-   "clear": 1.0,
-   "lost": 0.5,
-   "time": 119.0
-  },
-  "id": "beijing/shichahai",
-  "novice": {
-   "broken": 0.27,
-   "clear": 0.25,
-   "lost": 2.5,
-   "time": 70.0
-  },
-  "runs": 8
- },
- "beijing/tiantan": {
-  "average": {
-   "broken": 0.69,
-   "clear": 0.5,
-   "lost": 2.0,
-   "time": 210.0
-  },
-  "expert": {
-   "broken": 0.99,
-   "clear": 1.0,
-   "lost": 0.38,
-   "time": 243.0
-  },
-  "id": "beijing/tiantan",
-  "novice": {
-   "broken": 0.14,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
-  },
-  "runs": 8
- },
- "beijing/wangfujing": {
-  "average": {
-   "broken": 0.97,
-   "clear": 1.0,
-   "lost": 0.0,
-   "time": 76.0
-  },
-  "expert": {
-   "broken": 0.98,
-   "clear": 1.0,
-   "lost": 0.0,
-   "time": 85.0
-  },
-  "id": "beijing/wangfujing",
-  "novice": {
-   "broken": 0.34,
-   "clear": 0.25,
-   "lost": 2.25,
-   "time": 81.0
-  },
-  "runs": 8
- },
- "dubai/burj_khalifa": {
-  "average": {
-   "broken": 0.47,
-   "clear": 0.38,
-   "lost": 2.38,
-   "time": 135.0
-  },
-  "expert": {
-   "broken": 0.85,
-   "clear": 0.88,
-   "lost": 1.0,
-   "time": 97.0
-  },
-  "id": "dubai/burj_khalifa",
-  "novice": {
-   "broken": 0.14,
-   "clear": 0.13,
-   "lost": 2.75,
-   "time": 42.0
-  },
-  "runs": 8
- },
  "dubai/business_bay": {
   "average": {
-   "broken": 0.47,
-   "clear": 0.38,
-   "lost": 2.13,
-   "time": 194.0
+   "broken": 0.58,
+   "clear": 0.5,
+   "lost": 1.88,
+   "time": 136.0
   },
   "expert": {
-   "broken": 0.88,
+   "broken": 0.89,
    "clear": 0.88,
-   "lost": 0.63,
-   "time": 149.0
+   "lost": 0.5,
+   "time": 132.0
   },
   "id": "dubai/business_bay",
   "novice": {
-   "broken": 0.1,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
+   "broken": 0.33,
+   "clear": 0.25,
+   "lost": 2.5,
+   "time": 126.0
   },
   "runs": 8
  },
  "dubai/city_walk": {
   "average": {
-   "broken": 0.63,
+   "broken": 0.58,
    "clear": 0.5,
-   "lost": 1.63,
-   "time": 191.0
+   "lost": 2.13,
+   "time": 223.0
   },
   "expert": {
-   "broken": 0.97,
+   "broken": 0.98,
    "clear": 1.0,
-   "lost": 0.0,
-   "time": 150.0
+   "lost": 0.13,
+   "time": 214.0
   },
   "id": "dubai/city_walk",
   "novice": {
-   "broken": 0.0,
+   "broken": 0.07,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
@@ -727,20 +727,20 @@
  },
  "dubai/deira": {
   "average": {
-   "broken": 0.9,
-   "clear": 0.75,
-   "lost": 1.25,
-   "time": 157.0
+   "broken": 0.8,
+   "clear": 0.5,
+   "lost": 1.75,
+   "time": 131.0
   },
   "expert": {
-   "broken": 0.99,
+   "broken": 0.98,
    "clear": 1.0,
-   "lost": 0.0,
-   "time": 138.0
+   "lost": 0.25,
+   "time": 151.0
   },
   "id": "dubai/deira",
   "novice": {
-   "broken": 0.01,
+   "broken": 0.03,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
@@ -749,16 +749,16 @@
  },
  "dubai/difc": {
   "average": {
-   "broken": 0.52,
+   "broken": 0.51,
    "clear": 0.25,
-   "lost": 2.0,
-   "time": 166.0
+   "lost": 2.25,
+   "time": 172.0
   },
   "expert": {
-   "broken": 0.98,
+   "broken": 0.95,
    "clear": 1.0,
-   "lost": 0.13,
-   "time": 221.0
+   "lost": 0.0,
+   "time": 204.0
   },
   "id": "dubai/difc",
   "novice": {
@@ -771,20 +771,20 @@
  },
  "dubai/fahidi": {
   "average": {
-   "broken": 1.0,
-   "clear": 1.0,
-   "lost": 0.75,
-   "time": 188.0
+   "broken": 0.97,
+   "clear": 0.63,
+   "lost": 1.13,
+   "time": 193.0
   },
   "expert": {
-   "broken": 0.99,
-   "clear": 1.0,
+   "broken": 0.96,
+   "clear": 0.88,
    "lost": 0.0,
-   "time": 171.0
+   "time": 262.0
   },
   "id": "dubai/fahidi",
   "novice": {
-   "broken": 0.11,
+   "broken": 0.0,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
@@ -793,18 +793,40 @@
  },
  "dubai/frame": {
   "average": {
-   "broken": 0.66,
+   "broken": 0.75,
    "clear": 0.38,
-   "lost": 2.13,
-   "time": 181.0
+   "lost": 1.88,
+   "time": 121.0
   },
   "expert": {
    "broken": 0.98,
    "clear": 1.0,
-   "lost": 0.38,
-   "time": 213.0
+   "lost": 0.13,
+   "time": 215.0
   },
   "id": "dubai/frame",
+  "novice": {
+   "broken": 0.25,
+   "clear": 0.13,
+   "lost": 2.63,
+   "time": 60.0
+  },
+  "runs": 8
+ },
+ "dubai/jbr": {
+  "average": {
+   "broken": 0.74,
+   "clear": 0.63,
+   "lost": 1.5,
+   "time": 112.0
+  },
+  "expert": {
+   "broken": 0.72,
+   "clear": 0.38,
+   "lost": 2.25,
+   "time": 144.0
+  },
+  "id": "dubai/jbr",
   "novice": {
    "broken": 0.13,
    "clear": 0.0,
@@ -813,40 +835,18 @@
   },
   "runs": 8
  },
- "dubai/jbr": {
-  "average": {
-   "broken": 0.57,
-   "clear": 0.25,
-   "lost": 2.38,
-   "time": 164.0
-  },
-  "expert": {
-   "broken": 0.95,
-   "clear": 1.0,
-   "lost": 0.88,
-   "time": 168.0
-  },
-  "id": "dubai/jbr",
-  "novice": {
-   "broken": 0.1,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
-  },
-  "runs": 8
- },
  "dubai/marina": {
   "average": {
-   "broken": 0.65,
+   "broken": 0.61,
    "clear": 0.25,
    "lost": 2.5,
-   "time": 173.0
+   "time": 135.0
   },
   "expert": {
-   "broken": 0.93,
+   "broken": 0.91,
    "clear": 0.88,
    "lost": 0.63,
-   "time": 279.0
+   "time": 203.0
   },
   "id": "dubai/marina",
   "novice": {
@@ -859,20 +859,20 @@
  },
  "dubai/palm": {
   "average": {
-   "broken": 0.12,
+   "broken": 0.05,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
   },
   "expert": {
-   "broken": 0.73,
-   "clear": 0.63,
-   "lost": 1.63,
-   "time": 111.0
+   "broken": 0.45,
+   "clear": 0.38,
+   "lost": 2.25,
+   "time": 93.0
   },
   "id": "dubai/palm",
   "novice": {
-   "broken": 0.02,
+   "broken": 0.01,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
@@ -881,42 +881,42 @@
  },
  "italy/colosseo": {
   "average": {
-   "broken": 0.83,
-   "clear": 0.75,
-   "lost": 0.88,
-   "time": 152.0
+   "broken": 0.98,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 153.0
   },
   "expert": {
-   "broken": 0.98,
+   "broken": 0.92,
    "clear": 0.88,
    "lost": 0.0,
-   "time": 176.0
+   "time": 188.0
   },
   "id": "italy/colosseo",
   "novice": {
-   "broken": 0.19,
-   "clear": 0.13,
-   "lost": 2.63,
-   "time": 74.0
+   "broken": 0.51,
+   "clear": 0.38,
+   "lost": 2.0,
+   "time": 93.0
   },
   "runs": 8
  },
  "italy/firenze": {
   "average": {
-   "broken": 0.77,
-   "clear": 0.5,
-   "lost": 1.75,
-   "time": 203.0
+   "broken": 0.43,
+   "clear": 0.0,
+   "lost": 3.0,
+   "time": 0.0
   },
   "expert": {
-   "broken": 0.99,
-   "clear": 0.88,
-   "lost": 0.63,
-   "time": 239.0
+   "broken": 0.98,
+   "clear": 0.75,
+   "lost": 1.13,
+   "time": 214.0
   },
   "id": "italy/firenze",
   "novice": {
-   "broken": 0.07,
+   "broken": 0.0,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
@@ -925,20 +925,20 @@
  },
  "italy/milano": {
   "average": {
-   "broken": 0.7,
-   "clear": 0.38,
-   "lost": 2.13,
-   "time": 154.0
+   "broken": 0.77,
+   "clear": 0.5,
+   "lost": 1.63,
+   "time": 172.0
   },
   "expert": {
-   "broken": 0.98,
+   "broken": 0.99,
    "clear": 1.0,
-   "lost": 0.0,
-   "time": 171.0
+   "lost": 0.13,
+   "time": 192.0
   },
   "id": "italy/milano",
   "novice": {
-   "broken": 0.0,
+   "broken": 0.02,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
@@ -969,20 +969,20 @@
  },
  "italy/pisa": {
   "average": {
-   "broken": 0.62,
-   "clear": 0.38,
-   "lost": 2.13,
-   "time": 323.0
+   "broken": 0.77,
+   "clear": 0.63,
+   "lost": 1.5,
+   "time": 179.0
   },
   "expert": {
    "broken": 0.98,
    "clear": 1.0,
-   "lost": 0.25,
-   "time": 245.0
+   "lost": 0.0,
+   "time": 237.0
   },
   "id": "italy/pisa",
   "novice": {
-   "broken": 0.0,
+   "broken": 0.04,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
@@ -991,20 +991,20 @@
  },
  "italy/spagna": {
   "average": {
-   "broken": 0.6,
-   "clear": 0.75,
-   "lost": 1.25,
-   "time": 143.0
+   "broken": 0.86,
+   "clear": 0.5,
+   "lost": 1.75,
+   "time": 155.0
   },
   "expert": {
-   "broken": 0.91,
+   "broken": 0.9,
    "clear": 1.0,
    "lost": 0.0,
-   "time": 161.0
+   "time": 129.0
   },
   "id": "italy/spagna",
   "novice": {
-   "broken": 0.11,
+   "broken": 0.03,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
@@ -1013,64 +1013,64 @@
  },
  "italy/trastevere": {
   "average": {
-   "broken": 0.97,
+   "broken": 0.96,
    "clear": 0.75,
-   "lost": 1.0,
-   "time": 86.0
+   "lost": 1.13,
+   "time": 192.0
   },
   "expert": {
-   "broken": 0.99,
+   "broken": 0.98,
    "clear": 1.0,
    "lost": 0.25,
-   "time": 199.0
+   "time": 123.0
   },
   "id": "italy/trastevere",
   "novice": {
-   "broken": 0.66,
-   "clear": 0.38,
-   "lost": 1.88,
-   "time": 77.0
+   "broken": 0.37,
+   "clear": 0.13,
+   "lost": 2.88,
+   "time": 111.0
   },
   "runs": 8
  },
  "italy/trevi": {
   "average": {
-   "broken": 0.82,
-   "clear": 0.88,
-   "lost": 0.88,
-   "time": 163.0
+   "broken": 0.66,
+   "clear": 0.38,
+   "lost": 2.25,
+   "time": 191.0
   },
   "expert": {
    "broken": 0.97,
-   "clear": 1.0,
+   "clear": 0.88,
    "lost": 0.0,
-   "time": 158.0
+   "time": 163.0
   },
   "id": "italy/trevi",
   "novice": {
-   "broken": 0.29,
-   "clear": 0.25,
-   "lost": 2.25,
-   "time": 59.0
+   "broken": 0.57,
+   "clear": 0.5,
+   "lost": 1.63,
+   "time": 87.0
   },
   "runs": 8
  },
  "italy/vaticano": {
   "average": {
-   "broken": 0.28,
-   "clear": 0.13,
-   "lost": 2.63,
-   "time": 85.0
+   "broken": 0.33,
+   "clear": 0.25,
+   "lost": 2.75,
+   "time": 157.0
   },
   "expert": {
-   "broken": 0.95,
-   "clear": 0.88,
-   "lost": 0.88,
-   "time": 143.0
+   "broken": 0.89,
+   "clear": 0.75,
+   "lost": 1.13,
+   "time": 215.0
   },
   "id": "italy/vaticano",
   "novice": {
-   "broken": 0.13,
+   "broken": 0.1,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
@@ -1079,20 +1079,20 @@
  },
  "italy/venezia": {
   "average": {
-   "broken": 0.44,
-   "clear": 0.25,
-   "lost": 2.5,
-   "time": 162.0
+   "broken": 0.29,
+   "clear": 0.13,
+   "lost": 2.75,
+   "time": 157.0
   },
   "expert": {
    "broken": 0.99,
    "clear": 1.0,
-   "lost": 0.5,
-   "time": 165.0
+   "lost": 0.25,
+   "time": 166.0
   },
   "id": "italy/venezia",
   "novice": {
-   "broken": 0.07,
+   "broken": 0.03,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
@@ -1101,20 +1101,20 @@
  },
  "london/buckingham": {
   "average": {
-   "broken": 0.89,
-   "clear": 0.63,
-   "lost": 1.38,
-   "time": 213.0
+   "broken": 0.76,
+   "clear": 0.5,
+   "lost": 1.75,
+   "time": 183.0
   },
   "expert": {
-   "broken": 0.83,
-   "clear": 0.63,
-   "lost": 1.63,
-   "time": 257.0
+   "broken": 0.91,
+   "clear": 0.75,
+   "lost": 1.13,
+   "time": 211.0
   },
   "id": "london/buckingham",
   "novice": {
-   "broken": 0.01,
+   "broken": 0.16,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
@@ -1126,105 +1126,105 @@
    "broken": 0.98,
    "clear": 1.0,
    "lost": 0.25,
-   "time": 74.0
+   "time": 120.0
   },
   "expert": {
-   "broken": 0.89,
+   "broken": 0.99,
    "clear": 1.0,
-   "lost": 0.0,
-   "time": 74.0
+   "lost": 0.13,
+   "time": 172.0
   },
   "id": "london/camden",
   "novice": {
-   "broken": 0.32,
+   "broken": 0.58,
    "clear": 0.25,
    "lost": 2.25,
-   "time": 110.0
+   "time": 117.0
   },
   "runs": 8
  },
  "london/canary_wharf": {
   "average": {
-   "broken": 0.42,
-   "clear": 0.38,
-   "lost": 2.25,
-   "time": 147.0
+   "broken": 0.71,
+   "clear": 0.63,
+   "lost": 1.63,
+   "time": 104.0
   },
   "expert": {
-   "broken": 0.95,
-   "clear": 1.0,
-   "lost": 0.63,
-   "time": 120.0
+   "broken": 0.89,
+   "clear": 0.88,
+   "lost": 0.75,
+   "time": 99.0
   },
   "id": "london/canary_wharf",
   "novice": {
-   "broken": 0.33,
-   "clear": 0.25,
-   "lost": 2.5,
-   "time": 197.0
+   "broken": 0.52,
+   "clear": 0.5,
+   "lost": 1.88,
+   "time": 123.0
   },
   "runs": 8
  },
  "london/city": {
   "average": {
-   "broken": 0.67,
+   "broken": 0.85,
    "clear": 0.63,
-   "lost": 1.5,
-   "time": 106.0
+   "lost": 1.63,
+   "time": 120.0
   },
   "expert": {
-   "broken": 0.98,
+   "broken": 0.9,
    "clear": 1.0,
-   "lost": 0.25,
+   "lost": 0.13,
    "time": 139.0
   },
   "id": "london/city",
   "novice": {
-   "broken": 0.19,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
+   "broken": 0.24,
+   "clear": 0.13,
+   "lost": 2.75,
+   "time": 61.0
   },
   "runs": 8
  },
  "london/covent_garden": {
   "average": {
-   "broken": 0.9,
+   "broken": 0.95,
    "clear": 0.88,
-   "lost": 1.13,
-   "time": 125.0
+   "lost": 0.75,
+   "time": 141.0
   },
   "expert": {
-   "broken": 0.95,
-   "clear": 1.0,
-   "lost": 0.25,
-   "time": 96.0
+   "broken": 0.84,
+   "clear": 0.75,
+   "lost": 0.88,
+   "time": 100.0
   },
   "id": "london/covent_garden",
   "novice": {
-   "broken": 0.4,
-   "clear": 0.13,
-   "lost": 2.75,
-   "time": 114.0
+   "broken": 0.53,
+   "clear": 0.38,
+   "lost": 2.13,
+   "time": 146.0
   },
   "runs": 8
  },
  "london/kings_cross": {
   "average": {
-   "broken": 0.97,
-   "clear": 0.75,
-   "lost": 1.5,
-   "time": 203.0
+   "broken": 0.99,
+   "clear": 1.0,
+   "lost": 0.13,
+   "time": 184.0
   },
   "expert": {
    "broken": 0.99,
    "clear": 1.0,
    "lost": 0.0,
-   "time": 154.0
+   "time": 242.0
   },
   "id": "london/kings_cross",
   "novice": {
-   "broken": 0.22,
+   "broken": 0.52,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
@@ -1233,260 +1233,106 @@
  },
  "london/notting_hill": {
   "average": {
-   "broken": 0.99,
-   "clear": 1.0,
-   "lost": 0.25,
-   "time": 133.0
-  },
-  "expert": {
-   "broken": 0.99,
+   "broken": 0.91,
    "clear": 1.0,
    "lost": 0.0,
-   "time": 110.0
+   "time": 131.0
+  },
+  "expert": {
+   "broken": 0.97,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 133.0
   },
   "id": "london/notting_hill",
   "novice": {
    "broken": 0.26,
    "clear": 0.13,
    "lost": 2.75,
-   "time": 177.0
+   "time": 140.0
   },
   "runs": 8
  },
  "london/soho": {
   "average": {
-   "broken": 0.63,
-   "clear": 0.63,
-   "lost": 1.13,
-   "time": 109.0
+   "broken": 0.85,
+   "clear": 0.88,
+   "lost": 0.5,
+   "time": 99.0
   },
   "expert": {
    "broken": 0.95,
    "clear": 1.0,
-   "lost": 0.13,
-   "time": 106.0
+   "lost": 0.0,
+   "time": 101.0
   },
   "id": "london/soho",
   "novice": {
-   "broken": 0.15,
-   "clear": 0.13,
-   "lost": 2.63,
-   "time": 81.0
+   "broken": 0.49,
+   "clear": 0.5,
+   "lost": 1.5,
+   "time": 79.0
   },
   "runs": 8
  },
  "london/tower_bridge": {
   "average": {
    "broken": 0.89,
-   "clear": 0.63,
-   "lost": 1.63,
-   "time": 173.0
+   "clear": 0.75,
+   "lost": 0.88,
+   "time": 150.0
   },
   "expert": {
-   "broken": 0.96,
+   "broken": 0.98,
    "clear": 0.88,
    "lost": 0.38,
-   "time": 139.0
+   "time": 169.0
   },
   "id": "london/tower_bridge",
   "novice": {
-   "broken": 0.02,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
+   "broken": 0.32,
+   "clear": 0.13,
+   "lost": 2.88,
+   "time": 166.0
   },
   "runs": 8
  },
  "london/westminster": {
   "average": {
-   "broken": 0.6,
+   "broken": 0.5,
    "clear": 0.38,
-   "lost": 1.88,
-   "time": 59.0
+   "lost": 2.13,
+   "time": 159.0
   },
   "expert": {
-   "broken": 0.68,
-   "clear": 0.63,
-   "lost": 1.38,
-   "time": 126.0
+   "broken": 0.89,
+   "clear": 0.88,
+   "lost": 0.75,
+   "time": 123.0
   },
   "id": "london/westminster",
   "novice": {
-   "broken": 0.1,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
+   "broken": 0.43,
+   "clear": 0.25,
+   "lost": 2.5,
+   "time": 112.0
   },
   "runs": 8
  },
  "newyork/central_park": {
   "average": {
-   "broken": 0.78,
-   "clear": 0.13,
-   "lost": 2.88,
-   "time": 200.0
+   "broken": 0.83,
+   "clear": 0.25,
+   "lost": 2.5,
+   "time": 185.0
   },
   "expert": {
-   "broken": 0.92,
-   "clear": 0.75,
-   "lost": 0.75,
-   "time": 360.0
+   "broken": 0.99,
+   "clear": 1.0,
+   "lost": 0.5,
+   "time": 248.0
   },
   "id": "newyork/central_park",
-  "novice": {
-   "broken": 0.0,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
-  },
-  "runs": 8
- },
- "newyork/chelsea": {
-  "average": {
-   "broken": 0.54,
-   "clear": 0.25,
-   "lost": 2.5,
-   "time": 71.0
-  },
-  "expert": {
-   "broken": 0.68,
-   "clear": 0.5,
-   "lost": 1.88,
-   "time": 120.0
-  },
-  "id": "newyork/chelsea",
-  "novice": {
-   "broken": 0.23,
-   "clear": 0.25,
-   "lost": 2.5,
-   "time": 77.0
-  },
-  "runs": 8
- },
- "newyork/dumbo": {
-  "average": {
-   "broken": 0.81,
-   "clear": 0.63,
-   "lost": 1.5,
-   "time": 146.0
-  },
-  "expert": {
-   "broken": 0.98,
-   "clear": 1.0,
-   "lost": 0.13,
-   "time": 152.0
-  },
-  "id": "newyork/dumbo",
-  "novice": {
-   "broken": 0.0,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
-  },
-  "runs": 8
- },
- "newyork/empire": {
-  "average": {
-   "broken": 0.38,
-   "clear": 0.13,
-   "lost": 2.88,
-   "time": 134.0
-  },
-  "expert": {
-   "broken": 0.98,
-   "clear": 1.0,
-   "lost": 0.38,
-   "time": 256.0
-  },
-  "id": "newyork/empire",
-  "novice": {
-   "broken": 0.1,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
-  },
-  "runs": 8
- },
- "newyork/flatiron": {
-  "average": {
-   "broken": 0.71,
-   "clear": 0.38,
-   "lost": 2.25,
-   "time": 230.0
-  },
-  "expert": {
-   "broken": 0.99,
-   "clear": 0.88,
-   "lost": 0.0,
-   "time": 183.0
-  },
-  "id": "newyork/flatiron",
-  "novice": {
-   "broken": 0.13,
-   "clear": 0.13,
-   "lost": 2.88,
-   "time": 133.0
-  },
-  "runs": 8
- },
- "newyork/grand_central": {
-  "average": {
-   "broken": 0.72,
-   "clear": 0.5,
-   "lost": 2.13,
-   "time": 203.0
-  },
-  "expert": {
-   "broken": 0.97,
-   "clear": 1.0,
-   "lost": 0.0,
-   "time": 224.0
-  },
-  "id": "newyork/grand_central",
-  "novice": {
-   "broken": 0.0,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
-  },
-  "runs": 8
- },
- "newyork/greenwich": {
-  "average": {
-   "broken": 0.61,
-   "clear": 0.25,
-   "lost": 2.5,
-   "time": 115.0
-  },
-  "expert": {
-   "broken": 0.99,
-   "clear": 1.0,
-   "lost": 0.0,
-   "time": 229.0
-  },
-  "id": "newyork/greenwich",
-  "novice": {
-   "broken": 0.14,
-   "clear": 0.13,
-   "lost": 2.88,
-   "time": 93.0
-  },
-  "runs": 8
- },
- "newyork/hudson_yards": {
-  "average": {
-   "broken": 0.34,
-   "clear": 0.25,
-   "lost": 2.38,
-   "time": 122.0
-  },
-  "expert": {
-   "broken": 0.53,
-   "clear": 0.5,
-   "lost": 2.0,
-   "time": 146.0
-  },
-  "id": "newyork/hudson_yards",
   "novice": {
    "broken": 0.01,
    "clear": 0.0,
@@ -1495,18 +1341,172 @@
   },
   "runs": 8
  },
- "newyork/soho": {
+ "newyork/chelsea": {
   "average": {
-   "broken": 0.77,
-   "clear": 0.5,
-   "lost": 1.75,
-   "time": 131.0
+   "broken": 0.31,
+   "clear": 0.25,
+   "lost": 2.5,
+   "time": 58.0
   },
   "expert": {
-   "broken": 0.9,
+   "broken": 0.87,
    "clear": 0.88,
-   "lost": 0.88,
-   "time": 210.0
+   "lost": 0.63,
+   "time": 115.0
+  },
+  "id": "newyork/chelsea",
+  "novice": {
+   "broken": 0.13,
+   "clear": 0.13,
+   "lost": 2.88,
+   "time": 38.0
+  },
+  "runs": 8
+ },
+ "newyork/dumbo": {
+  "average": {
+   "broken": 0.84,
+   "clear": 0.63,
+   "lost": 1.63,
+   "time": 155.0
+  },
+  "expert": {
+   "broken": 0.97,
+   "clear": 1.0,
+   "lost": 0.75,
+   "time": 148.0
+  },
+  "id": "newyork/dumbo",
+  "novice": {
+   "broken": 0.44,
+   "clear": 0.25,
+   "lost": 2.63,
+   "time": 91.0
+  },
+  "runs": 8
+ },
+ "newyork/empire": {
+  "average": {
+   "broken": 0.45,
+   "clear": 0.13,
+   "lost": 2.88,
+   "time": 127.0
+  },
+  "expert": {
+   "broken": 0.97,
+   "clear": 0.88,
+   "lost": 0.63,
+   "time": 231.0
+  },
+  "id": "newyork/empire",
+  "novice": {
+   "broken": 0.06,
+   "clear": 0.0,
+   "lost": 3.0,
+   "time": 0.0
+  },
+  "runs": 8
+ },
+ "newyork/flatiron": {
+  "average": {
+   "broken": 0.74,
+   "clear": 0.38,
+   "lost": 2.0,
+   "time": 203.0
+  },
+  "expert": {
+   "broken": 0.98,
+   "clear": 0.75,
+   "lost": 0.0,
+   "time": 163.0
+  },
+  "id": "newyork/flatiron",
+  "novice": {
+   "broken": 0.16,
+   "clear": 0.13,
+   "lost": 2.63,
+   "time": 68.0
+  },
+  "runs": 8
+ },
+ "newyork/grand_central": {
+  "average": {
+   "broken": 0.66,
+   "clear": 0.25,
+   "lost": 2.25,
+   "time": 174.0
+  },
+  "expert": {
+   "broken": 0.99,
+   "clear": 1.0,
+   "lost": 0.13,
+   "time": 227.0
+  },
+  "id": "newyork/grand_central",
+  "novice": {
+   "broken": 0.09,
+   "clear": 0.0,
+   "lost": 3.0,
+   "time": 0.0
+  },
+  "runs": 8
+ },
+ "newyork/greenwich": {
+  "average": {
+   "broken": 0.65,
+   "clear": 0.38,
+   "lost": 2.13,
+   "time": 277.0
+  },
+  "expert": {
+   "broken": 0.98,
+   "clear": 0.88,
+   "lost": 0.0,
+   "time": 190.0
+  },
+  "id": "newyork/greenwich",
+  "novice": {
+   "broken": 0.07,
+   "clear": 0.0,
+   "lost": 3.0,
+   "time": 0.0
+  },
+  "runs": 8
+ },
+ "newyork/hudson_yards": {
+  "average": {
+   "broken": 0.55,
+   "clear": 0.38,
+   "lost": 2.13,
+   "time": 82.0
+  },
+  "expert": {
+   "broken": 0.93,
+   "clear": 0.75,
+   "lost": 1.25,
+   "time": 111.0
+  },
+  "id": "newyork/hudson_yards",
+  "novice": {
+   "broken": 0.07,
+   "clear": 0.0,
+   "lost": 3.0,
+   "time": 0.0
+  },
+  "runs": 8
+ },
+ "newyork/soho": {
+  "average": {
+   "broken": 0.6,
+   "clear": 0.13,
+   "lost": 2.75,
+   "time": 152.0
+  },
+  "expert": {
+   "broken": 0.98,
+   "clear": 1.0,
+   "lost": 0.38,
+   "time": 204.0
   },
   "id": "newyork/soho",
   "novice": {
@@ -1519,7 +1519,7 @@
  },
  "newyork/times_square": {
   "average": {
-   "broken": 0.24,
+   "broken": 0.22,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
@@ -1527,8 +1527,8 @@
   "expert": {
    "broken": 0.99,
    "clear": 1.0,
-   "lost": 0.25,
-   "time": 297.0
+   "lost": 0.13,
+   "time": 244.0
   },
   "id": "newyork/times_square",
   "novice": {
@@ -1541,64 +1541,64 @@
  },
  "paris/champs_elysees": {
   "average": {
-   "broken": 0.82,
-   "clear": 0.75,
-   "lost": 1.5,
-   "time": 165.0
+   "broken": 0.94,
+   "clear": 0.88,
+   "lost": 1.13,
+   "time": 183.0
   },
   "expert": {
    "broken": 0.99,
-   "clear": 1.0,
+   "clear": 0.88,
    "lost": 0.38,
-   "time": 150.0
+   "time": 159.0
   },
   "id": "paris/champs_elysees",
   "novice": {
-   "broken": 0.33,
+   "broken": 0.38,
    "clear": 0.13,
-   "lost": 2.63,
-   "time": 106.0
+   "lost": 2.75,
+   "time": 80.0
   },
   "runs": 8
  },
  "paris/cite": {
   "average": {
-   "broken": 0.89,
-   "clear": 0.75,
-   "lost": 1.38,
-   "time": 141.0
+   "broken": 0.97,
+   "clear": 1.0,
+   "lost": 1.0,
+   "time": 121.0
   },
   "expert": {
-   "broken": 0.98,
-   "clear": 1.0,
-   "lost": 0.25,
-   "time": 140.0
+   "broken": 0.96,
+   "clear": 0.88,
+   "lost": 0.5,
+   "time": 155.0
   },
   "id": "paris/cite",
   "novice": {
-   "broken": 0.14,
-   "clear": 0.13,
-   "lost": 2.88,
-   "time": 114.0
+   "broken": 0.43,
+   "clear": 0.25,
+   "lost": 2.75,
+   "time": 111.0
   },
   "runs": 8
  },
  "paris/eiffel": {
   "average": {
-   "broken": 0.68,
-   "clear": 0.38,
-   "lost": 2.13,
-   "time": 150.0
+   "broken": 0.76,
+   "clear": 0.5,
+   "lost": 1.63,
+   "time": 180.0
   },
   "expert": {
-   "broken": 0.92,
+   "broken": 0.88,
    "clear": 0.88,
-   "lost": 1.0,
-   "time": 210.0
+   "lost": 0.63,
+   "time": 190.0
   },
   "id": "paris/eiffel",
   "novice": {
-   "broken": 0.0,
+   "broken": 0.01,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
@@ -1607,64 +1607,64 @@
  },
  "paris/etoile": {
   "average": {
-   "broken": 0.66,
-   "clear": 0.38,
-   "lost": 2.13,
-   "time": 152.0
+   "broken": 0.69,
+   "clear": 0.5,
+   "lost": 2.0,
+   "time": 167.0
   },
   "expert": {
    "broken": 0.98,
    "clear": 1.0,
-   "lost": 1.0,
-   "time": 224.0
+   "lost": 0.63,
+   "time": 183.0
   },
   "id": "paris/etoile",
   "novice": {
-   "broken": 0.16,
+   "broken": 0.19,
    "clear": 0.13,
-   "lost": 2.88,
-   "time": 176.0
+   "lost": 2.75,
+   "time": 108.0
   },
   "runs": 8
  },
  "paris/la_defense": {
   "average": {
-   "broken": 0.88,
-   "clear": 0.88,
-   "lost": 0.63,
-   "time": 108.0
+   "broken": 0.93,
+   "clear": 1.0,
+   "lost": 0.25,
+   "time": 99.0
   },
   "expert": {
-   "broken": 0.82,
-   "clear": 0.88,
-   "lost": 0.5,
-   "time": 104.0
+   "broken": 0.92,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 55.0
   },
   "id": "paris/la_defense",
   "novice": {
-   "broken": 0.14,
-   "clear": 0.13,
-   "lost": 2.63,
-   "time": 58.0
+   "broken": 0.34,
+   "clear": 0.25,
+   "lost": 2.25,
+   "time": 69.0
   },
   "runs": 8
  },
  "paris/louvre": {
   "average": {
-   "broken": 0.91,
-   "clear": 0.88,
-   "lost": 1.25,
-   "time": 223.0
+   "broken": 0.94,
+   "clear": 0.0,
+   "lost": 2.88,
+   "time": 0.0
   },
   "expert": {
-   "broken": 0.97,
-   "clear": 1.0,
-   "lost": 0.13,
-   "time": 135.0
+   "broken": 0.95,
+   "clear": 0.13,
+   "lost": 0.88,
+   "time": 121.0
   },
   "id": "paris/louvre",
   "novice": {
-   "broken": 0.26,
+   "broken": 0.37,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
@@ -1673,133 +1673,133 @@
  },
  "paris/marais": {
   "average": {
-   "broken": 0.72,
-   "clear": 0.75,
-   "lost": 1.25,
-   "time": 110.0
+   "broken": 0.75,
+   "clear": 0.88,
+   "lost": 0.75,
+   "time": 75.0
   },
   "expert": {
    "broken": 0.84,
    "clear": 1.0,
-   "lost": 0.0,
-   "time": 104.0
+   "lost": 0.13,
+   "time": 77.0
   },
   "id": "paris/marais",
   "novice": {
-   "broken": 0.53,
-   "clear": 0.5,
-   "lost": 2.0,
-   "time": 90.0
+   "broken": 0.42,
+   "clear": 0.25,
+   "lost": 2.63,
+   "time": 143.0
   },
   "runs": 8
  },
  "paris/montmartre": {
   "average": {
-   "broken": 0.92,
+   "broken": 1.0,
    "clear": 1.0,
    "lost": 0.0,
-   "time": 137.0
+   "time": 123.0
   },
   "expert": {
    "broken": 0.99,
    "clear": 1.0,
    "lost": 0.0,
-   "time": 149.0
+   "time": 136.0
   },
   "id": "paris/montmartre",
   "novice": {
-   "broken": 0.52,
-   "clear": 0.5,
-   "lost": 1.5,
-   "time": 121.0
+   "broken": 0.65,
+   "clear": 0.63,
+   "lost": 1.63,
+   "time": 86.0
   },
   "runs": 8
  },
  "paris/opera": {
   "average": {
-   "broken": 0.85,
-   "clear": 0.88,
-   "lost": 1.13,
-   "time": 121.0
+   "broken": 0.65,
+   "clear": 0.63,
+   "lost": 1.75,
+   "time": 109.0
   },
   "expert": {
-   "broken": 0.89,
-   "clear": 0.88,
-   "lost": 0.63,
-   "time": 106.0
+   "broken": 0.96,
+   "clear": 1.0,
+   "lost": 0.13,
+   "time": 78.0
   },
   "id": "paris/opera",
   "novice": {
-   "broken": 0.25,
-   "clear": 0.13,
-   "lost": 2.75,
-   "time": 109.0
+   "broken": 0.59,
+   "clear": 0.5,
+   "lost": 1.88,
+   "time": 78.0
   },
   "runs": 8
  },
  "paris/saint_germain": {
   "average": {
-   "broken": 0.98,
+   "broken": 0.9,
    "clear": 1.0,
-   "lost": 0.13,
-   "time": 133.0
+   "lost": 0.25,
+   "time": 115.0
   },
   "expert": {
-   "broken": 0.96,
+   "broken": 0.97,
    "clear": 1.0,
    "lost": 0.0,
-   "time": 145.0
+   "time": 87.0
   },
   "id": "paris/saint_germain",
   "novice": {
-   "broken": 0.26,
-   "clear": 0.13,
-   "lost": 2.88,
-   "time": 121.0
+   "broken": 0.62,
+   "clear": 0.63,
+   "lost": 2.0,
+   "time": 86.0
   },
   "runs": 8
  },
  "seoul/bukchon": {
   "average": {
-   "broken": 0.91,
+   "broken": 0.9,
    "clear": 0.88,
-   "lost": 0.75,
-   "time": 224.0
+   "lost": 0.5,
+   "time": 190.0
   },
   "expert": {
-   "broken": 0.83,
+   "broken": 0.92,
    "clear": 1.0,
    "lost": 0.0,
-   "time": 127.0
+   "time": 129.0
   },
   "id": "seoul/bukchon",
   "novice": {
-   "broken": 0.18,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
+   "broken": 0.22,
+   "clear": 0.13,
+   "lost": 2.63,
+   "time": 50.0
   },
   "runs": 8
  },
  "seoul/coex": {
   "average": {
-   "broken": 0.97,
-   "clear": 1.0,
-   "lost": 0.25,
-   "time": 104.0
-  },
-  "expert": {
-   "broken": 0.99,
+   "broken": 0.94,
    "clear": 1.0,
    "lost": 0.0,
-   "time": 74.0
+   "time": 94.0
+  },
+  "expert": {
+   "broken": 0.93,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 88.0
   },
   "id": "seoul/coex",
   "novice": {
-   "broken": 0.54,
-   "clear": 0.38,
-   "lost": 2.38,
-   "time": 62.0
+   "broken": 0.71,
+   "clear": 0.63,
+   "lost": 1.63,
+   "time": 87.0
   },
   "runs": 8
  },
@@ -1807,263 +1807,263 @@
   "average": {
    "broken": 0.99,
    "clear": 1.0,
-   "lost": 0.0,
-   "time": 94.0
+   "lost": 0.25,
+   "time": 119.0
   },
   "expert": {
-   "broken": 0.96,
+   "broken": 0.99,
    "clear": 1.0,
    "lost": 0.0,
-   "time": 75.0
+   "time": 120.0
   },
   "id": "seoul/dongdaemun",
   "novice": {
    "broken": 0.51,
-   "clear": 0.38,
-   "lost": 2.0,
-   "time": 51.0
+   "clear": 0.13,
+   "lost": 2.63,
+   "time": 295.0
   },
   "runs": 8
  },
  "seoul/gangnam": {
   "average": {
-   "broken": 0.99,
-   "clear": 1.0,
-   "lost": 0.25,
-   "time": 72.0
-  },
-  "expert": {
-   "broken": 0.95,
+   "broken": 0.92,
    "clear": 1.0,
    "lost": 0.0,
-   "time": 55.0
+   "time": 57.0
+  },
+  "expert": {
+   "broken": 0.9,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 48.0
   },
   "id": "seoul/gangnam",
   "novice": {
-   "broken": 0.72,
+   "broken": 0.74,
    "clear": 0.75,
-   "lost": 1.13,
-   "time": 49.0
+   "lost": 1.5,
+   "time": 56.0
   },
   "runs": 8
  },
  "seoul/gyeongbokgung": {
   "average": {
-   "broken": 0.83,
-   "clear": 0.63,
-   "lost": 1.38,
-   "time": 222.0
+   "broken": 0.93,
+   "clear": 0.75,
+   "lost": 0.75,
+   "time": 152.0
   },
   "expert": {
-   "broken": 0.98,
+   "broken": 0.97,
    "clear": 1.0,
    "lost": 0.0,
-   "time": 132.0
+   "time": 172.0
   },
   "id": "seoul/gyeongbokgung",
   "novice": {
-   "broken": 0.1,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
+   "broken": 0.42,
+   "clear": 0.13,
+   "lost": 2.63,
+   "time": 93.0
   },
   "runs": 8
  },
  "seoul/hongdae": {
   "average": {
-   "broken": 0.88,
-   "clear": 0.88,
-   "lost": 0.5,
-   "time": 105.0
+   "broken": 0.75,
+   "clear": 0.75,
+   "lost": 1.25,
+   "time": 90.0
   },
   "expert": {
-   "broken": 0.98,
+   "broken": 1.0,
    "clear": 1.0,
-   "lost": 0.13,
-   "time": 67.0
+   "lost": 0.75,
+   "time": 85.0
   },
   "id": "seoul/hongdae",
   "novice": {
-   "broken": 0.52,
-   "clear": 0.5,
-   "lost": 1.63,
-   "time": 42.0
+   "broken": 0.92,
+   "clear": 0.88,
+   "lost": 1.13,
+   "time": 85.0
   },
   "runs": 8
  },
  "seoul/jamsil": {
   "average": {
-   "broken": 0.85,
-   "clear": 1.0,
-   "lost": 0.13,
-   "time": 134.0
-  },
-  "expert": {
-   "broken": 0.92,
+   "broken": 0.74,
    "clear": 1.0,
    "lost": 0.0,
-   "time": 125.0
+   "time": 127.0
+  },
+  "expert": {
+   "broken": 0.72,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 87.0
   },
   "id": "seoul/jamsil",
   "novice": {
-   "broken": 0.72,
-   "clear": 0.75,
-   "lost": 1.13,
-   "time": 151.0
+   "broken": 0.52,
+   "clear": 0.38,
+   "lost": 2.63,
+   "time": 164.0
   },
   "runs": 8
  },
  "seoul/myeongdong": {
   "average": {
    "broken": 0.95,
-   "clear": 1.0,
-   "lost": 0.0,
-   "time": 143.0
+   "clear": 0.13,
+   "lost": 0.38,
+   "time": 369.0
   },
   "expert": {
-   "broken": 0.96,
+   "broken": 0.99,
    "clear": 1.0,
    "lost": 0.0,
-   "time": 117.0
+   "time": 303.0
   },
   "id": "seoul/myeongdong",
   "novice": {
-   "broken": 0.84,
-   "clear": 0.88,
-   "lost": 0.75,
-   "time": 167.0
+   "broken": 0.43,
+   "clear": 0.0,
+   "lost": 2.63,
+   "time": 0.0
   },
   "runs": 8
  },
  "seoul/olympic_park": {
   "average": {
    "broken": 0.72,
-   "clear": 0.63,
-   "lost": 1.63,
-   "time": 293.0
+   "clear": 0.5,
+   "lost": 1.75,
+   "time": 222.0
   },
   "expert": {
-   "broken": 0.88,
-   "clear": 1.0,
-   "lost": 0.13,
-   "time": 231.0
+   "broken": 0.69,
+   "clear": 0.88,
+   "lost": 0.5,
+   "time": 212.0
   },
   "id": "seoul/olympic_park",
   "novice": {
-   "broken": 0.3,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
+   "broken": 0.54,
+   "clear": 0.25,
+   "lost": 2.38,
+   "time": 176.0
   },
   "runs": 8
  },
  "seoul/yeouido": {
   "average": {
-   "broken": 0.76,
+   "broken": 0.81,
    "clear": 1.0,
-   "lost": 0.63,
-   "time": 112.0
+   "lost": 0.75,
+   "time": 105.0
   },
   "expert": {
-   "broken": 0.71,
+   "broken": 0.79,
    "clear": 1.0,
-   "lost": 0.25,
-   "time": 83.0
+   "lost": 0.0,
+   "time": 70.0
   },
   "id": "seoul/yeouido",
   "novice": {
-   "broken": 0.37,
+   "broken": 0.4,
    "clear": 0.38,
-   "lost": 2.25,
-   "time": 92.0
+   "lost": 2.0,
+   "time": 59.0
   },
   "runs": 8
  },
  "tokyo/akihabara": {
   "average": {
-   "broken": 0.95,
+   "broken": 0.99,
    "clear": 1.0,
-   "lost": 0.0,
-   "time": 125.0
+   "lost": 0.13,
+   "time": 113.0
   },
   "expert": {
-   "broken": 0.98,
+   "broken": 0.99,
    "clear": 1.0,
    "lost": 0.0,
-   "time": 132.0
+   "time": 135.0
   },
   "id": "tokyo/akihabara",
   "novice": {
-   "broken": 0.47,
+   "broken": 0.78,
    "clear": 0.5,
-   "lost": 2.25,
-   "time": 142.0
+   "lost": 1.75,
+   "time": 130.0
   },
   "runs": 8
  },
  "tokyo/asakusa": {
   "average": {
-   "broken": 0.73,
+   "broken": 0.71,
    "clear": 1.0,
    "lost": 0.13,
-   "time": 53.0
+   "time": 65.0
   },
   "expert": {
-   "broken": 0.68,
+   "broken": 0.76,
    "clear": 1.0,
    "lost": 0.13,
-   "time": 47.0
+   "time": 55.0
   },
   "id": "tokyo/asakusa",
   "novice": {
-   "broken": 0.8,
-   "clear": 1.0,
-   "lost": 0.5,
-   "time": 93.0
+   "broken": 0.63,
+   "clear": 0.75,
+   "lost": 1.0,
+   "time": 74.0
   },
   "runs": 8
  },
  "tokyo/ginza": {
   "average": {
-   "broken": 0.81,
+   "broken": 0.9,
    "clear": 0.88,
-   "lost": 0.38,
-   "time": 64.0
+   "lost": 0.63,
+   "time": 108.0
   },
   "expert": {
-   "broken": 0.84,
-   "clear": 1.0,
-   "lost": 0.0,
-   "time": 71.0
+   "broken": 0.81,
+   "clear": 0.88,
+   "lost": 0.75,
+   "time": 103.0
   },
   "id": "tokyo/ginza",
   "novice": {
-   "broken": 0.23,
-   "clear": 0.38,
-   "lost": 2.13,
-   "time": 31.0
+   "broken": 0.43,
+   "clear": 0.25,
+   "lost": 2.25,
+   "time": 60.0
   },
   "runs": 8
  },
  "tokyo/harajuku": {
   "average": {
-   "broken": 0.99,
+   "broken": 1.0,
    "clear": 1.0,
    "lost": 0.13,
-   "time": 163.0
+   "time": 148.0
   },
   "expert": {
-   "broken": 0.99,
+   "broken": 1.0,
    "clear": 1.0,
    "lost": 0.0,
-   "time": 146.0
+   "time": 137.0
   },
   "id": "tokyo/harajuku",
   "novice": {
-   "broken": 0.26,
-   "clear": 0.0,
-   "lost": 3.0,
-   "time": 0.0
+   "broken": 0.53,
+   "clear": 0.13,
+   "lost": 2.63,
+   "time": 68.0
   },
   "runs": 8
  },
@@ -2091,84 +2091,40 @@
  },
  "tokyo/roppongi": {
   "average": {
-   "broken": 0.98,
+   "broken": 0.97,
    "clear": 1.0,
-   "lost": 0.13,
-   "time": 144.0
+   "lost": 0.5,
+   "time": 128.0
   },
   "expert": {
-   "broken": 0.98,
+   "broken": 0.97,
    "clear": 1.0,
    "lost": 0.0,
    "time": 121.0
   },
   "id": "tokyo/roppongi",
   "novice": {
-   "broken": 0.45,
-   "clear": 0.25,
-   "lost": 2.38,
-   "time": 83.0
-  },
-  "runs": 8
- },
- "tokyo/shibuya": {
-  "average": {
-   "broken": 0.81,
-   "clear": 0.75,
-   "lost": 1.13,
-   "time": 111.0
-  },
-  "expert": {
-   "broken": 0.99,
-   "clear": 1.0,
-   "lost": 0.13,
-   "time": 140.0
-  },
-  "id": "tokyo/shibuya",
-  "novice": {
-   "broken": 0.0,
+   "broken": 0.21,
    "clear": 0.0,
    "lost": 3.0,
    "time": 0.0
   },
   "runs": 8
  },
- "tokyo/shinjuku": {
+ "tokyo/shibuya": {
   "average": {
-   "broken": 0.75,
-   "clear": 0.63,
+   "broken": 0.84,
+   "clear": 0.75,
    "lost": 1.25,
-   "time": 69.0
+   "time": 182.0
   },
   "expert": {
-   "broken": 0.99,
+   "broken": 0.98,
    "clear": 1.0,
    "lost": 0.0,
-   "time": 128.0
+   "time": 176.0
   },
-  "id": "tokyo/shinjuku",
-  "novice": {
-   "broken": 0.52,
-   "clear": 0.25,
-   "lost": 2.25,
-   "time": 86.0
-  },
-  "runs": 8
- },
- "tokyo/tokyo_tower": {
-  "average": {
-   "broken": 1.0,
-   "clear": 1.0,
-   "lost": 0.0,
-   "time": 145.0
-  },
-  "expert": {
-   "broken": 1.0,
-   "clear": 1.0,
-   "lost": 0.0,
-   "time": 90.0
-  },
-  "id": "tokyo/tokyo_tower",
+  "id": "tokyo/shibuya",
   "novice": {
    "broken": 0.01,
    "clear": 0.0,
@@ -2177,25 +2133,69 @@
   },
   "runs": 8
  },
+ "tokyo/shinjuku": {
+  "average": {
+   "broken": 0.95,
+   "clear": 0.88,
+   "lost": 0.63,
+   "time": 110.0
+  },
+  "expert": {
+   "broken": 0.99,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 150.0
+  },
+  "id": "tokyo/shinjuku",
+  "novice": {
+   "broken": 0.39,
+   "clear": 0.25,
+   "lost": 2.38,
+   "time": 46.0
+  },
+  "runs": 8
+ },
+ "tokyo/tokyo_tower": {
+  "average": {
+   "broken": 0.99,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 157.0
+  },
+  "expert": {
+   "broken": 0.99,
+   "clear": 1.0,
+   "lost": 0.0,
+   "time": 115.0
+  },
+  "id": "tokyo/tokyo_tower",
+  "novice": {
+   "broken": 0.58,
+   "clear": 0.0,
+   "lost": 2.63,
+   "time": 0.0
+  },
+  "runs": 8
+ },
  "tokyo/ueno": {
   "average": {
-   "broken": 0.8,
+   "broken": 0.74,
    "clear": 1.0,
    "lost": 0.0,
    "time": 58.0
   },
   "expert": {
-   "broken": 0.75,
+   "broken": 0.77,
    "clear": 1.0,
    "lost": 0.0,
-   "time": 73.0
+   "time": 60.0
   },
   "id": "tokyo/ueno",
   "novice": {
-   "broken": 0.65,
-   "clear": 0.63,
-   "lost": 1.38,
-   "time": 102.0
+   "broken": 0.66,
+   "clear": 0.75,
+   "lost": 1.0,
+   "time": 67.0
   },
   "runs": 8
  }

@@ -51,6 +51,31 @@ GREEN_LEISURE = {"park", "garden", "nature_reserve", "golf_course"}
 GREEN_LANDUSE = {"grass", "forest", "meadow", "village_green", "recreation_ground"}
 
 
+# 가는 가지 다듬기. 길을 따라 자르고 작은 조각을 이웃에 합치는 과정에서, 셀 옆으로 실처럼 가는 가지가 삐져나오는 일이 있다.
+# 게임에서는 눈에 잘 띄지 않는데 공은 거기에 튕기므로 방해가 된다. 폭이 SPUR 의 두 배에 못 미치는 부분을 깎아 낸다.
+# 셀 전체가 실처럼 가늘면(블록을 두른 고리 따위) None 을 돌려주어 셀을 없앤다.
+SPUR = 7.0
+def trim_spurs(c):
+    try:
+        c = c if c.is_valid else c.buffer(0)
+        thin = 2.0 * c.area / max(1.0, c.length) < SPUR * 2.0
+        core = c.buffer(-SPUR, join_style=2)
+        if core.is_empty:
+            return None if thin else c
+        opened = core.buffer(SPUR, join_style=2, mitre_limit=2.0).intersection(c)
+        parts = [g for g in getattr(opened, "geoms", [opened]) if g.geom_type == "Polygon" and not g.is_empty]
+        if not parts:
+            return None if thin else c
+        best = max(parts, key=lambda g: g.area).simplify(1.0).buffer(0)
+        if best.geom_type != "Polygon":
+            return None if thin else c
+        if best.area < 0.5 * c.area:
+            return best if best.area > 600 else (None if thin else c)
+        return best
+    except Exception:   # 모양이 꼬인 셀은 그대로 둔다
+        return c
+
+
 def is_protected(t):
     if t.get("amenity") in ("place_of_worship", "hospital", "grave_yard"):
         return True
@@ -294,7 +319,10 @@ def bake(stage, raw):
         if g.area > BIG and 2 <= len(inside) <= 400:
             vor = voronoi_polygons(MultiPoint([b["poly"].centroid for b in inside]), extend_to=g)
             for v in vor.geoms:
-                split += [cc for cc in polys(v.intersection(g)) if cc.area > 30]
+                try:
+                    split += [cc for cc in polys(v.intersection(g)) if cc.area > 30]
+                except Exception:   # 모양이 꼬인 조각은 고쳐서 다시 해 본다
+                    split += [cc for cc in polys(v.buffer(0).intersection(g.buffer(0))) if cc.area > 30]
         else:
             split.append(g)
     cells = [c.buffer(2.2).buffer(-0.2) for c in split]
@@ -351,6 +379,8 @@ def bake(stage, raw):
                 out += split_big(g, depth + 1)
         return out or [c]
     cells = [part for c in cells for part in split_big(c)]
+    cells = [trim_spurs(c) for c in cells]
+    cells = [c for c in cells if c is not None and c.area > 600]
 
     # --- 셀의 성격: 건물, 숲, 부수지 않는 시설 ---
     def hp_of(lv):

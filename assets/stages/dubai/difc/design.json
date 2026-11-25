@@ -4,20 +4,20 @@
   "theme": "dubai",
   "base": "road",
   "grade_target": 8.1,
-  "level": 1.25,
+  "level": 1.063,
   "balance": {
-    "ball_speed": 1525,
-    "paddle_width": 155,
-    "landmark_hp": 40,
+    "ball_speed": 1446,
+    "paddle_width": 174,
+    "landmark_hp": 35,
     "cell_hp_bonus": 2,
-    "drop_interval_start": 24.0,
-    "drop_interval_end": 12.2,
+    "drop_interval_start": 22.5,
+    "drop_interval_end": 11.3,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 6.8,
+      "narrow": 6.2,
       "shield": 1.5,
       "wreck": 1.5
     }

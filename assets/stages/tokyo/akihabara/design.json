@@ -4,20 +4,20 @@
   "theme": "tokyo",
   "base": "river",
   "grade_target": 2.5,
-  "level": 0.247,
+  "level": 0.327,
   "balance": {
-    "ball_speed": 1104,
-    "paddle_width": 255,
-    "landmark_hp": 17,
+    "ball_speed": 1137,
+    "paddle_width": 247,
+    "landmark_hp": 19,
     "cell_hp_bonus": 0,
-    "drop_interval_start": 16.0,
-    "drop_interval_end": 7.2,
+    "drop_interval_start": 16.6,
+    "drop_interval_end": 7.6,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 3.7,
+      "narrow": 4.0,
       "shield": 1.5
     }
   },
@@ -88,24 +88,16 @@
     },
     {
       "at": [
-        1119,
-        1131
-      ],
-      "type": "fire",
-      "from": "주유소 エネオス"
-    },
-    {
-      "at": [
-        343,
-        620
+        345,
+        631
       ],
       "type": "multi",
       "from": "열기구 (상상)"
     },
     {
       "at": [
-        1175,
-        1195
+        1160,
+        1194
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -120,8 +112,8 @@
     },
     {
       "at": [
-        1045,
-        2311
+        1046,
+        2314
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -130,14 +122,14 @@
   "walls": [
     {
       "around": [
-        315,
-        1133
+        299,
+        1153
       ],
       "gap_toward": [
         0.3,
         -1.0
       ],
-      "gap_width": 180,
+      "gap_width": 174,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

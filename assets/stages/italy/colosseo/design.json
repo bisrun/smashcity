@@ -4,10 +4,10 @@
   "theme": "italy",
   "base": "road",
   "grade_target": 5.6,
-  "level": 0.417,
+  "level": 0.41,
   "balance": {
-    "ball_speed": 1175,
-    "paddle_width": 238,
+    "ball_speed": 1172,
+    "paddle_width": 239,
     "landmark_hp": 21,
     "cell_hp_bonus": 0,
     "drop_interval_start": 17.3,
@@ -17,7 +17,7 @@
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.3,
+      "narrow": 4.2,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -81,16 +81,24 @@
     },
     {
       "at": [
-        545,
-        681
+        1327,
+        1118
+      ],
+      "type": "wide",
+      "from": "주차장 Parking Labicana"
+    },
+    {
+      "at": [
+        550,
+        686
       ],
       "type": "multi",
       "from": "열기구 (상상)"
     },
     {
       "at": [
-        1178,
-        1268
+        1095,
+        1074
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -115,8 +123,8 @@
   "walls": [
     {
       "around": [
-        461,
-        1527
+        447,
+        1544
       ],
       "gap_toward": [
         0.3,

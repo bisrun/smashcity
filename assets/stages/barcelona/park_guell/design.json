@@ -4,20 +4,20 @@
   "theme": "barcelona",
   "base": "road",
   "grade_target": 8.8,
-  "level": 1.16,
+  "level": 1.24,
   "balance": {
-    "ball_speed": 1487,
-    "paddle_width": 164,
-    "landmark_hp": 38,
+    "ball_speed": 1521,
+    "paddle_width": 156,
+    "landmark_hp": 39,
     "cell_hp_bonus": 2,
-    "drop_interval_start": 23.3,
-    "drop_interval_end": 11.8,
+    "drop_interval_start": 23.9,
+    "drop_interval_end": 12.2,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 6.5,
+      "narrow": 6.7,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -57,15 +57,15 @@
     },
     {
       "at": [
-        304,
-        592
+        295,
+        597
       ],
       "type": "multi",
       "from": "열기구 (상상)"
     },
     {
       "at": [
-        1044,
+        1047,
         1128
       ],
       "type": "multi",
@@ -75,8 +75,8 @@
   "walls": [
     {
       "around": [
-        758,
-        1971
+        765,
+        1962
       ],
       "gap_toward": [
         0.2,

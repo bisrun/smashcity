@@ -4,20 +4,20 @@
   "theme": "amsterdam",
   "base": "river",
   "grade_target": 5.0,
-  "level": 0.904,
+  "level": 1.004,
   "balance": {
-    "ball_speed": 1380,
-    "paddle_width": 190,
-    "landmark_hp": 32,
+    "ball_speed": 1422,
+    "paddle_width": 180,
+    "landmark_hp": 34,
     "cell_hp_bonus": 2,
-    "drop_interval_start": 21.2,
-    "drop_interval_end": 10.5,
+    "drop_interval_start": 22.0,
+    "drop_interval_end": 11.0,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 5.7,
+      "narrow": 6.0,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -57,14 +57,6 @@
     },
     {
       "at": [
-        1392,
-        578
-      ],
-      "type": "wide",
-      "from": "주차장 Heinekenplein"
-    },
-    {
-      "at": [
         306,
         711
       ],
@@ -83,14 +75,14 @@
   "walls": [
     {
       "around": [
-        1062,
-        1559
+        1072,
+        1548
       ],
       "gap_toward": [
         0.2,
         1.0
       ],
-      "gap_width": 128,
+      "gap_width": 120,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

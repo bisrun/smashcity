@@ -4,7 +4,7 @@
   "theme": "italy",
   "base": "river",
   "grade_target": 6.8,
-  "level": 0.337,
+  "level": 0.338,
   "balance": {
     "ball_speed": 1142,
     "paddle_width": 246,
@@ -97,15 +97,15 @@
     },
     {
       "at": [
-        1146,
-        1188
+        1145,
+        1186
       ],
       "type": "multi",
       "from": "열기구 (상상)"
     },
     {
       "at": [
-        451,
+        464,
         1710
       ],
       "type": "multi",
@@ -113,8 +113,8 @@
     },
     {
       "at": [
-        1051,
-        2269
+        1050,
+        2273
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -123,7 +123,7 @@
   "walls": [
     {
       "around": [
-        845,
+        844,
         1506
       ],
       "gap_toward": [

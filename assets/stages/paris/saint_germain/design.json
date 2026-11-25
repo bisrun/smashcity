@@ -4,20 +4,20 @@
   "theme": "paris",
   "base": "river",
   "grade_target": 3.7,
-  "level": 0.3,
+  "level": 0.547,
   "balance": {
-    "ball_speed": 1126,
-    "paddle_width": 250,
-    "landmark_hp": 19,
-    "cell_hp_bonus": 0,
-    "drop_interval_start": 16.4,
-    "drop_interval_end": 7.5,
+    "ball_speed": 1230,
+    "paddle_width": 225,
+    "landmark_hp": 24,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 18.4,
+    "drop_interval_end": 8.7,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 3.9,
+      "narrow": 4.6,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -81,24 +81,16 @@
     },
     {
       "at": [
-        706,
-        1019
-      ],
-      "type": "shield",
-      "from": "경찰서 Centre de Police Saint Sulpice"
-    },
-    {
-      "at": [
-        478,
-        680
+        467,
+        686
       ],
       "type": "multi",
       "from": "열기구 (상상)"
     },
     {
       "at": [
-        1053,
-        1204
+        1052,
+        1206
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -124,13 +116,13 @@
     {
       "around": [
         557,
-        1355
+        1364
       ],
       "gap_toward": [
-        0.3,
-        -1.0
+        -1.0,
+        -0.2
       ],
-      "gap_width": 176,
+      "gap_width": 156,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

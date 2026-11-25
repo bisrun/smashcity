@@ -4,20 +4,20 @@
   "theme": "seoul",
   "base": "road",
   "grade_target": 3.4,
-  "level": 0.267,
+  "level": 0.52,
   "balance": {
-    "ball_speed": 1112,
-    "paddle_width": 253,
-    "landmark_hp": 18,
-    "cell_hp_bonus": 0,
-    "drop_interval_start": 16.1,
-    "drop_interval_end": 7.3,
+    "ball_speed": 1218,
+    "paddle_width": 228,
+    "landmark_hp": 23,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 18.2,
+    "drop_interval_end": 8.6,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 3.8
+      "narrow": 4.6
     }
   },
   "items": [
@@ -79,14 +79,6 @@
     },
     {
       "at": [
-        103,
-        1126
-      ],
-      "type": "wide",
-      "from": "주차장"
-    },
-    {
-      "at": [
         384,
         615
       ],
@@ -95,7 +87,7 @@
     },
     {
       "at": [
-        1095,
+        1093,
         1195
       ],
       "type": "multi",
@@ -103,16 +95,16 @@
     },
     {
       "at": [
-        432,
-        1770
+        436,
+        1764
       ],
       "type": "multi",
       "from": "열기구 (상상)"
     },
     {
       "at": [
-        1026,
-        2271
+        1023,
+        2279
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -125,10 +117,10 @@
         1248
       ],
       "gap_toward": [
-        0.3,
-        -1.0
+        1.0,
+        -0.2
       ],
-      "gap_width": 179,
+      "gap_width": 158,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

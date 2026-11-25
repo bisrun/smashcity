@@ -4,20 +4,20 @@
   "theme": "glass",
   "base": "river",
   "grade_target": 5.7,
-  "level": 0.42,
+  "level": 0.413,
   "balance": {
-    "ball_speed": 1176,
-    "paddle_width": 238,
+    "ball_speed": 1173,
+    "paddle_width": 239,
     "landmark_hp": 21,
     "cell_hp_bonus": 0,
-    "drop_interval_start": 17.4,
+    "drop_interval_start": 17.3,
     "drop_interval_end": 8.1,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.3,
+      "narrow": 4.2,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -81,24 +81,32 @@
     },
     {
       "at": [
-        431,
-        611
+        404,
+        1153
+      ],
+      "type": "wreck",
+      "from": "은행 Société Générale"
+    },
+    {
+      "at": [
+        428,
+        610
       ],
       "type": "multi",
       "from": "열기구 (상상)"
     },
     {
       "at": [
-        1125,
-        1205
+        1130,
+        1200
       ],
       "type": "multi",
       "from": "열기구 (상상)"
     },
     {
       "at": [
-        438,
-        1644
+        439,
+        1643
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -122,7 +130,7 @@
         0.3,
         -1.0
       ],
-      "gap_width": 166,
+      "gap_width": 167,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

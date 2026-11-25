@@ -4,20 +4,20 @@
   "theme": "amsterdam",
   "base": "river",
   "grade_target": 4.9,
-  "level": 0.073,
+  "level": 0.126,
   "balance": {
-    "ball_speed": 1031,
-    "paddle_width": 273,
-    "landmark_hp": 14,
+    "ball_speed": 1053,
+    "paddle_width": 267,
+    "landmark_hp": 15,
     "cell_hp_bonus": 0,
-    "drop_interval_start": 14.6,
-    "drop_interval_end": 6.4,
+    "drop_interval_start": 15.0,
+    "drop_interval_end": 6.6,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 3.2,
+      "narrow": 3.4,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -97,24 +97,24 @@
     },
     {
       "at": [
-        1186,
-        1279
+        1187,
+        1274
       ],
       "type": "multi",
       "from": "열기구 (상상)"
     },
     {
       "at": [
-        476,
-        1648
+        376,
+        1731
       ],
       "type": "multi",
       "from": "열기구 (상상)"
     },
     {
       "at": [
-        1027,
-        2163
+        1015,
+        2167
       ],
       "type": "multi",
       "from": "열기구 (상상)"

@@ -4,20 +4,20 @@
   "theme": "newyork",
   "base": "river",
   "grade_target": 6.4,
-  "level": 0.953,
+  "level": 1.25,
   "balance": {
-    "ball_speed": 1400,
-    "paddle_width": 185,
-    "landmark_hp": 33,
+    "ball_speed": 1525,
+    "paddle_width": 155,
+    "landmark_hp": 40,
     "cell_hp_bonus": 2,
-    "drop_interval_start": 21.6,
-    "drop_interval_end": 10.8,
+    "drop_interval_start": 24.0,
+    "drop_interval_end": 12.2,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 5.9,
+      "narrow": 6.8,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -73,8 +73,8 @@
     },
     {
       "at": [
-        623,
-        527
+        624,
+        523
       ],
       "type": "wide",
       "from": "임시 배치 (상상)"
@@ -82,7 +82,7 @@
     {
       "at": [
         713,
-        1557
+        1556
       ],
       "type": "wide",
       "from": "임시 배치 (상상)"
@@ -91,14 +91,14 @@
   "walls": [
     {
       "around": [
-        862,
-        1200
+        870,
+        1181
       ],
       "gap_toward": [
         0.2,
         1.0
       ],
-      "gap_width": 124,
+      "gap_width": 120,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

@@ -4,20 +4,20 @@
   "theme": "newyork",
   "base": "river",
   "grade_target": 7.8,
-  "level": 0.756,
+  "level": 0.636,
   "balance": {
-    "ball_speed": 1317,
-    "paddle_width": 204,
-    "landmark_hp": 29,
+    "ball_speed": 1267,
+    "paddle_width": 216,
+    "landmark_hp": 26,
     "cell_hp_bonus": 1,
-    "drop_interval_start": 20.0,
-    "drop_interval_end": 9.8,
+    "drop_interval_start": 19.1,
+    "drop_interval_end": 9.2,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 5.3,
+      "narrow": 4.9,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -65,8 +65,16 @@
     },
     {
       "at": [
-        354,
-        652
+        1357,
+        658
+      ],
+      "type": "life",
+      "from": "약국 Duane Reade"
+    },
+    {
+      "at": [
+        570,
+        608
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -95,10 +103,10 @@
         2070
       ],
       "gap_toward": [
-        0.2,
-        1.0
+        1.0,
+        -0.2
       ],
-      "gap_width": 140,
+      "gap_width": 149,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

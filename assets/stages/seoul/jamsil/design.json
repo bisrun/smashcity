@@ -116,5 +116,21 @@
     }
   ],
   "theme": "seoul",
-  "grade_target": 1.0
+  "grade_target": 1.0,
+  "balance": {
+    "ball_speed": 1000,
+    "paddle_width": 280,
+    "landmark_hp": 12,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 14.0,
+    "drop_interval_end": 6.0,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 3.0
+    }
+  },
+  "level": -0.3
 }

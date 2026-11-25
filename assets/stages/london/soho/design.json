@@ -4,20 +4,20 @@
   "theme": "london",
   "base": "river",
   "grade_target": 4.8,
-  "level": 0.355,
+  "level": 0.674,
   "balance": {
-    "ball_speed": 1149,
-    "paddle_width": 244,
-    "landmark_hp": 20,
-    "cell_hp_bonus": 0,
-    "drop_interval_start": 16.8,
-    "drop_interval_end": 7.8,
+    "ball_speed": 1283,
+    "paddle_width": 213,
+    "landmark_hp": 27,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 19.4,
+    "drop_interval_end": 9.4,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.1,
+      "narrow": 5.0,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -73,48 +73,24 @@
     },
     {
       "at": [
-        1351,
-        1053
-      ],
-      "type": "wreck",
-      "from": "은행 Coutts & Co"
-    },
-    {
-      "at": [
-        91,
-        1427
-      ],
-      "type": "life",
-      "from": "약국 C. W. Andrew"
-    },
-    {
-      "at": [
-        354,
-        587
+        357,
+        592
       ],
       "type": "multi",
       "from": "열기구 (상상)"
     },
     {
       "at": [
-        1052,
-        1110
+        1055,
+        1239
       ],
       "type": "multi",
       "from": "열기구 (상상)"
     },
     {
       "at": [
-        431,
-        1712
-      ],
-      "type": "multi",
-      "from": "열기구 (상상)"
-    },
-    {
-      "at": [
-        1107,
-        2280
+        432,
+        1710
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -127,10 +103,10 @@
         1433
       ],
       "gap_toward": [
-        0.3,
-        -1.0
+        1.0,
+        -0.2
       ],
-      "gap_width": 172,
+      "gap_width": 146,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

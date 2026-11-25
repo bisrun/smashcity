@@ -108,7 +108,7 @@ async function api(path, body) {
   if (!r.ok || j.error) throw new Error(j.error || r.statusText);
   return j;
 }
-function setDirty(v) { S.dirty = v; $("save").disabled = !v; document.title = (v ? "● " : "") + "SmashCity 맵 에디터"; }
+function setDirty(v) { S.dirty = v; const sv = $("savedAt"); if (sv) sv.textContent = "파일이 마지막으로 저장된 때: " + (S.savedAt || "-") + (v ? " · 지금 화면에는 저장하지 않은 변경이 있음" : ""); $("save").disabled = !v; document.title = (v ? "● " : "") + "SmashCity 맵 에디터"; }
 
 // ---------- 목록 ----------
 async function loadWorld(keep) {
@@ -127,18 +127,22 @@ function renderStages() {
     d.className = "stage" + (s.ready ? "" : " off") + (s.id === S.id ? " sel" : "");
     const off = s.grade != null && s.grade_target != null && Math.abs(s.grade - s.grade_target) > 0.8;
     d.innerHTML = '<span class="n">' + (i + 1) + '</span><span class="name"></span><span class="g' + (off ? " bad" : "") + '" title="목표 등급 → 봇으로 잰 등급"></span>';
-    d.children[1].textContent = s.name + (s.auto ? "" : " ✎");
-    d.children[1].title = s.auto ? "도구가 만든 초안" : "손으로 고친 기획";
+    d.children[1].textContent = s.name;
+    d.children[1].title = s.auto ? "도구가 만든 초안" : "손으로 만든 기획 (도구가 덮어쓰지 않음)";
+    if (!s.auto) { const tag = document.createElement("span"); tag.className = "g"; tag.textContent = "수작업"; tag.title = d.children[1].title; d.insertBefore(tag, d.children[2]); }
     d.children[2].textContent = s.ready ? ((s.grade_target ?? "-") + " → " + (s.grade ?? "-")) : "없음";
     if (s.ready) d.onclick = () => openStage(s.id);
     box.appendChild(d);
   });
 }
 async function openStage(id) {
-  if (S.dirty && !confirm("저장하지 않은 변경이 있습니다. 버리고 다른 스테이지를 열까요?")) return;
+  if (S.dirty) {
+    if (!confirm("저장하지 않은 변경이 있습니다. 버리고 다른 스테이지를 열까요?")) return;
+    log("저장하지 않고 버렸습니다: " + S.id + " · 파일은 그대로입니다 (마지막 저장 " + (S.savedAt || "-") + ")");
+  }
   try {
     const j = await api("/api/stage?id=" + encodeURIComponent(id));
-    S.id = id; S.map = j.map; S.design = j.design; S.report = j.report; S.sel = null; S.col = null;
+    S.id = id; S.map = j.map; S.design = j.design; S.report = j.report; S.savedAt = j.saved_at; S.sel = null; S.col = null;
     S.design.items = S.design.items || []; S.design.walls = S.design.walls || [];
     S.cellPolys = S.map.cells.map(c => c.p);
     setDirty(false); renderStages(); renderProps(); renderLists(); renderSel(); fit();
@@ -296,6 +300,9 @@ function renderProps() {
   const r = S.report, p = document.createElement("div"); p.className = "muted"; p.style.marginTop = "6px";
   p.textContent = r ? "봇 클리어율(저장된 측정): 초보 " + Math.round(r.novice.clear * 100) + "% · 보통 " + Math.round(r.average.clear * 100) + "% · 고수 " + Math.round(r.expert.clear * 100) + "%" : "측정 기록 없음";
   box.append(p);
+  const sv = document.createElement("div"); sv.className = "muted"; sv.id = "savedAt";
+  sv.textContent = "파일이 마지막으로 저장된 때: " + (S.savedAt || "-") + (S.dirty ? " · 지금 화면에는 저장하지 않은 변경이 있음" : "");
+  box.append(sv);
 }
 function renderLists() {
   const ib = $("items"); ib.innerHTML = "";
@@ -407,7 +414,7 @@ $("del").onclick = removeSelected;
 $("fit").onclick = fit;
 $("region").onchange = renderStages;
 $("save").onclick = async () => {
-  try { const j = await api("/api/save?id=" + encodeURIComponent(S.id), S.design); delete S.design._auto; setDirty(false); log("저장함: " + j.saved, "ok"); await loadWorld(true); }
+  try { const j = await api("/api/save?id=" + encodeURIComponent(S.id), S.design); delete S.design._auto; S.savedAt = j.saved_at; setDirty(false); renderProps(); log("저장함: " + j.saved + " (" + j.saved_at + ")", "ok"); await loadWorld(true); }
   catch (e) { log("저장하지 못함: " + e.message, "e"); }
 };
 $("measure").onclick = async () => {

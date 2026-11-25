@@ -13,6 +13,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -50,6 +51,12 @@ def world():
             "region_index": region_index}
 
 
+def saved_at(stage_id):
+    """design.json 이 디스크에 마지막으로 쓰인 시각."""
+    path = STAGES / stage_id / "design.json"
+    return time.strftime("%m-%d %H:%M:%S", time.localtime(path.stat().st_mtime)) if path.exists() else ""
+
+
 def known(stage_id):
     return any(s["id"] == stage_id and s["ready"] for c in read_json(STAGES / "stages.json", {"cities": []})["cities"] for s in c["stages"])
 
@@ -84,7 +91,8 @@ def save(stage_id, design):
         tuning = read_json(TUNING, {})
         tuning[stage_id] = design["level"]
         TUNING.write_text(json.dumps(tuning, ensure_ascii=False, indent=1, sort_keys=True) + "\n", encoding="utf-8")
-    return {"saved": str(path.relative_to(ROOT))}
+    print(time.strftime("%H:%M:%S"), "저장:", stage_id, flush=True)   # 언제 무엇을 저장했는지 남긴다
+    return {"saved": str(path.relative_to(ROOT)), "saved_at": saved_at(stage_id)}
 
 
 def measure(stage_id, runs):
@@ -126,7 +134,7 @@ class Handler(BaseHTTPRequestHandler):
                 if not known(sid):
                     return self.send({"error": "모르는 스테이지: " + sid}, 404)
                 return self.send({"map": read_json(STAGES / sid / "map.json"), "design": read_json(STAGES / sid / "design.json", {}),
-                                  "report": read_json(REPORT, {}).get(sid)})
+                                  "report": read_json(REPORT, {}).get(sid), "saved_at": saved_at(sid)})
             if url.path == "/api/balance":
                 return self.send(balance_for(float(q["level"][0]), int(q["region"][0])))
             self.send({"error": "없는 주소"}, 404)

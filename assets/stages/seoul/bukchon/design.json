@@ -4,20 +4,20 @@
   "theme": "hanok",
   "base": "road",
   "grade_target": 4.6,
-  "level": 0.5,
+  "level": 0.66,
   "balance": {
-    "ball_speed": 1210,
-    "paddle_width": 230,
-    "landmark_hp": 23,
+    "ball_speed": 1277,
+    "paddle_width": 214,
+    "landmark_hp": 27,
     "cell_hp_bonus": 1,
-    "drop_interval_start": 18.0,
-    "drop_interval_end": 8.5,
+    "drop_interval_start": 19.3,
+    "drop_interval_end": 9.3,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.5
+      "narrow": 5.0
     }
   },
   "items": [
@@ -79,24 +79,16 @@
     },
     {
       "at": [
-        1189,
-        1050
+        1194,
+        1055
       ],
       "type": "multi",
       "from": "열기구 (상상)"
     },
     {
       "at": [
-        408,
-        1719
-      ],
-      "type": "multi",
-      "from": "열기구 (상상)"
-    },
-    {
-      "at": [
-        1055,
-        2297
+        415,
+        1724
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -112,7 +104,7 @@
         -1.0,
         -0.2
       ],
-      "gap_width": 160,
+      "gap_width": 147,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

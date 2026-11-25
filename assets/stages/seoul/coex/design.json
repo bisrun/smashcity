@@ -4,13 +4,13 @@
   "theme": "seoul",
   "base": "river",
   "grade_target": 2.4,
-  "level": 0.156,
+  "level": 0.162,
   "balance": {
-    "ball_speed": 1065,
+    "ball_speed": 1068,
     "paddle_width": 264,
-    "landmark_hp": 15,
+    "landmark_hp": 16,
     "cell_hp_bonus": 0,
-    "drop_interval_start": 15.2,
+    "drop_interval_start": 15.3,
     "drop_interval_end": 6.8,
     "sky_items": {
       "multi": 3.0,
@@ -71,8 +71,8 @@
     },
     {
       "at": [
-        1064,
-        2190
+        1057,
+        2191
       ],
       "type": "multi",
       "from": "열기구 (상상)"

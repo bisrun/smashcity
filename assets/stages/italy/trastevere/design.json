@@ -4,20 +4,20 @@
   "theme": "italy",
   "base": "river",
   "grade_target": 4.6,
-  "level": 0.513,
+  "level": 0.613,
   "balance": {
-    "ball_speed": 1215,
-    "paddle_width": 229,
-    "landmark_hp": 23,
+    "ball_speed": 1257,
+    "paddle_width": 219,
+    "landmark_hp": 25,
     "cell_hp_bonus": 1,
-    "drop_interval_start": 18.1,
-    "drop_interval_end": 8.6,
+    "drop_interval_start": 18.9,
+    "drop_interval_end": 9.1,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.5,
+      "narrow": 4.8,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -73,14 +73,6 @@
     },
     {
       "at": [
-        481,
-        391
-      ],
-      "type": "fire",
-      "from": "주유소 Star Oil"
-    },
-    {
-      "at": [
         358,
         641
       ],
@@ -102,14 +94,6 @@
       ],
       "type": "multi",
       "from": "열기구 (상상)"
-    },
-    {
-      "at": [
-        991,
-        2215
-      ],
-      "type": "multi",
-      "from": "열기구 (상상)"
     }
   ],
   "walls": [
@@ -122,7 +106,7 @@
         -1.0,
         -0.2
       ],
-      "gap_width": 159,
+      "gap_width": 151,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

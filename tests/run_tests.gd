@@ -648,6 +648,19 @@ func _test_save_data_ranks_scores() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
+## 선처럼 삐져나온 가지의 수. 길이가 40 넘는 두 변이 3도 안쪽으로 접혀 있으면 가지로 본다.
+func _spikes(stage: StageData) -> int:
+	var n := 0
+	for c in stage.cells:
+		var pts: PackedVector2Array = c["points"]
+		for i in pts.size():
+			var a := pts[(i + pts.size() - 1) % pts.size()] - pts[i]
+			var b := pts[(i + 1) % pts.size()] - pts[i]
+			if a.length() > 40.0 and b.length() > 40.0 and absf(a.angle_to(b)) < deg_to_rad(3.0):
+				n += 1
+	return n
+
+
 func _test_stage_list_is_valid() -> void:
 	var data: Dictionary = BalanceScript.load_file("res://assets/stages/stages.json")
 	_check(not data.is_empty() and data["cities"].size() >= 1, "스테이지 차례 파일을 읽는다")
@@ -668,6 +681,7 @@ func _test_stage_list_is_valid() -> void:
 					goals += 1
 					_check(not c["solid"], "목표 건물은 부술 수 있다 (%s)" % s["id"])
 			_check(goals == 1 and stage.cells.size() >= 40, "스테이지에 목표 건물이 하나 있고 셀이 넉넉하다 (%s)" % s["id"])
+			_check(_spikes(stage) == 0, "셀 옆으로 선처럼 삐져나온 가지가 없다 (%s: %d개)" % [s["id"], _spikes(stage)])
 	_check(ready >= 1, "플레이할 수 있는 스테이지가 하나 이상 있다")
 
 
