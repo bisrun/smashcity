@@ -1,0 +1,132 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "paris",
+  "base": "river",
+  "grade_target": 5.0,
+  "level": 0.145,
+  "balance": {
+    "ball_speed": 1061,
+    "paddle_width": 266,
+    "landmark_hp": 15,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 15.2,
+    "drop_interval_end": 6.7,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 3.4,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1419,
+        4
+      ],
+      "type": "wreck",
+      "from": "은행 Crédit Mutuel"
+    },
+    {
+      "at": [
+        1466,
+        57
+      ],
+      "type": "life",
+      "from": "약국 Pharmacie du Quartier Latin"
+    },
+    {
+      "at": [
+        726,
+        159
+      ],
+      "type": "wide",
+      "from": "주차장 Marché Saint-Germain"
+    },
+    {
+      "at": [
+        409,
+        178
+      ],
+      "type": "wreck",
+      "from": "은행 LCL"
+    },
+    {
+      "at": [
+        545,
+        231
+      ],
+      "type": "life",
+      "from": "약국 CityPharma"
+    },
+    {
+      "at": [
+        1292,
+        245
+      ],
+      "type": "wide",
+      "from": "주차장 Saint-Michel"
+    },
+    {
+      "at": [
+        404,
+        387
+      ],
+      "type": "wide",
+      "from": "주차장 Saint-Germain des Prés"
+    },
+    {
+      "at": [
+        1289,
+        523
+      ],
+      "type": "shield",
+      "from": "경찰서 Police judiciaire - Brigade criminelle - Brigade des stupéfiants"
+    },
+    {
+      "at": [
+        1132,
+        1159
+      ],
+      "type": "fire",
+      "from": "주유소 Oil France"
+    },
+    {
+      "at": [
+        379,
+        702
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1059,
+        1180
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        495,
+        1736
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1078,
+        2250
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": []
+}

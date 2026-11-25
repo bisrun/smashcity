@@ -1,0 +1,132 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "dubai",
+  "base": "river",
+  "grade_target": 6.8,
+  "level": 0.35,
+  "balance": {
+    "ball_speed": 1147,
+    "paddle_width": 245,
+    "landmark_hp": 20,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 16.8,
+    "drop_interval_end": 7.8,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.0,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        309,
+        1433
+      ],
+      "type": "life",
+      "from": "약국 Medicina"
+    },
+    {
+      "at": [
+        1401,
+        1515
+      ],
+      "type": "wreck",
+      "from": "은행 Bloom Bank"
+    },
+    {
+      "at": [
+        621,
+        1526
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        679,
+        1590
+      ],
+      "type": "life",
+      "from": "약국 Life Pharmacy"
+    },
+    {
+      "at": [
+        497,
+        1642
+      ],
+      "type": "wreck",
+      "from": "은행 ADCB"
+    },
+    {
+      "at": [
+        721,
+        1907
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1362,
+        2544
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        404,
+        596
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1139,
+        1202
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        405,
+        1758
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1091,
+        2257
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        560,
+        1084
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 172,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

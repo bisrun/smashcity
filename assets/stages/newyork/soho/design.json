@@ -1,0 +1,116 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "newyork",
+  "base": "road",
+  "grade_target": 6.8,
+  "level": 0.744,
+  "balance": {
+    "ball_speed": 1312,
+    "paddle_width": 206,
+    "landmark_hp": 28,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 20.0,
+    "drop_interval_end": 9.7,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 5.2,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        404,
+        44
+      ],
+      "type": "wreck",
+      "from": "은행 Chase"
+    },
+    {
+      "at": [
+        813,
+        53
+      ],
+      "type": "wreck",
+      "from": "은행 Citibank"
+    },
+    {
+      "at": [
+        358,
+        78
+      ],
+      "type": "wide",
+      "from": "주차장 SP+"
+    },
+    {
+      "at": [
+        1256,
+        165
+      ],
+      "type": "shield",
+      "from": "경찰서 New York City Police Headquarters"
+    },
+    {
+      "at": [
+        512,
+        270
+      ],
+      "type": "life",
+      "from": "약국 Kings Pharmacy"
+    },
+    {
+      "at": [
+        226,
+        443
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        314,
+        641
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1162,
+        1175
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        411,
+        1640
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        717,
+        1331
+      ],
+      "gap_toward": [
+        1.0,
+        -0.2
+      ],
+      "gap_width": 140,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

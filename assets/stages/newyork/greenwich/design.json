@@ -1,0 +1,108 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "newyork",
+  "base": "road",
+  "grade_target": 7.3,
+  "level": 0.86,
+  "balance": {
+    "ball_speed": 1361,
+    "paddle_width": 194,
+    "landmark_hp": 31,
+    "cell_hp_bonus": 2,
+    "drop_interval_start": 20.9,
+    "drop_interval_end": 10.3,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 5.6,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        908,
+        42
+      ],
+      "type": "life",
+      "from": "약국 Duane Reade"
+    },
+    {
+      "at": [
+        683,
+        57
+      ],
+      "type": "wreck",
+      "from": "은행 Capital One"
+    },
+    {
+      "at": [
+        1393,
+        250
+      ],
+      "type": "life",
+      "from": "약국 Avalon Chemists"
+    },
+    {
+      "at": [
+        1405,
+        277
+      ],
+      "type": "wreck",
+      "from": "은행 TD Bank"
+    },
+    {
+      "at": [
+        1015,
+        412
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        297,
+        690
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1052,
+        1244
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        429,
+        1731
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        536,
+        1020
+      ],
+      "gap_toward": [
+        0.2,
+        1.0
+      ],
+      "gap_width": 131,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

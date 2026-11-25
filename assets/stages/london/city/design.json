@@ -1,0 +1,108 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "glass",
+  "base": "river",
+  "grade_target": 6.1,
+  "level": 0.781,
+  "balance": {
+    "ball_speed": 1328,
+    "paddle_width": 202,
+    "landmark_hp": 29,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 20.2,
+    "drop_interval_end": 9.9,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 5.3,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        141,
+        212
+      ],
+      "type": "wreck",
+      "from": "은행 Turkish Bank"
+    },
+    {
+      "at": [
+        1288,
+        244
+      ],
+      "type": "life",
+      "from": "약국 Towerbridge Wellness Pharmacy"
+    },
+    {
+      "at": [
+        277,
+        357
+      ],
+      "type": "life",
+      "from": "약국 City Pharmacy"
+    },
+    {
+      "at": [
+        1469,
+        515
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        939,
+        796
+      ],
+      "type": "wide",
+      "from": "주차장 Tower Hill Car & Coach Park"
+    },
+    {
+      "at": [
+        228,
+        570
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1117,
+        1211
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        365,
+        1640
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        956,
+        1421
+      ],
+      "gap_toward": [
+        0.2,
+        1.0
+      ],
+      "gap_width": 138,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

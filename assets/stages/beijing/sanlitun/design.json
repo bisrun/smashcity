@@ -1,0 +1,123 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "beijing",
+  "base": "river",
+  "grade_target": 2.2,
+  "level": 0.033,
+  "balance": {
+    "ball_speed": 1014,
+    "paddle_width": 277,
+    "landmark_hp": 13,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 14.3,
+    "drop_interval_end": 6.2,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 3.1,
+      "shield": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        209,
+        20
+      ],
+      "type": "life",
+      "from": "약국"
+    },
+    {
+      "at": [
+        252,
+        21
+      ],
+      "type": "shield",
+      "from": "경찰서"
+    },
+    {
+      "at": [
+        663,
+        176
+      ],
+      "type": "life",
+      "from": "약국"
+    },
+    {
+      "at": [
+        965,
+        459
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1139,
+        573
+      ],
+      "type": "fire",
+      "from": "주유소 中国石化"
+    },
+    {
+      "at": [
+        508,
+        1010
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        293,
+        1163
+      ],
+      "type": "shield",
+      "from": "경찰서"
+    },
+    {
+      "at": [
+        161,
+        1296
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        398,
+        649
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1108,
+        1245
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        470,
+        1677
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1061,
+        2299
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": []
+}

@@ -1,0 +1,98 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "seoul",
+  "base": "river",
+  "grade_target": 2.0,
+  "level": -0.055,
+  "balance": {
+    "ball_speed": 1000,
+    "paddle_width": 280,
+    "landmark_hp": 12,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 14.0,
+    "drop_interval_end": 6.0,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 3.0
+    }
+  },
+  "items": [
+    {
+      "at": [
+        96,
+        51
+      ],
+      "type": "fire",
+      "from": "주유소 매봉주유소"
+    },
+    {
+      "at": [
+        502,
+        78
+      ],
+      "type": "fire",
+      "from": "주유소 GS 보라주유소"
+    },
+    {
+      "at": [
+        24,
+        394
+      ],
+      "type": "wide",
+      "from": "주차장 신길공영주차장"
+    },
+    {
+      "at": [
+        896,
+        1535
+      ],
+      "type": "life",
+      "from": "약국 온누리약국"
+    },
+    {
+      "at": [
+        757,
+        1970
+      ],
+      "type": "fire",
+      "from": "주유소 여의도주유소"
+    },
+    {
+      "at": [
+        406,
+        737
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1139,
+        1238
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        428,
+        1675
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1037,
+        2075
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": []
+}

@@ -1,0 +1,116 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "dubai",
+  "base": "river",
+  "grade_target": 9.8,
+  "level": 0.72,
+  "balance": {
+    "ball_speed": 1302,
+    "paddle_width": 208,
+    "landmark_hp": 28,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 19.8,
+    "drop_interval_end": 9.6,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 5.2,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1342,
+        144
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1183,
+        248
+      ],
+      "type": "wreck",
+      "from": "은행 Union National Bank"
+    },
+    {
+      "at": [
+        454,
+        273
+      ],
+      "type": "wreck",
+      "from": "은행 Bloom Bank"
+    },
+    {
+      "at": [
+        230,
+        357
+      ],
+      "type": "life",
+      "from": "약국 Life Pharmacy"
+    },
+    {
+      "at": [
+        748,
+        626
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1478,
+        647
+      ],
+      "type": "life",
+      "from": "약국 Supercare Pharmacy"
+    },
+    {
+      "at": [
+        374,
+        657
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1116,
+        1230
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        458,
+        1770
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        700,
+        1367
+      ],
+      "gap_toward": [
+        1.0,
+        -0.2
+      ],
+      "gap_width": 142,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

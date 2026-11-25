@@ -1,0 +1,116 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "newyork",
+  "base": "river",
+  "grade_target": 8.6,
+  "level": 0.62,
+  "balance": {
+    "ball_speed": 1260,
+    "paddle_width": 218,
+    "landmark_hp": 26,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 19.0,
+    "drop_interval_end": 9.1,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.9,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1299,
+        9
+      ],
+      "type": "wreck",
+      "from": "은행 Bank of America"
+    },
+    {
+      "at": [
+        1299,
+        31
+      ],
+      "type": "life",
+      "from": "약국 Duane Reade"
+    },
+    {
+      "at": [
+        1467,
+        282
+      ],
+      "type": "shield",
+      "from": "경찰서 NYPD 10 PCT"
+    },
+    {
+      "at": [
+        1337,
+        396
+      ],
+      "type": "life",
+      "from": "약국 Bio Care Pharmacy"
+    },
+    {
+      "at": [
+        795,
+        553
+      ],
+      "type": "wreck",
+      "from": "은행 Chase"
+    },
+    {
+      "at": [
+        593,
+        1117
+      ],
+      "type": "wide",
+      "from": "주차장 MPG Manhattan Parking: MP Hudson"
+    },
+    {
+      "at": [
+        407,
+        647
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1101,
+        1222
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        391,
+        1721
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        663,
+        1261
+      ],
+      "gap_toward": [
+        1.0,
+        -0.2
+      ],
+      "gap_width": 150,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "tokyo",
+  "base": "road",
+  "grade_target": 5.7,
+  "level": 1.061,
+  "balance": {
+    "ball_speed": 1446,
+    "paddle_width": 174,
+    "landmark_hp": 35,
+    "cell_hp_bonus": 2,
+    "drop_interval_start": 22.5,
+    "drop_interval_end": 11.3,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 6.2,
+      "shield": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        732,
+        14
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        934,
+        118
+      ],
+      "type": "life",
+      "from": "약국 ウエルシア薬局"
+    },
+    {
+      "at": [
+        1231,
+        138
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1296,
+        369
+      ],
+      "type": "fire",
+      "from": "주유소 ENEOS"
+    },
+    {
+      "at": [
+        361,
+        676
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1098,
+        1097
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        760,
+        1183
+      ],
+      "gap_toward": [
+        0.2,
+        1.0
+      ],
+      "gap_width": 120,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

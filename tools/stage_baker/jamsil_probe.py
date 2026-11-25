@@ -183,6 +183,32 @@ def split_big(c, depth=0):
     return out or [c]
 cells = [part for c in cells for part in split_big(c)]
 
+# 가는 가지 다듬기. 길을 따라 자르고 작은 조각을 이웃에 합치는 과정에서, 셀 옆으로 실처럼 가는 가지가 삐져나오는 일이 있다.
+# 게임에서는 눈에 잘 띄지 않는데 공은 거기에 튕기므로 방해가 된다. 폭이 SPUR 의 두 배에 못 미치는 부분을 깎아 낸다.
+# 셀 전체가 실처럼 가늘면(블록을 두른 고리 따위) None 을 돌려주어 셀을 없앤다.
+SPUR = 7.0
+def trim_spurs(c):
+    try:
+        c = c if c.is_valid else c.buffer(0)
+        thin = 2.0 * c.area / max(1.0, c.length) < SPUR * 2.0
+        core = c.buffer(-SPUR, join_style=2)
+        if core.is_empty:
+            return None if thin else c
+        opened = core.buffer(SPUR, join_style=2, mitre_limit=2.0).intersection(c)
+        parts = [g for g in getattr(opened, "geoms", [opened]) if g.geom_type == "Polygon" and not g.is_empty]
+        if not parts:
+            return None if thin else c
+        best = max(parts, key=lambda g: g.area).simplify(1.0).buffer(0)
+        if best.geom_type != "Polygon":
+            return None if thin else c
+        if best.area < 0.5 * c.area:
+            return best if best.area > 600 else (None if thin else c)
+        return best
+    except Exception:   # 모양이 꼬인 셀은 그대로 둔다
+        return c
+cells = [trim_spurs(c) for c in cells]
+cells = [c for c in cells if c is not None and c.area > 600]
+
 def hp_of(lv): return 1 if lv <= 3 else 2 if lv <= 10 else 3 if lv <= 25 else 4
 cell_out = []
 tower = max(buildings, key=lambda b: b["lv"])

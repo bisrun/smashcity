@@ -1,0 +1,140 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "paris",
+  "base": "river",
+  "grade_target": 4.2,
+  "level": 0.269,
+  "balance": {
+    "ball_speed": 1113,
+    "paddle_width": 253,
+    "landmark_hp": 18,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 16.2,
+    "drop_interval_end": 7.3,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 3.8,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1459,
+        115
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1454,
+        116
+      ],
+      "type": "fire",
+      "from": "주유소 Oil France"
+    },
+    {
+      "at": [
+        1476,
+        237
+      ],
+      "type": "life",
+      "from": "약국 Pharmacie du Louvre"
+    },
+    {
+      "at": [
+        1443,
+        334
+      ],
+      "type": "wreck",
+      "from": "은행 BNP Paribas"
+    },
+    {
+      "at": [
+        1040,
+        439
+      ],
+      "type": "life",
+      "from": "약국 Pharmacie du Théâtre Français"
+    },
+    {
+      "at": [
+        644,
+        620
+      ],
+      "type": "wreck",
+      "from": "은행 SG"
+    },
+    {
+      "at": [
+        1404,
+        1043
+      ],
+      "type": "wide",
+      "from": "주차장 Bourse"
+    },
+    {
+      "at": [
+        201,
+        1172
+      ],
+      "type": "wide",
+      "from": "주차장 Madeleine Tronchet"
+    },
+    {
+      "at": [
+        398,
+        644
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1092,
+        1152
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        478,
+        1636
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1080,
+        2210
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        727,
+        1284
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 178,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

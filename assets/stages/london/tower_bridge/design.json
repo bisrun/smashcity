@@ -1,0 +1,92 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "london",
+  "base": "river",
+  "grade_target": 5.8,
+  "level": 0.939,
+  "balance": {
+    "ball_speed": 1394,
+    "paddle_width": 186,
+    "landmark_hp": 33,
+    "cell_hp_bonus": 2,
+    "drop_interval_start": 21.5,
+    "drop_interval_end": 10.7,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 5.8,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        428,
+        281
+      ],
+      "type": "life",
+      "from": "약국 Harfleur Pharmacy"
+    },
+    {
+      "at": [
+        1324,
+        319
+      ],
+      "type": "life",
+      "from": "약국 Hobbs Pharmacy"
+    },
+    {
+      "at": [
+        214,
+        741
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1283,
+        1282
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        356,
+        650
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1038,
+        1056
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        158,
+        1192
+      ],
+      "gap_toward": [
+        0.2,
+        1.0
+      ],
+      "gap_width": 125,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

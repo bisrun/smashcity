@@ -1,0 +1,125 @@
+{
+  "_comment": "지역 10곳과 스테이지 100개. lat, lon 은 판의 가운데, rot 은 화면 위쪽이 가리키는 방위(도, 0이면 북쪽이 위)다. landmark 는 목표 건물을 고를 때 OSM 이름에서 찾을 말이고, 없으면 가장 높은 건물을 고른다. theme 을 적지 않으면 지역의 theme 을 쓴다. bake 가 false 인 스테이지는 손으로 다듬은 것이라 다시 굽지 않는다.",
+  "regions": [
+    {"id": "seoul", "name": "서울", "theme": "seoul", "stages": [
+      {"id": "jamsil", "name": "잠실", "lat": 37.5094, "lon": 127.1000, "rot": 180, "bake": false},
+      {"id": "olympic_park", "name": "올림픽공원", "lat": 37.5190, "lon": 127.1220},
+      {"id": "gangnam", "name": "강남역", "lat": 37.4985, "lon": 127.0290},
+      {"id": "coex", "name": "코엑스와 삼성", "lat": 37.5105, "lon": 127.0600, "landmark": "무역센터|트레이드타워|Trade Tower"},
+      {"id": "yeouido", "name": "여의도", "lat": 37.5245, "lon": 126.9255, "landmark": "파크원|Parc1|63"},
+      {"id": "hongdae", "name": "홍대", "lat": 37.5545, "lon": 126.9240},
+      {"id": "myeongdong", "name": "명동과 남산", "lat": 37.5570, "lon": 126.9870, "landmark": "서울타워|Seoul Tower"},
+      {"id": "dongdaemun", "name": "동대문", "lat": 37.5680, "lon": 127.0090, "landmark": "동대문디자인플라자|DDP"},
+      {"id": "bukchon", "name": "북촌과 인사동", "lat": 37.5790, "lon": 126.9860, "theme": "hanok"},
+      {"id": "gyeongbokgung", "name": "경복궁과 광화문", "lat": 37.5745, "lon": 126.9770, "theme": "hanok"}
+    ]},
+    {"id": "tokyo", "name": "도쿄", "theme": "tokyo", "stages": [
+      {"id": "asakusa", "name": "아사쿠사", "lat": 35.7120, "lon": 139.7966},
+      {"id": "ueno", "name": "우에노", "lat": 35.7120, "lon": 139.7750},
+      {"id": "akihabara", "name": "아키하바라", "lat": 35.6990, "lon": 139.7720},
+      {"id": "ginza", "name": "긴자", "lat": 35.6717, "lon": 139.7650},
+      {"id": "marunouchi", "name": "도쿄역과 마루노우치", "lat": 35.6812, "lon": 139.7660, "landmark": "丸の内ビル|丸ビル|Marunouchi"},
+      {"id": "roppongi", "name": "롯폰기", "lat": 35.6620, "lon": 139.7300, "landmark": "六本木ヒルズ|森タワー|Mori Tower"},
+      {"id": "tokyo_tower", "name": "도쿄타워", "lat": 35.6600, "lon": 139.7460, "landmark": "東京タワー|Tokyo Tower"},
+      {"id": "harajuku", "name": "하라주쿠와 오모테산도", "lat": 35.6680, "lon": 139.7070},
+      {"id": "shinjuku", "name": "신주쿠", "lat": 35.6900, "lon": 139.6980, "landmark": "東京都庁|都庁|Metropolitan Government"},
+      {"id": "shibuya", "name": "시부야", "lat": 35.6595, "lon": 139.7010, "landmark": "スクランブルスクエア|Scramble Square|ヒカリエ"}
+    ]},
+    {"id": "beijing", "name": "베이징", "theme": "beijing", "stages": [
+      {"id": "sanlitun", "name": "싼리툰", "lat": 39.9340, "lon": 116.4540},
+      {"id": "art798", "name": "798 예술구", "lat": 39.9840, "lon": 116.4950},
+      {"id": "olympic_green", "name": "올림픽공원과 냐오차오", "lat": 39.9930, "lon": 116.3960, "landmark": "国家体育场|鸟巢|National Stadium"},
+      {"id": "wangfujing", "name": "왕푸징", "lat": 39.9140, "lon": 116.4110},
+      {"id": "qianmen", "name": "첸먼 거리", "lat": 39.8950, "lon": 116.3980},
+      {"id": "shichahai", "name": "스차하이와 난뤄구샹", "lat": 39.9400, "lon": 116.3920, "theme": "hutong"},
+      {"id": "cbd", "name": "궈마오", "lat": 39.9100, "lon": 116.4600, "landmark": "中国尊|国贸|CITIC"},
+      {"id": "beihai", "name": "베이하이 공원", "lat": 39.9255, "lon": 116.3890, "theme": "hutong"},
+      {"id": "tiantan", "name": "톈탄 공원", "lat": 39.8830, "lon": 116.4070, "theme": "hutong"},
+      {"id": "forbidden_city", "name": "자금성", "lat": 39.9163, "lon": 116.3972, "theme": "hutong"}
+    ]},
+    {"id": "paris", "name": "파리", "theme": "paris", "stages": [
+      {"id": "montmartre", "name": "몽마르트르", "lat": 48.8850, "lon": 2.3410},
+      {"id": "marais", "name": "마레", "lat": 48.8590, "lon": 2.3620},
+      {"id": "saint_germain", "name": "생제르맹", "lat": 48.8530, "lon": 2.3330},
+      {"id": "opera", "name": "오페라", "lat": 48.8719, "lon": 2.3316, "landmark": "Opéra Garnier|Palais Garnier"},
+      {"id": "la_defense", "name": "라데팡스", "lat": 48.8910, "lon": 2.2390, "landmark": "Grande Arche|Tour First"},
+      {"id": "louvre", "name": "루브르", "lat": 48.8625, "lon": 2.3360},
+      {"id": "cite", "name": "시테섬", "lat": 48.8550, "lon": 2.3470},
+      {"id": "champs_elysees", "name": "샹젤리제", "lat": 48.8690, "lon": 2.3080},
+      {"id": "etoile", "name": "개선문", "lat": 48.8738, "lon": 2.2950},
+      {"id": "eiffel", "name": "에펠탑", "lat": 48.8590, "lon": 2.2945, "landmark": "Tour Eiffel"}
+    ]},
+    {"id": "london", "name": "런던", "theme": "london", "stages": [
+      {"id": "camden", "name": "캠든타운", "lat": 51.5410, "lon": -0.1460},
+      {"id": "notting_hill", "name": "노팅힐", "lat": 51.5130, "lon": -0.2030, "theme": "pastel"},
+      {"id": "covent_garden", "name": "코벤트가든", "lat": 51.5130, "lon": -0.1230},
+      {"id": "soho", "name": "소호와 피카딜리", "lat": 51.5115, "lon": -0.1340},
+      {"id": "kings_cross", "name": "킹스크로스", "lat": 51.5330, "lon": -0.1240},
+      {"id": "canary_wharf", "name": "카나리워프", "lat": 51.5050, "lon": -0.0200, "landmark": "One Canada Square", "theme": "glass"},
+      {"id": "city", "name": "시티", "lat": 51.5135, "lon": -0.0830, "landmark": "30 St Mary Axe|Gherkin", "theme": "glass"},
+      {"id": "tower_bridge", "name": "타워브리지", "lat": 51.5060, "lon": -0.0780, "landmark": "The Shard|Shard"},
+      {"id": "buckingham", "name": "버킹엄", "lat": 51.5000, "lon": -0.1400},
+      {"id": "westminster", "name": "웨스트민스터", "lat": 51.5010, "lon": -0.1230, "landmark": "Elizabeth Tower|Big Ben"}
+    ]},
+    {"id": "amsterdam", "name": "암스테르담", "theme": "amsterdam", "stages": [
+      {"id": "jordaan", "name": "요르단", "lat": 52.3740, "lon": 4.8810},
+      {"id": "dam", "name": "담 광장", "lat": 52.3731, "lon": 4.8926},
+      {"id": "centraal", "name": "중앙역", "lat": 52.3770, "lon": 4.9000, "landmark": "Amsterdam Centraal|Centraal Station"},
+      {"id": "grachten", "name": "운하 고리", "lat": 52.3680, "lon": 4.8870},
+      {"id": "leidseplein", "name": "레이체 광장", "lat": 52.3640, "lon": 4.8830},
+      {"id": "museumplein", "name": "뮤지엄 광장", "lat": 52.3585, "lon": 4.8820, "landmark": "Rijksmuseum"},
+      {"id": "vondelpark", "name": "폰덜 공원", "lat": 52.3580, "lon": 4.8690},
+      {"id": "de_pijp", "name": "더 페이프", "lat": 52.3545, "lon": 4.8930},
+      {"id": "amstel", "name": "암스털 강", "lat": 52.3650, "lon": 4.9010},
+      {"id": "ij", "name": "에이 강과 북쪽 부두", "lat": 52.3830, "lon": 4.9020, "landmark": "A'DAM|Toren Overhoeks"}
+    ]},
+    {"id": "italy", "name": "이탈리아", "theme": "italy", "stages": [
+      {"id": "trastevere", "name": "로마 트라스테베레", "lat": 41.8890, "lon": 12.4700},
+      {"id": "spagna", "name": "로마 스페인 광장", "lat": 41.9060, "lon": 12.4820},
+      {"id": "trevi", "name": "로마 트레비 분수", "lat": 41.9000, "lon": 12.4810},
+      {"id": "navona", "name": "로마 나보나 광장", "lat": 41.8992, "lon": 12.4731},
+      {"id": "colosseo", "name": "로마 콜로세움", "lat": 41.8910, "lon": 12.4930},
+      {"id": "firenze", "name": "피렌체", "lat": 43.7710, "lon": 11.2550},
+      {"id": "pisa", "name": "피사", "lat": 43.7200, "lon": 10.3980, "landmark": "Torre di Pisa|Torre pendente"},
+      {"id": "milano", "name": "밀라노", "lat": 45.4660, "lon": 9.1900, "landmark": "Galleria Vittorio Emanuele|Torre Velasca"},
+      {"id": "vaticano", "name": "로마 산탄젤로", "lat": 41.9030, "lon": 12.4640},
+      {"id": "venezia", "name": "베네치아", "lat": 45.4360, "lon": 12.3340}
+    ]},
+    {"id": "barcelona", "name": "바르셀로나", "theme": "barcelona", "stages": [
+      {"id": "barceloneta", "name": "바르셀로네타", "lat": 41.3810, "lon": 2.1890, "rot": 315},
+      {"id": "gotic", "name": "고딕 지구", "lat": 41.3830, "lon": 2.1770},
+      {"id": "rambla", "name": "람블라스", "lat": 41.3817, "lon": 2.1716},
+      {"id": "born", "name": "엘 보른", "lat": 41.3860, "lon": 2.1830},
+      {"id": "gracia", "name": "그라시아", "lat": 41.4030, "lon": 2.1560},
+      {"id": "eixample", "name": "에이샴플라", "lat": 41.3940, "lon": 2.1630, "landmark": "Casa Milà|La Pedrera", "rot": 315},
+      {"id": "montjuic", "name": "몬주익", "lat": 41.3690, "lon": 2.1510, "landmark": "Palau Nacional|Estadi Olímpic"},
+      {"id": "camp_nou", "name": "캄프 누", "lat": 41.3809, "lon": 2.1228, "landmark": "Camp Nou"},
+      {"id": "park_guell", "name": "구엘 공원", "lat": 41.4130, "lon": 2.1527},
+      {"id": "sagrada", "name": "사그라다 파밀리아", "lat": 41.4036, "lon": 2.1744, "rot": 315}
+    ]},
+    {"id": "dubai", "name": "두바이", "theme": "dubai", "stages": [
+      {"id": "deira", "name": "데이라 금시장", "lat": 25.2700, "lon": 55.2990},
+      {"id": "fahidi", "name": "알 파히디", "lat": 25.2630, "lon": 55.2990},
+      {"id": "frame", "name": "두바이 프레임", "lat": 25.2350, "lon": 55.3000, "landmark": "Dubai Frame|برواز دبي"},
+      {"id": "city_walk", "name": "시티워크", "lat": 25.2080, "lon": 55.2620},
+      {"id": "business_bay", "name": "비즈니스 베이", "lat": 25.1860, "lon": 55.2650},
+      {"id": "difc", "name": "DIFC", "lat": 25.2120, "lon": 55.2800, "landmark": "Emirates Towers|Emirates Office Tower|Gate"},
+      {"id": "marina", "name": "두바이 마리나", "lat": 25.0800, "lon": 55.1400, "landmark": "Cayan|Princess Tower"},
+      {"id": "jbr", "name": "JBR과 블루워터", "lat": 25.0790, "lon": 55.1270, "landmark": "Ain Dubai"},
+      {"id": "palm", "name": "팜 주메이라", "lat": 25.1180, "lon": 55.1380},
+      {"id": "burj_khalifa", "name": "부르즈 할리파", "lat": 25.1972, "lon": 55.2744, "landmark": "Burj Khalifa|برج خليفة"}
+    ]},
+    {"id": "newyork", "name": "뉴욕", "theme": "newyork", "stages": [
+      {"id": "dumbo", "name": "브루클린 덤보", "lat": 40.7010, "lon": -73.9890},
+      {"id": "soho", "name": "소호", "lat": 40.7233, "lon": -74.0010, "rot": 29},
+      {"id": "greenwich", "name": "그리니치 빌리지", "lat": 40.7336, "lon": -73.9990},
+      {"id": "chelsea", "name": "첼시와 하이라인", "lat": 40.7465, "lon": -74.0020, "rot": 29},
+      {"id": "flatiron", "name": "플랫아이언", "lat": 40.7400, "lon": -73.9900, "rot": 29, "landmark": "Flatiron Building"},
+      {"id": "hudson_yards", "name": "허드슨 야드", "lat": 40.7540, "lon": -74.0000, "rot": 29, "landmark": "30 Hudson Yards|Hudson Yards"},
+      {"id": "grand_central", "name": "그랜드 센트럴", "lat": 40.7527, "lon": -73.9772, "rot": 29, "landmark": "Chrysler Building"},
+      {"id": "central_park", "name": "센트럴파크 남쪽", "lat": 40.7660, "lon": -73.9770, "rot": 29, "landmark": "Central Park Tower|432 Park"},
+      {"id": "empire", "name": "엠파이어 스테이트", "lat": 40.7484, "lon": -73.9857, "rot": 29, "landmark": "Empire State Building"},
+      {"id": "times_square", "name": "타임스 스퀘어", "lat": 40.7580, "lon": -73.9855, "rot": 29, "landmark": "One Times Square|Times Square Tower|Bank of America Tower"}
+    ]}
+  ]
+}

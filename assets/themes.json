@@ -1,0 +1,333 @@
+{
+  "_comment": "지역의 생김새. 벽과 지붕의 색, 지붕 모양의 비율(style: 뾰족지붕 house, 층층 기와지붕 tiered, 평지붕 flat), 땅과 풀의 색, 꽃나무의 비율, 부수지 않는 시설의 색을 정한다. 적지 않은 값은 기본(서울)을 쓴다. 판정과는 무관하다.",
+  "seoul": {},
+  "hanok": {
+    "walls": [
+      "F6EFE2",
+      "EFE6D4",
+      "FFFFFF",
+      "E9DCC6"
+    ],
+    "roofs": [
+      "7C93A8",
+      "8BA3B5",
+      "6F8CA3",
+      "A3B4C2",
+      "C9A27A"
+    ],
+    "style": {
+      "house": 0.2,
+      "tiered": 0.75,
+      "flat": 0.05
+    },
+    "heritage": {
+      "roof": "5F7F96",
+      "wall": "D9634F",
+      "trim": "3FA796"
+    }
+  },
+  "tokyo": {
+    "walls": [
+      "FFFFFF",
+      "F4F1EA",
+      "E8EEF4",
+      "FDE8EC",
+      "EDE7DD"
+    ],
+    "roofs": [
+      "8FA0B0",
+      "E56B8C",
+      "4FB0A5",
+      "A3B4C2",
+      "F2A65A",
+      "E8785A"
+    ],
+    "style": {
+      "house": 0.25,
+      "tiered": 0.2,
+      "flat": 0.55
+    },
+    "blossom": 0.6,
+    "heritage": {
+      "roof": "4E6B5A",
+      "wall": "D9534F",
+      "trim": "F2E6C8"
+    }
+  },
+  "beijing": {
+    "walls": [
+      "F6E9D2",
+      "EFD9B4",
+      "E8C8A0",
+      "FFFFFF"
+    ],
+    "roofs": [
+      "D9A441",
+      "C94F3D",
+      "E0B64A",
+      "B8432F",
+      "8E9AA6"
+    ],
+    "style": {
+      "house": 0.15,
+      "tiered": 0.35,
+      "flat": 0.5
+    },
+    "heritage": {
+      "roof": "E2B23C",
+      "wall": "B83C32",
+      "trim": "2F7F6F"
+    }
+  },
+  "hutong": {
+    "walls": [
+      "D9634F",
+      "C8503E",
+      "E9E2D4",
+      "D8CDB8"
+    ],
+    "roofs": [
+      "E2B23C",
+      "EBC55A",
+      "A3ADB6",
+      "8FA0B0"
+    ],
+    "style": {
+      "house": 0.15,
+      "tiered": 0.8,
+      "flat": 0.05
+    },
+    "heritage": {
+      "roof": "E2B23C",
+      "wall": "B83C32",
+      "trim": "2F7F6F"
+    }
+  },
+  "paris": {
+    "walls": [
+      "F3EAD8",
+      "EFE3CC",
+      "F7F0E2",
+      "E9DEC8"
+    ],
+    "roofs": [
+      "8FB0D0",
+      "A7C0DA",
+      "7FA3C7",
+      "B9CBE0",
+      "9DB4CC"
+    ],
+    "style": {
+      "house": 0.2,
+      "tiered": 0.7,
+      "flat": 0.1
+    },
+    "heritage": {
+      "roof": "8E9DB0",
+      "wall": "EFE3CC",
+      "trim": "D9C7A6"
+    }
+  },
+  "london": {
+    "walls": [
+      "D98F78",
+      "C97B63",
+      "E0A08A",
+      "F1E9DA",
+      "E3D7C0"
+    ],
+    "roofs": [
+      "8FA0B0",
+      "A8B5C2",
+      "C97B63",
+      "7FA3C7"
+    ],
+    "style": {
+      "house": 0.45,
+      "tiered": 0.3,
+      "flat": 0.25
+    },
+    "heritage": {
+      "roof": "7A858F",
+      "wall": "E9E2D4",
+      "trim": "C9B48A"
+    }
+  },
+  "pastel": {
+    "walls": [
+      "FFC9D4",
+      "BFE3F2",
+      "FFF1B8",
+      "CDEBC5",
+      "E3D0F2",
+      "FFD8B8"
+    ],
+    "roofs": [
+      "8FA0B0",
+      "A8B5C2",
+      "E56B8C",
+      "5E8FD6"
+    ],
+    "style": {
+      "house": 0.65,
+      "tiered": 0.2,
+      "flat": 0.15
+    },
+    "blossom": 0.4
+  },
+  "glass": {
+    "walls": [
+      "CFE6F5",
+      "BBD9EE",
+      "D8ECF7",
+      "C4E0EC"
+    ],
+    "roofs": [
+      "6FB3E8",
+      "58A6E0",
+      "7CC4EE",
+      "9DB8F2"
+    ],
+    "style": {
+      "house": 0.0,
+      "tiered": 0.1,
+      "flat": 0.9
+    }
+  },
+  "amsterdam": {
+    "walls": [
+      "C97B63",
+      "D98F78",
+      "B8654F",
+      "E8C9A0",
+      "7C93A8",
+      "F3E6D0"
+    ],
+    "roofs": [
+      "E8785A",
+      "F2A65A",
+      "8FA0B0",
+      "D9774A"
+    ],
+    "style": {
+      "house": 0.8,
+      "tiered": 0.15,
+      "flat": 0.05
+    },
+    "heritage": {
+      "roof": "5B4A42",
+      "wall": "C9A27A",
+      "trim": "FFFFFF"
+    }
+  },
+  "italy": {
+    "walls": [
+      "F4D9A8",
+      "F2C48D",
+      "EFB87F",
+      "F7E3BE",
+      "E9A774"
+    ],
+    "roofs": [
+      "E8875A",
+      "D9774A",
+      "F2A65A",
+      "E39A6B"
+    ],
+    "style": {
+      "house": 0.5,
+      "tiered": 0.4,
+      "flat": 0.1
+    },
+    "heritage": {
+      "roof": "C8623A",
+      "wall": "F7EBD0",
+      "trim": "E0CFA8"
+    }
+  },
+  "barcelona": {
+    "walls": [
+      "F7E6C4",
+      "FFD9A0",
+      "F6C6B0",
+      "CDEBE3",
+      "FBEEDC"
+    ],
+    "roofs": [
+      "E8785A",
+      "4FB0A5",
+      "F2C14E",
+      "E56B8C",
+      "5E8FD6",
+      "8AC47A"
+    ],
+    "style": {
+      "house": 0.15,
+      "tiered": 0.5,
+      "flat": 0.35
+    },
+    "heritage": {
+      "roof": "D9A441",
+      "wall": "E9D3A3",
+      "trim": "4FB0A5"
+    }
+  },
+  "dubai": {
+    "walls": [
+      "F3E3C3",
+      "EAD2A8",
+      "FFFFFF",
+      "CFE6F5",
+      "BBD9EE"
+    ],
+    "roofs": [
+      "E9D3A3",
+      "6FB3E8",
+      "58C0D0",
+      "F6E7C6"
+    ],
+    "style": {
+      "house": 0.05,
+      "tiered": 0.15,
+      "flat": 0.8
+    },
+    "ground": "F8E9C6",
+    "grass": [
+      "E9DDA6",
+      "DDE3A4",
+      "EFE2B0"
+    ],
+    "heritage": {
+      "roof": "58C0D0",
+      "wall": "F6E7C6",
+      "trim": "E2B23C"
+    }
+  },
+  "newyork": {
+    "walls": [
+      "D98F78",
+      "C97B63",
+      "B8654F",
+      "E9DFD2",
+      "A9C4DA",
+      "D3DEE8"
+    ],
+    "roofs": [
+      "8FA0B0",
+      "A8B5C2",
+      "7C93A8",
+      "E8785A",
+      "6FB3E8"
+    ],
+    "style": {
+      "house": 0.05,
+      "tiered": 0.15,
+      "flat": 0.8
+    },
+    "heritage": {
+      "roof": "6F8196",
+      "wall": "D9CFC2",
+      "trim": "C9B48A"
+    }
+  }
+}

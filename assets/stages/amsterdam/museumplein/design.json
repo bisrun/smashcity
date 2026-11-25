@@ -1,0 +1,132 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "amsterdam",
+  "base": "river",
+  "grade_target": 6.2,
+  "level": 0.578,
+  "balance": {
+    "ball_speed": 1243,
+    "paddle_width": 222,
+    "landmark_hp": 25,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 18.6,
+    "drop_interval_end": 8.9,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.7,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        904,
+        262
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        974,
+        335
+      ],
+      "type": "fire",
+      "from": "주유소 Shell"
+    },
+    {
+      "at": [
+        781,
+        607
+      ],
+      "type": "life",
+      "from": "약국 Apotheek Oud Zuid"
+    },
+    {
+      "at": [
+        1414,
+        674
+      ],
+      "type": "wreck",
+      "from": "은행 ASN Bank"
+    },
+    {
+      "at": [
+        1363,
+        727
+      ],
+      "type": "life",
+      "from": "약국 Ferdinand Bol Apotheek"
+    },
+    {
+      "at": [
+        605,
+        999
+      ],
+      "type": "wreck",
+      "from": "은행 Rabobank"
+    },
+    {
+      "at": [
+        621,
+        1089
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        364,
+        655
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1142,
+        1168
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        451,
+        1704
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1041,
+        2270
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        948,
+        1447
+      ],
+      "gap_toward": [
+        1.0,
+        -0.2
+      ],
+      "gap_width": 154,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

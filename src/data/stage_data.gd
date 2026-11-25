@@ -47,6 +47,7 @@ static func from_dict(d: Dictionary) -> StageData:
 			"hp": int(c.get("hp", 1)),
 			"landmark": int(c.get("lm", 0)) == 1,
 			"empty": int(c.get("e", 0)) == 1,
+			"solid": int(c.get("s", 0)) == 1,
 		})
 	for b: Dictionary in d.get("buildings", []):
 		s.buildings.append({

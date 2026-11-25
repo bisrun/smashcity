@@ -1,0 +1,140 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "barcelona",
+  "base": "river",
+  "grade_target": 5.2,
+  "level": 0.274,
+  "balance": {
+    "ball_speed": 1115,
+    "paddle_width": 253,
+    "landmark_hp": 18,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 16.2,
+    "drop_interval_end": 7.4,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 3.8,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        252,
+        839
+      ],
+      "type": "wide",
+      "from": "주차장 Apk2 Plaça del Mar"
+    },
+    {
+      "at": [
+        342,
+        876
+      ],
+      "type": "life",
+      "from": "약국 Farmàcia Ramon Torelló Colet"
+    },
+    {
+      "at": [
+        495,
+        1159
+      ],
+      "type": "wreck",
+      "from": "은행 BBVA"
+    },
+    {
+      "at": [
+        465,
+        1178
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        568,
+        1180
+      ],
+      "type": "life",
+      "from": "약국 Farmàcia Piqué Figuerola, Raimon"
+    },
+    {
+      "at": [
+        519,
+        1192
+      ],
+      "type": "shield",
+      "from": "경찰서 Oficina Conjunta de Mossos d'Esquadra i la Guàrdia Urbana"
+    },
+    {
+      "at": [
+        1363,
+        1373
+      ],
+      "type": "wide",
+      "from": "주차장 BSM Parc de Recerca Biomèdica"
+    },
+    {
+      "at": [
+        735,
+        1846
+      ],
+      "type": "wreck",
+      "from": "은행 Banco Sabadell"
+    },
+    {
+      "at": [
+        261,
+        787
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1005,
+        1165
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        475,
+        1698
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1004,
+        2124
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        992,
+        1400
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 178,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

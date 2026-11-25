@@ -1,0 +1,116 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "italy",
+  "base": "river",
+  "grade_target": 4.6,
+  "level": 0.613,
+  "balance": {
+    "ball_speed": 1257,
+    "paddle_width": 219,
+    "landmark_hp": 25,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 18.9,
+    "drop_interval_end": 9.1,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.8,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        356,
+        12
+      ],
+      "type": "fire",
+      "from": "주유소 Esso"
+    },
+    {
+      "at": [
+        1211,
+        37
+      ],
+      "type": "fire",
+      "from": "주유소 Eni"
+    },
+    {
+      "at": [
+        398,
+        47
+      ],
+      "type": "life",
+      "from": "약국"
+    },
+    {
+      "at": [
+        489,
+        111
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1473,
+        170
+      ],
+      "type": "wreck",
+      "from": "은행 Deutsche Bank"
+    },
+    {
+      "at": [
+        1327,
+        216
+      ],
+      "type": "life",
+      "from": "약국 Farmacia Testaccio"
+    },
+    {
+      "at": [
+        358,
+        641
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1114,
+        1122
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        456,
+        1754
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        479,
+        1056
+      ],
+      "gap_toward": [
+        -1.0,
+        -0.2
+      ],
+      "gap_width": 151,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

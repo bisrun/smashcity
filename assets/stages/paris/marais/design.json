@@ -1,0 +1,116 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "paris",
+  "base": "river",
+  "grade_target": 3.2,
+  "level": 0.05,
+  "balance": {
+    "ball_speed": 1021,
+    "paddle_width": 275,
+    "landmark_hp": 13,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 14.4,
+    "drop_interval_end": 6.2,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 3.1,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1379,
+        191
+      ],
+      "type": "life",
+      "from": "약국 Pharmacie Nouvelle de Lyon"
+    },
+    {
+      "at": [
+        1438,
+        241
+      ],
+      "type": "wide",
+      "from": "주차장 Q-Park Opéra Bastille"
+    },
+    {
+      "at": [
+        351,
+        521
+      ],
+      "type": "wreck",
+      "from": "은행 Société Générale"
+    },
+    {
+      "at": [
+        1090,
+        687
+      ],
+      "type": "wreck",
+      "from": "은행 LCL"
+    },
+    {
+      "at": [
+        1122,
+        745
+      ],
+      "type": "life",
+      "from": "약국 MaPharmacie"
+    },
+    {
+      "at": [
+        438,
+        770
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        139,
+        1058
+      ],
+      "type": "wide",
+      "from": "주차장 Lobau Rivoli"
+    },
+    {
+      "at": [
+        295,
+        586
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1094,
+        1134
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        497,
+        1729
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        969,
+        2284
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": []
+}

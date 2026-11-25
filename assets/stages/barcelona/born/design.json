@@ -1,0 +1,132 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "barcelona",
+  "base": "river",
+  "grade_target": 6.6,
+  "level": 0.509,
+  "balance": {
+    "ball_speed": 1214,
+    "paddle_width": 229,
+    "landmark_hp": 23,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 18.1,
+    "drop_interval_end": 8.5,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.5,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1231,
+        79
+      ],
+      "type": "wide",
+      "from": "주차장 Apk2 Plaça del Mar"
+    },
+    {
+      "at": [
+        1269,
+        168
+      ],
+      "type": "life",
+      "from": "약국 Farmàcia Ramon Torelló Colet"
+    },
+    {
+      "at": [
+        149,
+        465
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1142,
+        469
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1171,
+        517
+      ],
+      "type": "shield",
+      "from": "경찰서 Oficina Conjunta de Mossos d'Esquadra i la Guàrdia Urbana"
+    },
+    {
+      "at": [
+        1214,
+        543
+      ],
+      "type": "life",
+      "from": "약국 Farmàcia Piqué Figuerola, Raimon"
+    },
+    {
+      "at": [
+        23,
+        597
+      ],
+      "type": "wreck",
+      "from": "은행 Western Union"
+    },
+    {
+      "at": [
+        383,
+        656
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1098,
+        1140
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        376,
+        1715
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1050,
+        2210
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        752,
+        1421
+      ],
+      "gap_toward": [
+        1.0,
+        -0.2
+      ],
+      "gap_width": 159,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

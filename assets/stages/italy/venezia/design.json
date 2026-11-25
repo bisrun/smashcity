@@ -1,0 +1,148 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "italy",
+  "base": "river",
+  "grade_target": 8.6,
+  "level": 0.405,
+  "balance": {
+    "ball_speed": 1170,
+    "paddle_width": 240,
+    "landmark_hp": 21,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 17.2,
+    "drop_interval_end": 8.0,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.2,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        574,
+        145
+      ],
+      "type": "life",
+      "from": "약국 del Redentore"
+    },
+    {
+      "at": [
+        260,
+        209
+      ],
+      "type": "wreck",
+      "from": "은행 Banco San Marco"
+    },
+    {
+      "at": [
+        159,
+        240
+      ],
+      "type": "life",
+      "from": "약국 Farmacia Ghezzo ai S.S. Cosma e Damiano (ex Boldi)"
+    },
+    {
+      "at": [
+        100,
+        615
+      ],
+      "type": "wreck",
+      "from": "은행"
+    },
+    {
+      "at": [
+        574,
+        827
+      ],
+      "type": "shield",
+      "from": "경찰서 Prefettura di Venezia"
+    },
+    {
+      "at": [
+        1006,
+        928
+      ],
+      "type": "shield",
+      "from": "경찰서 Capitaneria di Porto di Venezia"
+    },
+    {
+      "at": [
+        979,
+        2311
+      ],
+      "type": "fire",
+      "from": "주유소 IP"
+    },
+    {
+      "at": [
+        330,
+        717
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1060,
+        1199
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        490,
+        1746
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1062,
+        2178
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        734,
+        616
+      ],
+      "type": "wide",
+      "from": "임시 배치 (상상)"
+    },
+    {
+      "at": [
+        766,
+        1524
+      ],
+      "type": "wide",
+      "from": "임시 배치 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        728,
+        2006
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 168,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

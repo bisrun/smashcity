@@ -1,0 +1,92 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "newyork",
+  "base": "road",
+  "grade_target": 9.1,
+  "level": 1.25,
+  "balance": {
+    "ball_speed": 1525,
+    "paddle_width": 155,
+    "landmark_hp": 40,
+    "cell_hp_bonus": 2,
+    "drop_interval_start": 24.0,
+    "drop_interval_end": 12.2,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 6.8,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        698,
+        55
+      ],
+      "type": "wreck",
+      "from": "은행 Chase"
+    },
+    {
+      "at": [
+        132,
+        57
+      ],
+      "type": "wreck",
+      "from": "은행 Citizens Bank"
+    },
+    {
+      "at": [
+        752,
+        105
+      ],
+      "type": "life",
+      "from": "약국 Duane Reade"
+    },
+    {
+      "at": [
+        152,
+        112
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        378,
+        734
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1153,
+        1180
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        928,
+        1337
+      ],
+      "gap_toward": [
+        0.2,
+        1.0
+      ],
+      "gap_width": 120,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

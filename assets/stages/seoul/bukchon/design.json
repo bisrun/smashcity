@@ -1,0 +1,114 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "hanok",
+  "base": "road",
+  "grade_target": 4.6,
+  "level": 0.66,
+  "balance": {
+    "ball_speed": 1277,
+    "paddle_width": 214,
+    "landmark_hp": 27,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 19.3,
+    "drop_interval_end": 9.3,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 5.0
+    }
+  },
+  "items": [
+    {
+      "at": [
+        484,
+        219
+      ],
+      "type": "life",
+      "from": "약국 광교약국"
+    },
+    {
+      "at": [
+        1257,
+        259
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1204,
+        342
+      ],
+      "type": "life",
+      "from": "약국"
+    },
+    {
+      "at": [
+        403,
+        484
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        835,
+        706
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        724,
+        1032
+      ],
+      "type": "fire",
+      "from": "주유소 재동주유소"
+    },
+    {
+      "at": [
+        337,
+        670
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1194,
+        1055
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        415,
+        1724
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        600,
+        1920
+      ],
+      "gap_toward": [
+        -1.0,
+        -0.2
+      ],
+      "gap_width": 147,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

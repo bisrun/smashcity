@@ -1,0 +1,82 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "seoul",
+  "base": "river",
+  "grade_target": 2.4,
+  "level": 0.162,
+  "balance": {
+    "ball_speed": 1068,
+    "paddle_width": 264,
+    "landmark_hp": 16,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 15.3,
+    "drop_interval_end": 6.8,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 3.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        828,
+        183
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        123,
+        639
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        727,
+        1888
+      ],
+      "type": "fire",
+      "from": "주유소 동성주유소"
+    },
+    {
+      "at": [
+        292,
+        622
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1074,
+        1257
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        373,
+        1625
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1057,
+        2191
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": []
+}

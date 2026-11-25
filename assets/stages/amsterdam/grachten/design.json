@@ -1,0 +1,108 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "amsterdam",
+  "base": "river",
+  "grade_target": 5.3,
+  "level": 0.845,
+  "balance": {
+    "ball_speed": 1355,
+    "paddle_width": 196,
+    "landmark_hp": 31,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 20.8,
+    "drop_interval_end": 10.2,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 5.5,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        281,
+        35
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1120,
+        135
+      ],
+      "type": "wide",
+      "from": "주차장 Heinekenplein"
+    },
+    {
+      "at": [
+        1067,
+        523
+      ],
+      "type": "life",
+      "from": "약국 Apotheek Koek, Schaeffer & van Tijen"
+    },
+    {
+      "at": [
+        252,
+        643
+      ],
+      "type": "wide",
+      "from": "주차장 Q-Park Byzantium"
+    },
+    {
+      "at": [
+        417,
+        811
+      ],
+      "type": "wreck",
+      "from": "은행 ABN AMRO"
+    },
+    {
+      "at": [
+        413,
+        723
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1106,
+        1142
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        415,
+        1687
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        1075,
+        1391
+      ],
+      "gap_toward": [
+        0.2,
+        1.0
+      ],
+      "gap_width": 132,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

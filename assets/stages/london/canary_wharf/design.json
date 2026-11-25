@@ -1,0 +1,140 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "glass",
+  "base": "river",
+  "grade_target": 5.7,
+  "level": 0.413,
+  "balance": {
+    "ball_speed": 1173,
+    "paddle_width": 239,
+    "landmark_hp": 21,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 17.3,
+    "drop_interval_end": 8.1,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.2,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1270,
+        102
+      ],
+      "type": "life",
+      "from": "약국 Britannia Pharmacy"
+    },
+    {
+      "at": [
+        1185,
+        191
+      ],
+      "type": "fire",
+      "from": "주유소 Asda"
+    },
+    {
+      "at": [
+        230,
+        257
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1118,
+        415
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1378,
+        573
+      ],
+      "type": "life",
+      "from": "약국 Allen's Pharmacy"
+    },
+    {
+      "at": [
+        676,
+        686
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        869,
+        1088
+      ],
+      "type": "wreck",
+      "from": "은행 HSBC UK"
+    },
+    {
+      "at": [
+        404,
+        1153
+      ],
+      "type": "wreck",
+      "from": "은행 Société Générale"
+    },
+    {
+      "at": [
+        428,
+        610
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1130,
+        1200
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        439,
+        1643
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1050,
+        2199
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        796,
+        1291
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 167,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

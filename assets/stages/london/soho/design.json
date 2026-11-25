@@ -1,0 +1,116 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "london",
+  "base": "river",
+  "grade_target": 4.8,
+  "level": 0.674,
+  "balance": {
+    "ball_speed": 1283,
+    "paddle_width": 213,
+    "landmark_hp": 27,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 19.4,
+    "drop_interval_end": 9.4,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 5.0,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        294,
+        754
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        108,
+        789
+      ],
+      "type": "wreck",
+      "from": "은행 HSBC UK"
+    },
+    {
+      "at": [
+        1002,
+        833
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1205,
+        921
+      ],
+      "type": "shield",
+      "from": "경찰서 Former smallest police station of England"
+    },
+    {
+      "at": [
+        1382,
+        964
+      ],
+      "type": "life",
+      "from": "약국 Boots"
+    },
+    {
+      "at": [
+        1428,
+        1018
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        357,
+        592
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1055,
+        1239
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        432,
+        1710
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        705,
+        1433
+      ],
+      "gap_toward": [
+        1.0,
+        -0.2
+      ],
+      "gap_width": 146,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

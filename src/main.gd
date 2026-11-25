@@ -37,7 +37,7 @@ const SKY := Color("BFE6F2")
 const INK := Color("14213D")
 const FIRE := Color("FF7A3C")
 ## 순간의 효과를 알리는 말은 영어로 쓴다.
-const ITEM_NAMES := {"multi": "MULTI BALL!", "wide": "WIDE PADDLE!", "fire": "FIRE BALL!", "life": "1 UP!", "bolt": "LIGHTNING!", "narrow": "OOPS! NARROW"}
+const ITEM_NAMES := {"shield": "SHIELD!", "wreck": "WRECKING BALL!", "multi": "MULTI BALL!", "wide": "WIDE PADDLE!", "fire": "FIRE BALL!", "life": "1 UP!", "bolt": "LIGHTNING!", "narrow": "OOPS! NARROW"}
 
 ## 방금 끝난 판의 결과. 장면을 다시 불러도 남아 있어 스테이지 지도에 보여 준다.
 static var last_result := {}
@@ -82,6 +82,8 @@ var _city_name := ""
 var _stage_list: Array = []
 var _stage_index := 0
 var _landmark := -1
+## 패들이 다니는 자리: 강(river)이나 큰 도로(road)
+var _base := "river"
 
 
 func _ready() -> void:
@@ -92,6 +94,9 @@ func _ready() -> void:
 	if _stage == null or _cfg.is_empty():
 		return
 	var design: Dictionary = BalanceScript.load_file(dir + "design.json")
+	_base = String(design.get("base", "river"))
+	# 스테이지마다 난이도 값이 다르다
+	_cfg = BalanceScript.merged(_cfg, design)
 	_save = SaveDataScript.new()
 	_river = float(_cfg["river_width"])
 	_sim = SimScript.new(_stage, _cfg, design)
@@ -124,20 +129,27 @@ func _ready() -> void:
 ## 이번에 할 스테이지를 고른다. 만들어진 스테이지 가운데 아직 못 깬 첫 번째이고, 다 깼으면 첫 번째다.
 func _pick_stage() -> void:
 	var data: Dictionary = BalanceScript.load_file(STAGES_PATH)
-	var city: Dictionary = data["cities"][0]
-	_city_name = String(city["name"])
-	_stage_list = city["stages"]
 	var done := SaveDataScript.new().cleared
+	var want := OS.get_environment("SMASHCITY_STAGE")  # 화면 확인용: 스테이지를 골라 띄운다
 	_stage_index = -1
-	for i in _stage_list.size():
-		if bool(_stage_list[i]["ready"]) and not done.has(String(_stage_list[i]["id"])):
-			_stage_index = i
-			break
-	if _stage_index < 0:
-		for i in _stage_list.size():
-			if bool(_stage_list[i]["ready"]):
-				_stage_index = i
+	# 지역을 차례로 돌며 아직 못 깬 첫 스테이지를 찾는다. 다 깼으면 맨 처음으로 돌아간다.
+	for pass_ in 2:
+		for city: Dictionary in data["cities"]:
+			var list: Array = city["stages"]
+			for i in list.size():
+				if not bool(list[i]["ready"]):
+					continue
+				var id := String(list[i]["id"])
+				if (want != "" and id == want) or (want == "" and (pass_ == 1 or not done.has(id))):
+					_city_name = String(city["name"])
+					_stage_list = list
+					_stage_index = i
+					break
+			if _stage_index >= 0:
 				break
+		if _stage_index >= 0:
+			break
+		want = ""
 	_stage_id = String(_stage_list[_stage_index]["id"])
 	_stage_name = String(_stage_list[_stage_index]["name"])
 
@@ -178,6 +190,10 @@ func _process(delta: float) -> void:
 				_pop_step = _pop_step + 1 if _since_pop < 1.2 else 0
 				_since_pop = 0.0
 				_sfx.play("pop", _pop_step)
+			"shield_used":
+				_hud.say("SAVED!")
+				_sfx.play("emerge")
+				_board.show_shockwave(e["pos"], 160.0, Color("5AC8E0"))
 			"thud":
 				_board.show_thud(e["cell"], e["pos"])
 				_sfx.play("wall", 0, -3.0)
@@ -412,6 +428,10 @@ func _sync_hud(delta: float) -> void:
 	var effects: Array = []
 	if _sim.fire_left > 0.0:
 		effects.append(["FIRE", _sim.fire_left, FIRE])
+	if _sim.wreck_left > 0.0:
+		effects.append(["WRECK", _sim.wreck_left, Color("8A78D6")])
+	if _sim.shield > 0:
+		effects.append(["SHIELD", 0.0, Color("5AC8E0")])
 	if _sim.wide_left > 0.0:
 		effects.append(["WIDE", _sim.wide_left, UiKit.MINT])
 	if _sim.narrow_left > 0.0:
@@ -525,8 +545,12 @@ func _setup_paddle_and_ball() -> void:
 	_paddle = Node3D.new()
 	_paddle.position = Vector3(0.0, 0.0, _stage.height / 2.0 - float(_cfg["paddle_y"]))
 	add_child(_paddle)
-	var ship := _ship(width, thick)
-	_paddle.add_child(ship if ship != null else _boat(width, thick))
+	if _base == "road":
+		# 패들이 큰 도로를 다니는 판에서는 배가 아니라 버스다
+		_paddle.add_child(_bus(width, thick))
+	else:
+		var ship := _ship(width, thick)
+		_paddle.add_child(ship if ship != null else _boat(width, thick))
 
 	var r := _sim.ball_radius
 	_outline_mesh = SphereMesh.new()
@@ -569,6 +593,47 @@ func _ship(length: float, beam: float) -> MeshInstance3D:
 	for i in points.size():
 		st.set_color(colors[i])
 		st.add_vertex(Vector3(points[i].z * along, points[i].y * along * SHIP_HEIGHT, -points[i].x * across))
+	st.generate_normals()
+	var mat := StandardMaterial3D.new()
+	mat.vertex_color_use_as_albedo = true
+	mat.vertex_color_is_srgb = true
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.roughness = 1.0
+	var mi := MeshInstance3D.new()
+	mi.mesh = st.commit()
+	mi.material_override = mat
+	return mi
+
+
+## 패들로 쓰는 버스. 길이가 패들의 폭이다. 두 칸을 이은 굴절 버스 모양이다.
+func _bus(length: float, beam: float) -> MeshInstance3D:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	st.set_smooth_group(-1)
+	var hl := length / 2.0
+	var hb := beam * 0.62
+	var body := Color("3F8FE0")
+	var trim := Color("FFFFFF")
+	var glass := Color("BFE6FA")
+	var dark := Color("2B3445")
+	# 바퀴
+	for wx: float in [-hl * 0.72, -hl * 0.3, hl * 0.3, hl * 0.72]:
+		for wz: float in [-hb, hb]:
+			_slab(st, _box2(wx, wz, 13.0, 4.0), 0.0, 20.0, dark, dark)
+	# 두 칸의 몸통과 그 사이의 주름
+	for sign_: float in [-1.0, 1.0]:
+		var cx := sign_ * (hl * 0.5 + 3.0)
+		var half := hl * 0.5 - 5.0
+		_slab(st, _box2(cx, 0.0, half, hb), 8.0, 30.0, body, body.darkened(0.1))
+		_slab(st, _box2(cx, 0.0, half - 3.0, hb + 0.6), 30.0, 50.0, glass, glass)
+		for k in 5:
+			_slab(st, _box2(cx - half + 6.0 + k * (half * 2.0 - 12.0) / 4.0, 0.0, 2.2, hb + 1.0), 30.0, 50.0, body, body)
+		_slab(st, _box2(cx, 0.0, half, hb), 50.0, 56.0, trim, trim.darkened(0.08))
+		_slab(st, _box2(cx, 0.0, half * 0.5, hb * 0.5), 56.0, 61.0, Color("DDE6EE"), Color("C3CED8"))
+	_slab(st, _box2(0.0, 0.0, 9.0, hb * 0.9), 10.0, 52.0, dark.lightened(0.15), dark.lightened(0.1))
+	# 앞의 전조등과 뒤의 후미등
+	_slab(st, _box2(hl - 0.5, 0.0, 1.5, hb * 0.8), 12.0, 20.0, Color("FFE9A8"), Color("FFE9A8"))
+	_slab(st, _box2(-hl + 0.5, 0.0, 1.5, hb * 0.8), 12.0, 20.0, Color("F0645A"), Color("F0645A"))
 	st.generate_normals()
 	var mat := StandardMaterial3D.new()
 	mat.vertex_color_use_as_albedo = true

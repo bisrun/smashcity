@@ -1,0 +1,131 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "tokyo",
+  "base": "river",
+  "grade_target": 2.6,
+  "level": 0.265,
+  "balance": {
+    "ball_speed": 1111,
+    "paddle_width": 254,
+    "landmark_hp": 18,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 16.1,
+    "drop_interval_end": 7.3,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 3.8,
+      "shield": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        260,
+        58
+      ],
+      "type": "wide",
+      "from": "주차장 西銀座駐車場"
+    },
+    {
+      "at": [
+        1225,
+        89
+      ],
+      "type": "shield",
+      "from": "경찰서 築地警察署"
+    },
+    {
+      "at": [
+        821,
+        91
+      ],
+      "type": "shield",
+      "from": "경찰서"
+    },
+    {
+      "at": [
+        264,
+        180
+      ],
+      "type": "life",
+      "from": "약국 阪神調剤薬局"
+    },
+    {
+      "at": [
+        808,
+        567
+      ],
+      "type": "life",
+      "from": "약국 薬局アポック"
+    },
+    {
+      "at": [
+        1129,
+        1938
+      ],
+      "type": "wide",
+      "from": "주차장 タイムズ"
+    },
+    {
+      "at": [
+        1019,
+        2364
+      ],
+      "type": "wide",
+      "from": "주차장 タイムズ"
+    },
+    {
+      "at": [
+        428,
+        662
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1096,
+        1166
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        392,
+        1757
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1024,
+        2242
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        1027,
+        1461
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 179,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

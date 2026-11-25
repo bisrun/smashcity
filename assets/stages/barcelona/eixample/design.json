@@ -1,0 +1,92 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "barcelona",
+  "base": "road",
+  "grade_target": 7.5,
+  "level": 1.116,
+  "balance": {
+    "ball_speed": 1469,
+    "paddle_width": 168,
+    "landmark_hp": 37,
+    "cell_hp_bonus": 2,
+    "drop_interval_start": 22.9,
+    "drop_interval_end": 11.6,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 6.3,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        317,
+        104
+      ],
+      "type": "life",
+      "from": "약국 Farmàcia Rosenfeld Barrenechea, Ricard"
+    },
+    {
+      "at": [
+        921,
+        146
+      ],
+      "type": "wreck",
+      "from": "은행 Caixabank"
+    },
+    {
+      "at": [
+        1470,
+        235
+      ],
+      "type": "wide",
+      "from": "주차장 Ali Bei"
+    },
+    {
+      "at": [
+        296,
+        295
+      ],
+      "type": "wreck",
+      "from": "은행 Caixabank"
+    },
+    {
+      "at": [
+        454,
+        734
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1094,
+        1140
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        794,
+        1507
+      ],
+      "gap_toward": [
+        0.2,
+        1.0
+      ],
+      "gap_width": 120,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

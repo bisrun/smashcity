@@ -1,0 +1,156 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "italy",
+  "base": "road",
+  "grade_target": 5.5,
+  "level": 0.387,
+  "balance": {
+    "ball_speed": 1163,
+    "paddle_width": 241,
+    "landmark_hp": 21,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 17.1,
+    "drop_interval_end": 7.9,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 4.2,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        98,
+        18
+      ],
+      "type": "shield",
+      "from": "경찰서 I Gruppo Centro Polizia Locale di Roma Capitale"
+    },
+    {
+      "at": [
+        179,
+        43
+      ],
+      "type": "wreck",
+      "from": "은행 Banca Popolare di Sondrio"
+    },
+    {
+      "at": [
+        525,
+        56
+      ],
+      "type": "fire",
+      "from": "주유소 Eni"
+    },
+    {
+      "at": [
+        345,
+        126
+      ],
+      "type": "life",
+      "from": "약국 Parafarmacia"
+    },
+    {
+      "at": [
+        961,
+        373
+      ],
+      "type": "shield",
+      "from": "경찰서 Comando Generale Polizia Locale di Roma Capitale"
+    },
+    {
+      "at": [
+        1330,
+        565
+      ],
+      "type": "fire",
+      "from": "주유소 Agip"
+    },
+    {
+      "at": [
+        249,
+        633
+      ],
+      "type": "life",
+      "from": "약국 Farmacia"
+    },
+    {
+      "at": [
+        331,
+        641
+      ],
+      "type": "wreck",
+      "from": "은행 Monte dei Paschi di Siena"
+    },
+    {
+      "at": [
+        389,
+        678
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1144,
+        1170
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        458,
+        1723
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1137,
+        2185
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        777,
+        543
+      ],
+      "type": "wide",
+      "from": "임시 배치 (상상)"
+    },
+    {
+      "at": [
+        727,
+        1595
+      ],
+      "type": "wide",
+      "from": "임시 배치 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        432,
+        1292
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 169,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

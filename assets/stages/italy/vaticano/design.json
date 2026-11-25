@@ -1,0 +1,108 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "italy",
+  "base": "river",
+  "grade_target": 8.2,
+  "level": 0.8,
+  "balance": {
+    "ball_speed": 1336,
+    "paddle_width": 200,
+    "landmark_hp": 30,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 20.4,
+    "drop_interval_end": 10.0,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 5.4,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1070,
+        15
+      ],
+      "type": "life",
+      "from": "약국 Farmacia Santa Maria della Scala"
+    },
+    {
+      "at": [
+        1431,
+        170
+      ],
+      "type": "wide",
+      "from": "주차장 Garage"
+    },
+    {
+      "at": [
+        27,
+        522
+      ],
+      "type": "wide",
+      "from": "주차장 Stazione San Pietro"
+    },
+    {
+      "at": [
+        1441,
+        653
+      ],
+      "type": "wreck",
+      "from": "은행 UniCredit"
+    },
+    {
+      "at": [
+        1201,
+        736
+      ],
+      "type": "life",
+      "from": "약국 Farmacia Langeli"
+    },
+    {
+      "at": [
+        322,
+        664
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1093,
+        1078
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        511,
+        1663
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        652,
+        1930
+      ],
+      "gap_toward": [
+        0.2,
+        1.0
+      ],
+      "gap_width": 136,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

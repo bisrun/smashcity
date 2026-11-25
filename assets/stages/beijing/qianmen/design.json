@@ -1,0 +1,107 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "beijing",
+  "base": "road",
+  "grade_target": 3.2,
+  "level": 0.244,
+  "balance": {
+    "ball_speed": 1103,
+    "paddle_width": 256,
+    "landmark_hp": 17,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 16.0,
+    "drop_interval_end": 7.2,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 3.7,
+      "shield": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        506,
+        1001
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1132,
+        1665
+      ],
+      "type": "shield",
+      "from": "경찰서 前门派出所"
+    },
+    {
+      "at": [
+        423,
+        2017
+      ],
+      "type": "shield",
+      "from": "경찰서 北京公安局天安门分局"
+    },
+    {
+      "at": [
+        1244,
+        2385
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        384,
+        663
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1094,
+        1239
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        449,
+        1675
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1051,
+        2220
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        342,
+        1505
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 180,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "dubai",
+  "base": "river",
+  "grade_target": 6.2,
+  "level": 0.839,
+  "balance": {
+    "ball_speed": 1352,
+    "paddle_width": 196,
+    "landmark_hp": 30,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 20.7,
+    "drop_interval_end": 10.2,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 5.5,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1106,
+        18
+      ],
+      "type": "life",
+      "from": "약국 Life Pharmacy"
+    },
+    {
+      "at": [
+        476,
+        241
+      ],
+      "type": "wide",
+      "from": "주차장"
+    },
+    {
+      "at": [
+        1435,
+        349
+      ],
+      "type": "wreck",
+      "from": "은행 Dubai Islamic Bank"
+    },
+    {
+      "at": [
+        1176,
+        381
+      ],
+      "type": "life",
+      "from": "약국 Boots"
+    },
+    {
+      "at": [
+        936,
+        549
+      ],
+      "type": "wreck",
+      "from": "은행 Habib bank limited (Bur Dubai)"
+    },
+    {
+      "at": [
+        345,
+        657
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1104,
+        1124
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        355,
+        1720
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        703,
+        1241
+      ],
+      "gap_toward": [
+        0.2,
+        1.0
+      ],
+      "gap_width": 133,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}

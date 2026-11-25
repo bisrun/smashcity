@@ -1,0 +1,140 @@
+{
+  "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
+  "_auto": true,
+  "theme": "paris",
+  "base": "road",
+  "grade_target": 2.8,
+  "level": 0.2,
+  "balance": {
+    "ball_speed": 1084,
+    "paddle_width": 260,
+    "landmark_hp": 16,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 15.6,
+    "drop_interval_end": 7.0,
+    "sky_items": {
+      "multi": 3.0,
+      "wide": 2.0,
+      "fire": 2.0,
+      "life": 0.5,
+      "narrow": 3.6,
+      "shield": 1.5,
+      "wreck": 1.5
+    }
+  },
+  "items": [
+    {
+      "at": [
+        1030,
+        79
+      ],
+      "type": "life",
+      "from": "약국 Pharmacie des Folies Bergère"
+    },
+    {
+      "at": [
+        20,
+        96
+      ],
+      "type": "life",
+      "from": "약국 Pharmacie Carré Opéra"
+    },
+    {
+      "at": [
+        266,
+        131
+      ],
+      "type": "wreck",
+      "from": "은행 CIC"
+    },
+    {
+      "at": [
+        662,
+        174
+      ],
+      "type": "wreck",
+      "from": "은행 BNP Paribas"
+    },
+    {
+      "at": [
+        155,
+        981
+      ],
+      "type": "wide",
+      "from": "주차장 Garage Mansart"
+    },
+    {
+      "at": [
+        533,
+        988
+      ],
+      "type": "fire",
+      "from": "주유소 ELAN - relais Pigalle 2"
+    },
+    {
+      "at": [
+        959,
+        1058
+      ],
+      "type": "wide",
+      "from": "주차장 Q-Park Anvers - Montmartre - Sacré Coeur"
+    },
+    {
+      "at": [
+        1255,
+        1829
+      ],
+      "type": "shield",
+      "from": "경찰서 Commissariat de police de Paris 18e arrondissement"
+    },
+    {
+      "at": [
+        366,
+        685
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1115,
+        1227
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        468,
+        1733
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        1077,
+        2234
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    }
+  ],
+  "walls": [
+    {
+      "around": [
+        606,
+        1120
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 184,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
+}
