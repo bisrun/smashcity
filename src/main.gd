@@ -22,9 +22,19 @@ const SCREENS := {
 	"regions": preload("res://src/ui/screens/regions_screen.gd"),
 	"settings": preload("res://src/ui/screens/settings_screen.gd"),
 	"dev": preload("res://src/ui/screens/dev_screen.gd"),
+	"title": preload("res://src/ui/screens/title_screen.gd"),
+	"crew": preload("res://src/ui/screens/crew_screen.gd"),
+	"trophies": preload("res://src/ui/screens/trophies_screen.gd"),
+	"ranking": preload("res://src/ui/screens/ranking_screen.gd"),
 }
+## 다른 화면 위에 얹히는 판
+const SHEETS := {
+	"ready": preload("res://src/ui/screens/ready_screen.gd"),
+	"pause": preload("res://src/ui/screens/pause_screen.gd"),
+}
+const ProgressionScript := preload("res://src/meta/progression.gd")
 ## 안드로이드의 뒤로 단추가 데려가는 곳. 없는 공간에서는 아무 일도 없다(플레이 중).
-const BACK_TO := {"settings": "menu", "regions": "menu", "map": "menu", "dev": "settings"}
+const BACK_TO := {"settings": "menu", "regions": "menu", "map": "menu", "dev": "settings", "crew": "menu", "trophies": "menu", "ranking": "menu"}
 
 const STAGES_PATH := "res://assets/stages/stages.json"
 ## 카메라가 내려다보는 각도
@@ -67,6 +77,12 @@ var _screen: Control
 var _layer: CanvasLayer
 var _settings: SettingsData
 var _cities: Array = []
+## 출발 준비나 일시정지처럼 얹힌 판
+var _sheet: Control
+var _pause_button: Button
+var _prog: Progression
+## 이 판에 가져온 출발 아이템
+var _gear_used := ""
 var _sfx: Sfx
 var _ball_nodes := {}
 var _item_nodes := {}
@@ -113,6 +129,12 @@ func _ready() -> void:
 	_base = String(design.get("base", "river"))
 	# 스테이지마다 난이도 값이 다르다
 	_cfg = BalanceScript.merged(_cfg, design)
+	_prog = ProgressionScript.new()
+	# 출발 준비에서 고른 출발 아이템. 판정에는 시작 설정의 한 항목으로만 들어간다.
+	if Session.gear != "":
+		_gear_used = Session.gear
+		_cfg["loadout"] = Session.gear
+		Session.gear = ""
 	_save = SaveDataScript.new()
 	_settings = SettingsScript.new()
 	_apply_settings()
@@ -302,9 +324,18 @@ func _finish(cleared: bool) -> void:
 	var at := "%02d.%02d %02d:%02d" % [now["month"], now["day"], now["hour"], now["minute"]]
 	var rank := 0
 	# 개발자 창에서 들어간 판은 기록에 남기지 않는다
+	last_result = {"cleared": cleared, "score": _sim.score, "rank": 0, "stage": _stage_id}
 	if not OS.has_environment("SMASHCITY_AUTOPLAY") and not Session.dev:
-		rank = _save.add_result(_stage_id, _sim.score, cleared, int(_sim.elapsed), at)
-	last_result = {"cleared": cleared, "score": _sim.score, "rank": rank, "stage": _stage_id}
+		var first := cleared and not _save.cleared.has(_stage_id)
+		var level := _prog.level_of(int(_save.profile["xp"]))
+		rank = _save.add_result(_stage_id, _sim.score, cleared, int(_sim.elapsed), at, _gear_used)
+		var gain := _prog.reward(cleared, first, _sim.destroyed)
+		_save.add_progress(int(gain["xp"]), int(gain["coins"]), cleared, _sim.destroyed, _sim.best_combo, int(_sim.elapsed))
+		last_result["rank"] = rank
+		last_result["xp"] = gain["xp"]
+		last_result["coins"] = gain["coins"]
+		last_result["level_up"] = _prog.level_of(int(_save.profile["xp"])) > level
+	_pause_button.visible = false
 	_ending = CLEAR_PAUSE if cleared else OVER_PAUSE
 	# 다시 불린 장면이 보여 줄 곳. 고른 스테이지는 한 판으로 끝나고, 다음부터는 진행에 따라 고른다.
 	Session.screen = "dev" if Session.dev else "map"
@@ -320,6 +351,7 @@ func _start() -> void:
 	_clear_screens()
 	Session.screen = "play"
 	_hud.visible = true
+	_pause_button.visible = true
 	last_result = {}
 	_playing = true
 
@@ -489,6 +521,16 @@ func _setup_ui() -> void:
 	layer.add_child(_hud)
 	_hud.set_stage(_city_name, _stage_index + 1, _stage_list.size(), _stage_name)
 	_layer = layer
+	# 멈춤 단추. 위쪽 표시 바로 아래 오른쪽 구석에 둔다. 패들을 끄는 엄지가 닿지 않는 자리다.
+	_pause_button = UiKit.button("II", Color(0.08, 0.13, 0.24, 0.55), 30)
+	_pause_button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	_pause_button.offset_left = -96
+	_pause_button.offset_right = -16
+	_pause_button.offset_top = 236
+	_pause_button.offset_bottom = 312
+	_pause_button.visible = false
+	_pause_button.pressed.connect(_pause)
+	layer.add_child(_pause_button)
 	if OS.has_environment("SMASHCITY_AUTOPLAY"):
 		return
 	_show(_first_screen())
@@ -504,8 +546,7 @@ func _first_screen() -> String:
 	for hook: String in ["SMASHCITY_SHOT", "SMASHCITY_STAGE", "SMASHCITY_DEMO_CLEAR", "SMASHCITY_DEMO_RESULT"]:
 		if OS.has_environment(hook):
 			return "map"
-	# 처음 켠 사람에게만 로그인이 뜬다
-	return "login" if _save.account == "" else "menu"
+	return "title"
 
 
 func _clear_screens() -> void:
@@ -515,6 +556,7 @@ func _clear_screens() -> void:
 	if _screen != null:
 		_screen.queue_free()
 		_screen = null
+	_close_sheet()
 
 
 ## 공간을 연다. 뒤의 도시는 그대로 두고 화면만 바꾼다.
@@ -528,13 +570,35 @@ func _show(which: String) -> void:
 	if which == "map":
 		_show_map()
 		return
+	if which == "ready":
+		# 화면 확인용: 지도 위에 출발 준비를 얹어 띄운다
+		_show_map()
+		_show_ready()
+		return
+	if which == "pause":
+		_start()
+		_pause()
+		return
 	_screen = SCREENS[which].new()
 	_layer.add_child(_screen)
 	match which:
 		"login":
 			_screen.setup()
 		"menu":
-			_screen.setup("%s %d/%d · %s" % [_city_name, _stage_index + 1, _stage_list.size(), _stage_name], "GUEST")
+			_screen.setup("%s %d/%d · %s" % [_city_name, _stage_index + 1, _stage_list.size(), _stage_name],
+				"%s  LV %d" % [_save.display_name(), _prog.level_of(int(_save.profile["xp"]))], int(_save.profile["coins"]))
+		"title":
+			_screen.setup()
+		"crew":
+			_screen.setup(_save, _prog, _cities)
+		"trophies":
+			_screen.setup(_cities, _save.cleared)
+		"ranking":
+			var at := 0
+			for i in _cities.size():
+				if _cities[i]["stages"] == _stage_list:
+					at = i
+			_screen.setup(_cities, _save, at)
 		"regions":
 			_screen.setup(_cities, _save.cleared)
 		"settings":
@@ -550,6 +614,34 @@ func _on_go(to: String, arg: String) -> void:
 	if _sfx != null:
 		_sfx.play("tap")
 	match to:
+		"title_done":
+			# 처음 켠 사람에게만 로그인이 뜬다
+			_show("login" if _save.account == "" else "menu")
+		"close":
+			_close_sheet()
+		"start":
+			_close_sheet()
+			if arg != "" and _save.use_gear(arg):
+				# 출발 아이템은 판정을 만들 때 들어가야 하므로 장면을 다시 부른다
+				Session.gear = arg
+				Session.stage = _stage_id
+				Session.screen = "play"
+				get_tree().reload_current_scene()
+			else:
+				_start()
+		"resume":
+			_close_sheet()
+			_playing = true
+			_pause_button.visible = true
+		"retry":
+			Session.stage = _stage_id
+			Session.screen = "play"
+			get_tree().reload_current_scene()
+		"home":
+			Session.stage = ""
+			Session.dev = false
+			Session.screen = "menu"
+			get_tree().reload_current_scene()
 		"login_done":
 			_save.set_account(arg)
 			_show("menu")
@@ -568,6 +660,45 @@ func _on_go(to: String, arg: String) -> void:
 			_enter(arg, "play", true)
 		_:
 			_show(to)
+
+
+func _close_sheet() -> void:
+	if _sheet != null:
+		_sheet.queue_free()
+		_sheet = null
+
+
+func _open_sheet(which: String) -> void:
+	_close_sheet()
+	_sheet = SHEETS[which].new()
+	_layer.add_child(_sheet)
+	_sheet.go.connect(_on_go)
+
+
+## 출발 준비. 스테이지 지도에서 PLAY 를 누르면 뜬다.
+func _show_ready() -> void:
+	if _sfx != null:
+		_sfx.play("tap")
+	_open_sheet("ready")
+	var design: Dictionary = BalanceScript.load_file("res://assets/stages/%s/design.json" % _stage_id)
+	var owned: Array = []
+	for g: Dictionary in _prog.data["gear"]:
+		var count := _save.gear_count(String(g["id"]))
+		if count > 0:
+			owned.append({"id": g["id"], "name": g["name"], "about": g["about"], "count": count})
+	_sheet.setup({"title": "%s %d · %s" % [_city_name, _stage_index + 1, _stage_name], "grade": design.get("grade_target", "?"),
+		"best": _save.best(_stage_id), "ride": "BUS" if _base == "road" else "SHIP", "top": _save.top(_stage_id, 3), "gear": owned})
+
+
+## 판을 멈춘다. 멈춤 단추, 안드로이드의 뒤로 단추, 앱이 뒤로 갈 때 불린다.
+func _pause() -> void:
+	if not _playing or _ending > 0.0 or _sheet != null:
+		return
+	_playing = false
+	_drag_from = NAN
+	_pause_button.visible = false
+	_open_sheet("pause")
+	_sheet.setup("%s %d · %s" % [_city_name, _stage_index + 1, _stage_name])
 
 
 ## 스테이지를 골라 들어간다. 지금 떠 있는 스테이지면 화면만 바꾸고, 아니면 장면을 다시 부른다.
@@ -606,11 +737,25 @@ func _buzz(milliseconds: int) -> void:
 
 ## 안드로이드의 뒤로 단추. 한 단계 위 공간으로 간다. 메인 메뉴와 로그인에서는 게임을 끝낸다.
 func _notification(what: int) -> void:
-	if what != NOTIFICATION_WM_GO_BACK_REQUEST or _layer == null:
+	if _layer == null:
 		return
-	if BACK_TO.has(Session.screen):
+	if what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		# 자동 플레이는 창이 뒤에 있어도 돈다
+		if not OS.has_environment("SMASHCITY_AUTOPLAY"):
+			_pause()
+		return
+	if what != NOTIFICATION_WM_GO_BACK_REQUEST:
+		return
+	# 얹힌 판과 단계가 있는 화면은 스스로 한 단계 물러난다
+	if _sheet != null and _sheet.has_method("back"):
+		_sheet.back()
+	elif _screen != null and _screen.has_method("back"):
+		_screen.back()
+	elif _playing:
+		_pause()
+	elif BACK_TO.has(Session.screen):
 		_show(BACK_TO[Session.screen])
-	elif Session.screen == "menu" or Session.screen == "login":
+	elif Session.screen == "menu" or Session.screen == "login" or Session.screen == "title":
 		get_tree().quit()
 
 
@@ -635,7 +780,9 @@ func _show_map() -> void:
 	if OS.has_environment("SMASHCITY_DEMO_RESULT"):
 		best[_stage_id] = 61350
 	_map.setup(_city_name, _stage_list, cleared, _stage_index, best, ranking, result)
-	_map.started.connect(_start)
+	_map.started.connect(_show_ready)
+	# 깬 스테이지의 단추를 누르면 그 스테이지를 다시 할 수 있다
+	_map.picked.connect(func(i: int) -> void: _enter(String(_stage_list[i]["id"]), "map", false))
 	var home := UiKit.button("HOME", UiKit.INK, 24)
 	# 위쪽은 지역 이름표가, 아래 가운데는 PLAY 가 차지하므로 왼쪽 아래 구석에 둔다
 	home.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
@@ -708,7 +855,7 @@ func _setup_paddle_and_ball() -> void:
 	add_child(_paddle)
 	if _base == "road":
 		# 패들이 큰 도로를 다니는 판에서는 배가 아니라 버스다
-		_paddle.add_child(_bus(width, thick))
+		_paddle.add_child(_bus(width, thick, Color(String(_prog.cosmetic("bus", String(_save.profile["bus"]))["color"]))))
 	else:
 		var ship := _ship(width, thick)
 		_paddle.add_child(ship if ship != null else _boat(width, thick))
@@ -733,7 +880,9 @@ func _setup_paddle_and_ball() -> void:
 	_trail_mesh.height = r * 1.6
 	_trail_mesh.radial_segments = 8
 	_trail_mesh.rings = 4
-	_trail_mesh.material = _ball_mat
+	# 고른 자취 색. 고르지 않았으면 공의 색을 따라간다.
+	var trail := String(_prog.cosmetic("trail", String(_save.profile["trail"]))["color"])
+	_trail_mesh.material = _flat(Color(trail), true) if trail != "" else _ball_mat
 
 
 ## 패들로 쓰는 배. Kenney Watercraft Kit 의 여객선 모델이다(CC0). 길이가 패들의 폭이다.
@@ -767,13 +916,12 @@ func _ship(length: float, beam: float) -> MeshInstance3D:
 
 
 ## 패들로 쓰는 버스. 길이가 패들의 폭이다. 두 칸을 이은 굴절 버스 모양이다.
-func _bus(length: float, beam: float) -> MeshInstance3D:
+func _bus(length: float, beam: float, body: Color) -> MeshInstance3D:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	st.set_smooth_group(-1)
 	var hl := length / 2.0
 	var hb := beam * 0.62
-	var body := Color("3F8FE0")
 	var trim := Color("FFFFFF")
 	var glass := Color("BFE6FA")
 	var dark := Color("2B3445")

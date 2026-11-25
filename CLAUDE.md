@@ -45,7 +45,7 @@ python3 tools/check_docs.py
 
 - 첫 줄은 스크립트 오류를 잡는다. 출력에 `ERROR`나 `SCRIPT ERROR`가 없어야 한다.
 - 코드를 바꿨으면 테스트를 붙인다. `tests/run_tests.gd`에 `_test_`로 시작하는 함수를 더하고 목록에 넣는다.
-- 화면이 바뀌는 변경이면 직접 본다. `SMASHCITY_SHOT=<저장할 경로.png> godot --path . --resolution 540x1200`을 실행하면 창이 잠깐 떴다가 화면을 저장하고 닫힌다. 앞에 `SMASHCITY_SCREEN=<login, menu, regions, settings, dev, map>`을 붙이면 그 공간을 띄운다.
+- 화면이 바뀌는 변경이면 직접 본다. `SMASHCITY_SHOT=<저장할 경로.png> godot --path . --resolution 540x1200`을 실행하면 창이 잠깐 떴다가 화면을 저장하고 닫힌다. 앞에 `SMASHCITY_SCREEN=<title, login, menu, regions, map, ready, pause, crew, trophies, ranking, settings, dev>`을 붙이면 그 공간을 띄운다.
 - 단말기 확인은 `godot --headless --path . --export-debug Android build/smashcity.apk` 뒤 `adb install -r build/smashcity.apk`로 한다. 내보내기 템플릿이 설치되어 있어야 한다.
 - 문서만 바꿨어도 `check_docs.py`는 돌린다. 스테이지 번호나 파일 이름을 바꾸면 다른 문서의 링크와 표가 낡는다.
 - 실패하면 원인을 조사한다. 테스트를 끄거나 건너뛰어 통과시키지 않는다.

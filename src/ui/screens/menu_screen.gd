@@ -4,12 +4,15 @@ extends "res://src/ui/screens/base_screen.gd"
 var _note: Label
 
 
-## next: 이어 할 곳("서울 3/10 · 강남"), who: 위쪽에 쓸 이름
-func setup(next: String, who: String) -> void:
+## next: 이어 할 곳("서울 3/10 · 강남"), who: 위쪽에 쓸 이름과 레벨, coins: 가진 코인
+func setup(next: String, who: String, coins: int) -> void:
 	_fill(Color(1, 1, 1, 0.18))
 	var v := _column(40, 70, 90, 18)
 	var top := HBoxContainer.new()
-	top.add_child(Kit.chip(who, Kit.INK, Color.WHITE, 26))
+	top.add_theme_constant_override("separation", 10)
+	var me := Kit.button(who, Kit.INK, 26)
+	top.add_child(_link(me, "crew"))
+	top.add_child(Kit.chip("COIN %s" % Kit.number(coins), Kit.GOLD, Color.WHITE, 24))
 	var gap := Control.new()
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(gap)
@@ -35,7 +38,7 @@ func setup(next: String, who: String) -> void:
 	row.columns = 2
 	row.add_theme_constant_override("h_separation", 16)
 	row.add_theme_constant_override("v_separation", 16)
-	for item: Array in [["WORLD TOUR", "regions", Kit.MINT], ["CREW", "", Kit.SKY], ["TROPHIES", "", Kit.GOLD], ["RANKING", "", Kit.GOLD]]:
+	for item: Array in [["WORLD TOUR", "regions", Kit.MINT], ["CREW", "crew", Kit.SKY], ["TROPHIES", "trophies", Kit.GOLD], ["RANKING", "ranking", Kit.GOLD]]:
 		var b := Kit.button(String(item[0]), item[2], 32)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.custom_minimum_size = Vector2(0, 96)

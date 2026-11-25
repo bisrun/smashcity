@@ -27,6 +27,7 @@ func _init() -> void:
 		_test_fever_chains_to_neighbors, _test_wall_blocks_but_gap_lets_through, _test_bolt_finishes_the_last_cells,
 		_test_pressure_builds_over_time, _test_narrow_item_hurts, _test_models_load, _test_save_data_ranks_scores, _test_stage_list_is_valid, _test_sim_is_deterministic, _test_jamsil_plays,
 		_test_secret_gesture_opens_dev_room, _test_settings_are_kept, _test_account_is_kept, _test_screens_build,
+		_test_start_gear, _test_progression_and_profile, _test_more_screens_build,
 	]:
 		t.call()
 	print("%d개 확인, 실패 %d개" % [_checks, _failures])
@@ -190,6 +191,12 @@ func _test_forest_lasts_several_hits() -> void:
 	_place(sim, Vector2(500, 900), Vector2(0, 1))
 	_run(sim, 0.3)
 	_check(sim.cell_hp[0] == 0 and sim.destroyed == 1, "마지막 한 번에 부서진다")
+	var small := _square(400, 1000, 60, 1)
+	small["e"] = 1
+	var mid := _square(700, 1000, 90, 1)
+	mid["e"] = 1
+	var mixed: Sim = SimScript.new(_stage({"cells": [small, mid, forest, _square(100, 1700, 100, 2)]}), _no_gravity())
+	_check(mixed.cell_hp[0] == 1 and mixed.cell_hp[1] == 2 and mixed.cell_hp[2] == 3, "숲은 넓을수록 오래 버틴다: 작은 쉼터 1, 보통 숲 2, 큰 숲 3")
 	var fire: Sim = SimScript.new(_stage({"cells": [forest, _square(100, 1700, 100, 2)]}), _no_gravity())
 	fire.fire_left = 5.0
 	_place(fire, Vector2(500, 900), Vector2(0, 1))
@@ -754,14 +761,15 @@ func _test_screens_build() -> void:
 	login.free()
 
 	var menu: Control = load("res://src/ui/screens/menu_screen.gd").new()
-	menu.setup("서울 1/10 · 잠실", "GUEST")
+	menu.setup("서울 1/10 · 잠실", "CAPTAIN  LV 1", 120)
 	went.clear()
 	menu.go.connect(note)
 	found = []
 	_buttons(menu, found)
 	for b: Button in found:
 		b.pressed.emit()
-	_check(went.has("play_next:") and went.has("regions:") and went.has("settings:"), "메인 메뉴에서 플레이, 지역 선택, 설정으로 갈 수 있다")
+	for to: String in ["play_next:", "regions:", "settings:", "crew:", "trophies:", "ranking:"]:
+		_check(went.has(to), "메인 메뉴에서 %s 로 갈 수 있다" % to)
 	menu.free()
 
 	var regions: Control = load("res://src/ui/screens/regions_screen.gd").new()
@@ -797,22 +805,166 @@ func _test_screens_build() -> void:
 	options.free()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
+	# 개발자 창은 단계로 나뉜다: 처음 → 지역 → 스테이지
 	var dev: Control = load("res://src/ui/screens/dev_screen.gd").new()
 	dev.setup(cities, cleared, {})
 	went.clear()
 	dev.go.connect(note)
 	found = []
 	_buttons(dev, found)
-	var ready := 0
-	for city: Dictionary in cities:
-		for s: Dictionary in city["stages"]:
-			if bool(s["ready"]):
-				ready += 1
-	_check(found.size() == ready + 1, "개발자 창에 만들어진 스테이지가 모두 있다 (%d개)" % ready)
-	found[found.size() - 2].pressed.emit()
+	_check(found.size() == 2 and found[0].text.begins_with("STAGE JUMP"), "개발자 창의 처음에는 스테이지 바로가기가 있다")
+	found[0].pressed.emit()
+	found = []
+	_buttons(dev, found)
+	_check(found.size() == cities.size() + 1, "바로가기를 누르면 지역이 나온다 (%d곳)" % cities.size())
+	found[cities.size() - 1].pressed.emit()
+	found = []
+	_buttons(dev, found)
 	var last: Array = cities[cities.size() - 1]["stages"]
+	_check(found.size() == last.size() + 1, "지역을 누르면 그 지역의 스테이지가 나온다")
+	found[last.size() - 1].pressed.emit()
 	_check(went == ["dev_stage:" + String(last[last.size() - 1]["id"])], "스테이지를 누르면 그 스테이지로 들어간다")
+	dev.back()
+	dev.back()
+	_check(went.size() == 1, "뒤로 가면 한 단계씩 물러난다")
+	dev.back()
+	_check(went[went.size() - 1] == "settings:", "처음 단계에서 뒤로 가면 설정으로 나간다")
 	dev.free()
+
+
+func _test_start_gear() -> void:
+	var cells := {"cells": [_square(400, 1000, 200, 3), _square(100, 1700, 100, 2)]}
+	var plain: Sim = SimScript.new(_stage(cells), _no_gravity())
+	var cfg := _no_gravity()
+	cfg["loadout"] = "spare_ball"
+	var spare: Sim = SimScript.new(_stage(cells), cfg)
+	_check(spare.lives == plain.lives + 1, "예비 공은 공 하나를 더 가지고 시작한다")
+	cfg = _no_gravity()
+	cfg["loadout"] = "shield"
+	var guarded: Sim = SimScript.new(_stage(cells), cfg)
+	_check(guarded.shield == 1 and plain.shield == 0, "방패는 방어막이 켜진 채로 시작한다")
+	cfg = _no_gravity()
+	cfg["loadout"] = "wide_start"
+	var wide: Sim = SimScript.new(_stage(cells), cfg)
+	_check(wide.paddle_width() > plain.paddle_width() and is_equal_approx(wide.wide_left, float(cfg["gear_wide_seconds"])), "넓은 출발은 넓은 패들로 시작한다")
+	cfg = _no_gravity()
+	cfg["loadout"] = "multi_start"
+	var multi: Sim = SimScript.new(_stage(cells), cfg)
+	_run(multi, float(cfg["launch_delay"]) + 0.1)
+	_run(plain, float(cfg["launch_delay"]) + 0.1)
+	_check(multi.balls.size() == 3 and plain.balls.size() == 1, "멀티 출발은 첫 발사가 세 갈래로 나간다 (공 %d개)" % multi.balls.size())
+	cfg = _no_gravity()
+	cfg["loadout"] = "모르는것"
+	var odd: Sim = SimScript.new(_stage(cells), cfg)
+	_check(odd.lives == plain.lives and odd.shield == 0, "모르는 출발 아이템은 아무 일도 하지 않는다")
+
+
+func _test_progression_and_profile() -> void:
+	var prog: Progression = load("res://src/meta/progression.gd").new()
+	_check(not prog.data.is_empty(), "성장 파일을 읽는다")
+	var step := int(prog.data["level_step"])
+	_check(prog.level_of(0) == 1 and prog.level_of(step - 1) == 1 and prog.level_of(step) == 2, "경험치가 차면 레벨이 오른다")
+	_check(prog.level_of(step + step * 2) == 3 and prog.into_level(step + 10) == 10, "레벨이 오를수록 다음 레벨이 멀어진다")
+	var lost: Dictionary = prog.reward(false, false, 10)
+	var won: Dictionary = prog.reward(true, true, 10)
+	_check(int(won["xp"]) > int(lost["xp"]) and int(won["coins"]) > int(lost["coins"]), "깨면 더 많이 얻는다")
+	_check(prog.cosmetic("bus", "없는것")["id"] == prog.data["bus"][0]["id"], "모르는 꾸밈은 기본으로 돌아간다")
+	for g: Dictionary in prog.data["gear"]:
+		_check(["spare_ball", "shield", "wide_start", "multi_start"].has(g["id"]), "출발 아이템은 판정이 아는 것이다 (%s)" % g["id"])
+
+	var Save = load("res://src/meta/save_data.gd")
+	var path := "user://test_profile.json"
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	var save: SaveData = Save.new(path)
+	_check(save.display_name() == "CAPTAIN" and int(save.profile["coins"]) == 0, "처음에는 이름이 없고 코인이 없다")
+	_check(not save.buy_gear("shield", 120), "코인이 모자라면 살 수 없다")
+	save.add_progress(300, 200, true, 40, 7, 90)
+	save.add_progress(100, 0, false, 10, 3, 30)
+	_check(save.buy_gear("shield", 120) and int(save.profile["coins"]) == 80 and save.gear_count("shield") == 1, "코인으로 출발 아이템을 산다")
+	save.set_name("  아주아주아주긴이름입니다정말로  ")
+	var again: SaveData = Save.new(path)
+	_check(String(again.profile["name"]).length() == SaveData.NAME_MAX, "이름은 정해진 길이로 자른다")
+	_check(int(again.profile["xp"]) == 400 and int(again.profile["coins"]) == 80 and again.gear_count("shield") == 1, "경험치와 코인과 소지품이 파일에 남는다")
+	var stats: Dictionary = again.profile["stats"]
+	_check(int(stats["games"]) == 2 and int(stats["clears"]) == 1 and int(stats["cells"]) == 50 and int(stats["best_combo"]) == 7, "누적 기록이 쌓인다")
+	_check(again.use_gear("shield") and not again.use_gear("shield"), "출발 아이템은 쓰면 줄고, 없으면 쓸 수 없다")
+	again.add_result("seoul/jamsil", 500, true, 60, "11.25 12:00", "shield")
+	_check(String(again.top("seoul/jamsil", 1)[0].get("gear", "")) == "shield", "출발 아이템을 쓴 판의 기록에는 표시가 남는다")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+func _test_more_screens_build() -> void:
+	var cities: Array = BalanceScript.load_file("res://assets/stages/stages.json")["cities"]
+	var path := "user://test_screens.json"
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	var save: SaveData = load("res://src/meta/save_data.gd").new(path)
+	var prog: Progression = load("res://src/meta/progression.gd").new()
+	save.add_progress(0, 500, true, 10, 2, 30)
+	var went: Array = []
+	var note := func(to: String, arg: String) -> void: went.append(to + ":" + arg)
+	var found: Array = []
+
+	var ready: Control = load("res://src/ui/screens/ready_screen.gd").new()
+	ready.setup({"title": "서울 1 · 잠실", "grade": 1.0, "best": 1200, "ride": "SHIP", "top": [], "gear": [{"id": "shield", "name": "SHIELD", "about": "", "count": 2}]})
+	ready.go.connect(note)
+	_buttons(ready, found)
+	for b: Button in found:
+		if b.text.begins_with("SHIELD") or b.text == "START":
+			b.pressed.emit()
+	_check(went == ["start:shield"], "출발 준비에서 고른 출발 아이템을 가지고 시작한다")
+	ready.free()
+
+	var pause: Control = load("res://src/ui/screens/pause_screen.gd").new()
+	pause.setup("서울 1 · 잠실")
+	went.clear()
+	pause.go.connect(note)
+	found = []
+	_buttons(pause, found)
+	for b: Button in found:
+		b.pressed.emit()
+	_check(went == ["resume:", "retry:", "home:"], "일시정지에서 계속, 다시 하기, 나가기를 고른다")
+	pause.free()
+
+	var crew: Control = load("res://src/ui/screens/crew_screen.gd").new()
+	crew.setup(save, prog, cities)
+	for tab in 4:
+		crew._open(tab)
+	crew._open(2)
+	found = []
+	_buttons(crew, found)
+	for b: Button in found:
+		if b.text.begins_with("BUY"):
+			b.pressed.emit()
+			break
+	var owned := 0
+	for g: Dictionary in prog.data["gear"]:
+		owned += save.gear_count(String(g["id"]))
+	_check(owned == 1 and int(save.profile["coins"]) < 500, "CREW 의 GEAR 에서 코인으로 출발 아이템을 산다")
+	crew._open(1)
+	found = []
+	_buttons(crew, found)
+	var open_bus := 0
+	for c: Dictionary in prog.data["bus"]:
+		if int(c["level"]) <= 1:
+			open_bus += 1
+	_check(open_bus >= 1 and found.size() < 4 + prog.data["bus"].size() + prog.data["trail"].size() + 1, "레벨이 모자란 꾸밈은 잠겨 있다")
+	crew.free()
+
+	var cleared: Array[String] = [String(cities[0]["stages"][0]["id"])]
+	var trophies: Control = load("res://src/ui/screens/trophies_screen.gd").new()
+	trophies.setup(cities, cleared)
+	trophies.free()
+	var ranking: Control = load("res://src/ui/screens/ranking_screen.gd").new()
+	ranking.setup(cities, save, 0)
+	ranking._open(-1)
+	_check(ranking._region == cities.size() - 1, "순위는 지역을 넘기면 끝에서 처음으로 돈다")
+	ranking.free()
+	var title: Control = load("res://src/ui/screens/title_screen.gd").new()
+	title.setup()
+	title.free()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
 ## 선처럼 삐져나온 가지의 수. 길이가 40 넘는 두 변이 3도 안쪽으로 접혀 있으면 가지로 본다.

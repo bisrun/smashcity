@@ -27,6 +27,11 @@ const ITEM_NARROW := "narrow"
 ## 방어막: 놓친 공을 한 번 받아 준다. 레킹볼: 잠깐 동안 한 번에 두 칸씩 깎는다.
 const ITEM_SHIELD := "shield"
 const ITEM_WRECK := "wreck"
+## 출발 아이템. cfg["loadout"] 에 하나를 적어 넘긴다.
+const GEAR_SPARE_BALL := "spare_ball"
+const GEAR_SHIELD := "shield"
+const GEAR_WIDE_START := "wide_start"
+const GEAR_MULTI_START := "multi_start"
 ## 하늘에서 떨어지는 아이템의 기본 비율. 스테이지가 값(sky_items)으로 바꿀 수 있다.
 const SKY_ITEMS := {"multi": 3.0, "wide": 2.0, "fire": 2.0, "narrow": 3.0, "life": 0.5}
 
@@ -83,6 +88,9 @@ var wide_left := 0.0
 var fire_left := 0.0
 ## 레킹볼이 남은 시간, 남은 방어막의 수
 var wreck_left := 0.0
+var _multi_start := false
+## 한 공이 패들에 닿지 않고 연달아 부순 수의 최고 기록
+var best_combo := 0
 var shield := 0
 var narrow_left := 0.0
 ## 시간이 흘러 빨라진 단계. 0부터.
@@ -155,7 +163,7 @@ func _init(p_stage: StageData, p_cfg: Dictionary, design: Dictionary = {}) -> vo
 		cell_solid[i] = 1 if c.get("solid", false) and not c["landmark"] else 0
 		var hp: int = int(cfg["landmark_hp"]) if c["landmark"] else int(c["hp"]) + int(cfg.get("cell_hp_bonus", 0))
 		if is_park(c):
-			hp = int(cfg["forest_hp"])  # 숲은 오래 버틴다
+			hp = forest_hp(c["points"])
 		cell_hp[i] = hp
 		cell_max_hp[i] = hp
 		if c["landmark"]:
@@ -172,6 +180,7 @@ func _init(p_stage: StageData, p_cfg: Dictionary, design: Dictionary = {}) -> vo
 	for w: Dictionary in design.get("walls", []):
 		_build_wall(w)
 	lives = int(cfg["lives"])
+	_apply_loadout(String(cfg.get("loadout", "")))
 	_rng.seed = int(cfg["seed"])
 	paddle_x = stage.width / 2.0
 	_drop_in = float(cfg["drop_interval_start"])
@@ -225,6 +234,22 @@ func breakable_count() -> int:
 
 ## 숲이나 공원인 셀인지. 실제로 건물이 없던 낮은 구획이 그렇다. 화면도 같은 기준으로 그린다.
 ## 숲은 여러 번 맞아야 부서진다.
+## 숲이 버티는 횟수. 넓은 숲일수록 오래 버틴다: 작은 쉼터 1, 보통 숲 2, 큰 숲 3.
+## 넓이의 경계는 forest_area_steps 에 있고, forest_hp 를 넘지 않는다.
+func forest_hp(points: PackedVector2Array) -> int:
+	var area := 0.0
+	for i in points.size():
+		var a := points[i]
+		var b := points[(i + 1) % points.size()]
+		area += a.x * b.y - b.x * a.y
+	area = absf(area) / 2.0
+	var hp := 1
+	for step: float in cfg.get("forest_area_steps", []):
+		if area >= step:
+			hp += 1
+	return mini(hp, int(cfg["forest_hp"]))
+
+
 static func is_park(cell: Dictionary) -> bool:
 	return bool(cell.get("empty", false)) and int(cell.get("hp", 1)) <= 1 and not bool(cell.get("landmark", false))
 
@@ -345,6 +370,10 @@ func _step_ball(b: Ball) -> void:
 			b.vel = Vector2(sin(a), cos(a)) * ball_speed()
 			b.state = BallState.FLYING
 			_events.append({"type": "launch"})
+			if _multi_start:
+				# 출발 아이템: 첫 발사가 세 갈래로 나간다
+				_multi_start = false
+				_apply_item(ITEM_MULTI)
 		return
 	if b.state == BallState.SUNK:
 		b.wait -= STEP
@@ -738,6 +767,7 @@ func _strike(b: Ball, idx: int, amount: int, chained: bool) -> bool:
 	var points := int(round(float(cfg["score_destroy_per_hp"]) * cell_max_hp[idx] * _multiplier(b.combo)))
 	score += points
 	b.combo += 1
+	best_combo = maxi(best_combo, b.combo)
 	var landmark: bool = stage.cells[idx]["landmark"]
 	_events.append({"type": "destroyed", "cell": idx, "landmark": landmark, "points": points, "chained": chained})
 	if _item_in_cell.has(idx):
@@ -777,6 +807,19 @@ func _step_items() -> void:
 			_events.append({"type": "item_gone", "id": it["id"]})
 			if it["type"] == ITEM_BOLT:
 				_bolt_retry = float(cfg["bolt_retry"])  # 놓친 번개는 잠시 뒤 다시 내려온다
+
+
+## 판을 시작하기 전에 골라 온 출발 아이템. 판 밖의 것이 판정에 들어오는 길은 이것 하나다(docs/18_character_items.md).
+func _apply_loadout(gear: String) -> void:
+	match gear:
+		GEAR_SPARE_BALL:
+			lives += 1
+		GEAR_SHIELD:
+			shield = 1
+		GEAR_WIDE_START:
+			wide_left = float(cfg["gear_wide_seconds"])
+		GEAR_MULTI_START:
+			_multi_start = true
 
 
 func _apply_item(type: String) -> void:

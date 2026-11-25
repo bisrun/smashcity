@@ -1,0 +1,108 @@
+{
+ "_comment": "판 밖의 성장과 꾸밈. 경험치, 레벨, 코인, 출발 아이템의 값, 꾸밈의 목록. 레벨과 꾸밈은 판정을 바꾸지 않는다(docs/18_character_items.md). 초기값이며 확인 전이다.",
+ "xp": {
+  "play": 20,
+  "clear": 100,
+  "per_cell": 1
+ },
+ "level_step": 250,
+ "coins": {
+  "play": 10,
+  "clear": 50,
+  "first_clear": 100
+ },
+ "gear": [
+  {
+   "id": "spare_ball",
+   "name": "SPARE BALL",
+   "about": "공 하나를 더 가지고 시작",
+   "price": 150
+  },
+  {
+   "id": "shield",
+   "name": "SHIELD",
+   "about": "방어막이 켜진 채로 시작",
+   "price": 120
+  },
+  {
+   "id": "wide_start",
+   "name": "WIDE START",
+   "about": "30초 동안 넓은 패들로 시작",
+   "price": 100
+  },
+  {
+   "id": "multi_start",
+   "name": "MULTI START",
+   "about": "첫 발사가 세 갈래로 나감",
+   "price": 150
+  }
+ ],
+ "faces": [
+  "F0645A",
+  "F5A623",
+  "3DBE8B",
+  "6FB8FF",
+  "9B7BE8",
+  "14213D",
+  "E86BA8",
+  "8A6A4B"
+ ],
+ "bus": [
+  {
+   "id": "blue",
+   "name": "BLUE LINE",
+   "color": "3F8FE0",
+   "level": 1
+  },
+  {
+   "id": "red",
+   "name": "RED RIDER",
+   "color": "E0483F",
+   "level": 2
+  },
+  {
+   "id": "yellow",
+   "name": "SCHOOL BUS",
+   "color": "F2B632",
+   "level": 4
+  },
+  {
+   "id": "green",
+   "name": "GREEN TRAM",
+   "color": "3DA66B",
+   "level": 6
+  },
+  {
+   "id": "night",
+   "name": "NIGHT OWL",
+   "color": "3A3F6B",
+   "level": 9
+  }
+ ],
+ "trail": [
+  {
+   "id": "none",
+   "name": "CLEAN",
+   "color": "",
+   "level": 1
+  },
+  {
+   "id": "mint",
+   "name": "MINT",
+   "color": "7FE3C0",
+   "level": 3
+  },
+  {
+   "id": "pink",
+   "name": "BLOSSOM",
+   "color": "FFA6C9",
+   "level": 5
+  },
+  {
+   "id": "sky",
+   "name": "SKY",
+   "color": "8FD0FF",
+   "level": 7
+  }
+ ]
+}

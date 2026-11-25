@@ -8,6 +8,8 @@ extends Control
 ## 화면을 누르면 started 가 난다.
 
 signal started
+## 깼거나 이번에 할 스테이지의 단추를 눌렀다. index 는 스테이지 번호(0부터)
+signal picked(index: int)
 
 const SKY_TOP := Color("9ED8F0")
 const SKY_LOW := Color("DFF4FA")
@@ -71,6 +73,10 @@ func setup(city: String, stages: Array, cleared: Array[String], current: int, be
 		var score := UiKit.label(UiKit.number(int(result["score"])), 56)
 		score.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		rows.add_child(score)
+		if result.has("xp"):
+			var gain := UiKit.label("+%d XP    +%d COIN%s" % [int(result["xp"]), int(result["coins"]), "    LEVEL UP!" if result.get("level_up", false) else ""], 28, UiKit.SKY.darkened(0.2))
+			gain.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			rows.add_child(gain)
 		if int(result["rank"]) > 0:
 			var rank := UiKit.label("RANK #%d" % int(result["rank"]), 30, UiKit.GOLD)
 			rank.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -118,6 +124,8 @@ func _ranking(entries: Array, mark: int) -> VBoxContainer:
 		var score := UiKit.label(UiKit.number(int(e["score"])), 34, UiKit.CORAL if mine else UiKit.INK)
 		score.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(score)
+		if String(e.get("gear", "")) != "":
+			row.add_child(UiKit.chip("GEAR", UiKit.SKY, Color.WHITE, 16))
 		if e.get("cleared", false):
 			row.add_child(UiKit.chip("CLEAR", UiKit.MINT, Color.WHITE, 18))
 		var when := UiKit.label(String(e.get("at", "")), 20, UiKit.GREY)
@@ -354,4 +362,12 @@ func _gui_input(event: InputEvent) -> void:
 	var pressed: bool = (event is InputEventScreenTouch and event.pressed) or (event is InputEventMouseButton and event.pressed)
 	if pressed and _ready_to_start:
 		accept_event()
+		for i in _points.size():
+			if _points[i].distance_to(event.position) < _radius * 1.4:
+				# 잠긴 스테이지는 눌러도 아무 일이 없다
+				if _state(i) != 0 and i != _current:
+					picked.emit(i)
+					return
+				if _state(i) == 0:
+					return
 		started.emit()

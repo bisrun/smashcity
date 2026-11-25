@@ -11,3 +11,5 @@ static var screen := ""
 static var stage := ""
 ## 개발자 창에서 들어간 판이다. 기록을 남기지 않고, 끝나면 개발자 창으로 돌아온다.
 static var dev := false
+## 출발 준비에서 고른 출발 아이템. 다시 불린 장면이 판정에 넘기고 지운다.
+static var gear := ""

@@ -117,7 +117,9 @@ static func ranking(entries: Array, mark: int) -> VBoxContainer:
 		var score := label(number(int(e["score"])), 30, color)
 		score.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(score)
-		row.add_child(label("클리어" if e.get("cleared", false) else "", 22, MINT))
+		if String(e.get("gear", "")) != "":
+			row.add_child(chip("GEAR", SKY, Color.WHITE, 16))
+		row.add_child(label("CLEAR" if e.get("cleared", false) else "", 22, MINT))
 		row.add_child(label(String(e.get("at", "")), 20, GREY))
 		v.add_child(row)
 	return v
