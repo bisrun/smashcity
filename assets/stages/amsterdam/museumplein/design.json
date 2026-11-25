@@ -2,6 +2,11 @@
   "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
   "_auto": true,
   "theme": "amsterdam",
+  "sight": {
+    "name": "국립미술관",
+    "kind": "dome",
+    "color": "B5553C"
+  },
   "base": "river",
   "grade_target": 6.2,
   "level": 0.578,

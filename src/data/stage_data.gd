@@ -23,6 +23,8 @@ var pois: Array[Dictionary] = []
 var parks: Array[PackedVector2Array] = []
 ## 통로 면의 바깥 윤곽. 물 위를 지나는 통로(다리)를 가릴 때 쓴다
 var corridors: Array[PackedVector2Array] = []
+## 그 동네의 명소가 선 자리. 없으면 빈 사전. {at: Vector2, solid: 부서지지 않는가, target: 목표인가}
+var sight := {}
 
 
 static func load_file(path: String) -> StageData:
@@ -67,6 +69,9 @@ static func from_dict(d: Dictionary) -> StageData:
 		s.parks.append(_points(ring))
 	for c: Dictionary in d.get("corridors", []):
 		s.corridors.append(_points(c["p"]))
+	if d.has("sight"):
+		var sg: Dictionary = d["sight"]
+		s.sight = {"at": Vector2(float(sg["at"][0]), float(sg["at"][1])), "solid": int(sg.get("s", 0)) == 1, "target": int(sg.get("lm", 0)) == 1}
 	for p: Dictionary in d.get("pois", []):
 		s.pois.append({
 			"position": Vector2(float(p["x"]), float(p["y"])),

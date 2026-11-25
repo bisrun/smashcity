@@ -2,6 +2,11 @@
   "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
   "_auto": true,
   "theme": "seoul",
+  "sight": {
+    "name": "상상마당",
+    "kind": "blob",
+    "color": "C9CED6"
+  },
   "base": "river",
   "grade_target": 3.2,
   "level": 0.184,
@@ -121,8 +126,8 @@
   "walls": [
     {
       "around": [
-        707,
-        1708
+        493,
+        970
       ],
       "gap_toward": [
         0.3,

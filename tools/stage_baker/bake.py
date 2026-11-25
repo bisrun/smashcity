@@ -22,7 +22,7 @@ from pathlib import Path
 
 from shapely import make_valid, voronoi_polygons
 from shapely.geometry import LineString, MultiPoint, Point, Polygon, box
-from shapely.ops import polygonize, unary_union
+from shapely.ops import nearest_points, polygonize, unary_union
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 HERE = Path(__file__).resolve().parent
@@ -197,6 +197,7 @@ def bake(stage, raw):
         return None
 
     buildings, roads, greens, waters, coast, prot, pois = [], [], [], [], [], [], []
+    named_areas = []
     for e in sorted(raw, key=lambda e: 0 if "building" in e.get("tags", {}) else 1):
         t = e.get("tags", {})
         if e["type"] == "node":
@@ -230,6 +231,8 @@ def bake(stage, raw):
         if g.is_empty:
             continue
         guarded = is_protected(t)
+        if t.get("name"):
+            named_areas.append((" ".join(str(t.get(k, "")) for k in ("name", "name:en", "name:ko", "alt_name", "official_name")), g, guarded, "building" in t))
         if "building" in t:
             names = " ".join(str(t.get(k, "")) for k in ("name", "name:en", "name:ko", "alt_name", "official_name"))
             for p in polys(g):
@@ -408,13 +411,59 @@ def bake(stage, raw):
             hp = 1 + (int(c.centroid.x) * 7 + int(c.centroid.y) * 13) % 3
         cell_out.append(dict(poly=c, hp=1 if is_park else hp, park=is_park, solid=is_solid, inside=inside, lm=False))
 
+    # --- 명소 ---
+    # 그 동네에 다녀온 사람이 알아볼 건물이나 구조물. world.json 의 sight 가 이름과 자리를 준다.
+    # OSM 에서 이름으로 찾고, 못 찾으면 적어 둔 좌표를 쓴다. 문화재와 종교시설이면 부서지지 않게 둔다.
+    sight = stage.get("sight") or {}
+    sight_at, sight_cell, sight_how = None, None, ""
+    sight_guarded = bool(sight.get("protect"))
+    pats = [h.lower() for h in sight.get("match", "").split("|") if h]
+    hits = [(g, gd, bld) for names, g, gd, bld in named_areas if pats and any(h in names.lower() for h in pats)]
+    if hits:
+        # 같은 이름의 넓은 땅(공원, 단지)보다 건물을 먼저 고른다
+        g, gd, _ = max(hits, key=lambda x: (x[2], x[0].area))
+        pt = g.representative_point()
+        sight_at, sight_how = (pt.x, pt.y), "이름"
+        sight_guarded = sight_guarded or gd
+    elif "lat" in sight:
+        sight_at, sight_how = P({"lat": sight["lat"], "lon": sight["lon"]}), "좌표"
+    if sight_at is not None and not (30 < sight_at[0] < W - 30 and 0.1 * H < sight_at[1] < H - 30):
+        sight_at, sight_how = None, "판 밖 (%d, %d)" % (sight_at[0], sight_at[1])
+    if sight_at is not None:
+        for c in cell_out:
+            if c["poly"].contains(Point(sight_at)):
+                sight_cell = c
+                break
+        if sight_cell is None and sight.get("kind") != "bridge":
+            # 명소가 길 가장자리에 걸쳐 셀 밖에 떨어졌으면 가장 가까운 셀로 당긴다
+            near = min(cell_out, key=lambda c: c["poly"].distance(Point(sight_at)))
+            if near["poly"].distance(Point(sight_at)) < 90:
+                edge = nearest_points(near["poly"], Point(sight_at))[0]
+                inner = near["poly"].representative_point()
+                step = min(1.0, 14.0 / max(1.0, edge.distance(inner)))
+                sight_at = (edge.x + (inner.x - edge.x) * step, edge.y + (inner.y - edge.y) * step)
+                if near["poly"].contains(Point(sight_at)):
+                    sight_cell = near
+                    sight_how += ", 가까운 셀로 당김"
+        if sight_cell is not None and (sight_guarded or sight_cell["solid"]):
+            sight_guarded = True
+            sight_cell.update(solid=True, park=False)
+
     # --- 목표 건물 ---
     depth = stage.get("depth", 0.5)   # 패들에서 판 세로의 몇 할 깊이에 목표를 둘지
     hints = [h.lower() for h in stage.get("landmark", "").split("|") if h]
     cands = [b for b in buildings if not b["guarded"] and b["poly"].area >= 150 and 0.2 * H < b["poly"].centroid.y < 0.94 * H]
     target = None
-    named = [b for b in cands if any(h in b["names"].lower() for h in hints)] if hints else []
-    if named:
+    if sight_cell is not None and not sight_guarded:
+        # 부술 수 있는 명소가 있으면 그것이 목표다
+        inside_sight = [b for b in cands if sight_cell["poly"].contains(b["poly"].representative_point())]
+        named_hit = [b for b in inside_sight if pats and any(h in b["names"].lower() for h in pats)]
+        target = max(named_hit or inside_sight, key=lambda b: (b["lv"], b["poly"].area)) if (named_hit or inside_sight) else None
+    forced = sight_cell if (sight_cell is not None and not sight_guarded) else None
+    named = [] if forced is not None else [b for b in cands if any(h in b["names"].lower() for h in hints)] if hints else []
+    if forced is not None:
+        pass
+    elif named:
         target = max(named, key=lambda b: (b["lv"], b["poly"].area))
     elif cands:
         def score(b):
@@ -422,15 +471,15 @@ def bake(stage, raw):
             side = abs(b["poly"].centroid.x / W - 0.5)
             return b["lv"] * (1.0 - min(0.8, off * 1.6)) * (1.0 - min(0.5, max(0.0, side - 0.3) * 2.0))
         target = max(cands, key=score)
-    lm_cell = None
-    if target is not None:
+    lm_cell = forced
+    if lm_cell is None and target is not None:
         at = target["poly"].representative_point()
         for c in cell_out:
-            if c["poly"].contains(at):
+            if c["poly"].contains(at) and not (c is sight_cell and sight_guarded):
                 lm_cell = c
                 break
     if lm_cell is None:   # 건물 자료가 없으면 알맞은 깊이의 셀 하나를 목표로 삼는다
-        open_cells = [c for c in cell_out if not c["solid"]]
+        open_cells = [c for c in cell_out if not c["solid"] and c is not sight_cell]
         lm_cell = min(open_cells, key=lambda c: abs(c["poly"].centroid.y / H - depth) + abs(c["poly"].centroid.x / W - 0.5))
         target = None
     lm_cell.update(lm=True, solid=False, park=False)
@@ -456,12 +505,17 @@ def bake(stage, raw):
         hp=dict(sorted(collections.Counter(c["hp"] for c in cell_out if not c["park"] and not c["solid"]).items())),
         corridor_share=round(corr.area / BOARD.area, 3), corridor_classes=used,
         water_share=round(lake.area / BOARD.area, 3) if lake is not None else 0.0,
-        buildings=len(buildings), landmark=lm_name,
+        buildings=len(buildings), landmark=lm_name, sight=sight_how,
         landmark_at=[round(lm_cell["poly"].centroid.x), round(lm_cell["poly"].centroid.y)],
         landmark_depth=round(lm_cell["poly"].centroid.y / H, 2),
     )
     shown = [b for b in buildings if b["poly"].area >= 400 and not b["guarded"]]
     shown.sort(key=lambda b: -b["poly"].area)
+    sight_out = None
+    if sight_at is not None:
+        # s: 부서지지 않는 명소, lm: 목표인 명소. 둘 다 아니면 길이나 물 위에 선 구조물이다(다리 등).
+        sight_out = dict(at=[round(sight_at[0]), round(sight_at[1])], s=1 if (sight_guarded and sight_cell is not None) else 0,
+                         lm=1 if (forced is not None) else 0)
     out = dict(
         W=W, H=H, ball=BALL, source="© OpenStreetMap contributors, ODbL", center=[lat0, lon0], rot=stage["rot"], report=report,
         buildings=[dict(p=ring(foot, 1), lv=target["lv"] if target is not None else 30, lm=1)]
@@ -474,6 +528,8 @@ def bake(stage, raw):
         parks=[ring(g.simplify(2.0)) for g in polys(green.intersection(BOARD)) if g.area > 1500] if green is not None else [],
         pois=[dict(x=round(p["x"]), y=round(p["y"]), k=p["kind"], n=p["name"]) for p in pois if p["kind"] in ("fuel", "police", "pharmacy", "parking", "bank")][:60],
     )
+    if sight_out is not None:
+        out["sight"] = sight_out
     return out, report
 
 

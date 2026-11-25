@@ -132,5 +132,10 @@
       "narrow": 3.0
     }
   },
-  "level": -0.3
+  "level": -0.3,
+  "sight": {
+    "name": "롯데월드타워",
+    "kind": "taper",
+    "color": "BFE3F2"
+  }
 }

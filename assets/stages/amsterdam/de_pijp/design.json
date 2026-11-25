@@ -2,6 +2,11 @@
   "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
   "_auto": true,
   "theme": "amsterdam",
+  "sight": {
+    "name": "하이네켄 양조장",
+    "kind": "tower",
+    "color": "B5553C"
+  },
   "base": "river",
   "grade_target": 6.4,
   "level": 0.974,
@@ -75,8 +80,8 @@
   "walls": [
     {
       "around": [
-        745,
-        1946
+        638,
+        1616
       ],
       "gap_toward": [
         0.2,

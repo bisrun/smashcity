@@ -2,6 +2,11 @@
   "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
   "_auto": true,
   "theme": "newyork",
+  "sight": {
+    "name": "베슬",
+    "kind": "egg",
+    "color": "C98A5B"
+  },
   "base": "river",
   "grade_target": 8.6,
   "level": 0.62,
@@ -99,8 +104,8 @@
   "walls": [
     {
       "around": [
-        663,
-        1261
+        551,
+        1193
       ],
       "gap_toward": [
         1.0,

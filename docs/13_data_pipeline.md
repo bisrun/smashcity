@@ -27,6 +27,8 @@ OSM 추출 → 변환 (stage_baker) → map.json ─┐
 
 | `tools/map_editor/server.py` | 맵 에디터. 스테이지를 눈으로 보고 `design.json`을 고친다 |
 
+명소는 `world.json`의 `sight`(이름, 모양, 색, OSM에서 찾을 이름, 좌표)에서 나온다. `bake.py`가 자리를 찾아 `map.json`의 `sight`에 적고, `design.py`가 이름과 모양을 `design.json`의 `sight`에 적는다.
+
 ## 맵 에디터
 
 PC에서 쓰는 도구다. 저장소 루트에서 `python3 tools/map_editor/server.py`를 실행하고 브라우저로 `http://127.0.0.1:8765`를 연다. 이 컴퓨터에서만 접속된다.

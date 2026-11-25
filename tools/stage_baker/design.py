@@ -55,6 +55,12 @@ def centre(p):
     return [round(sum(p[0::2]) / n), round(sum(p[1::2]) / n)]
 
 
+def sight_of(stage):
+    """그 동네의 명소. 이름과 모양은 손으로 정한 것이라 design.json 에 둔다. 자리는 map.json 의 sight 에 있다."""
+    s = stage.get("sight") or {}
+    return {k: s[k] for k in ("name", "kind", "color") if k in s}
+
+
 def make(stage, m, level):
     t = max(0.0, min(1.0, level))
     cells = m["cells"]
@@ -103,6 +109,7 @@ def make(stage, m, level):
         "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
         "_auto": True,
         "theme": stage["theme"],
+        "sight": sight_of(stage),
         # 물이 거의 없는 동네에서는 패들이 강이 아니라 큰 도로를 다닌다 (배 대신 버스)
         "base": "road" if m.get("report", {}).get("water_share", 0) < 0.01 else "river",
         "grade_target": target_grade(stage["region_index"], stage["order"]),
@@ -131,7 +138,7 @@ def main():
             if not old.get("_auto"):
                 # 손으로 고친 파일: 테마와 목표 등급만 채운다
                 changed = False
-                for k, v in (("theme", stage["theme"]), ("grade_target", grade)):
+                for k, v in (("theme", stage["theme"]), ("grade_target", grade), ("sight", sight_of(stage))):
                     if old.get(k) != v:
                         old[k] = v
                         changed = True

@@ -2,6 +2,11 @@
   "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
   "_auto": true,
   "theme": "tokyo",
+  "sight": {
+    "name": "메이지 신궁",
+    "kind": "palace",
+    "color": "7A5B3E"
+  },
   "base": "road",
   "grade_target": 4.0,
   "level": 0.507,

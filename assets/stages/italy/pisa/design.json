@@ -2,6 +2,11 @@
   "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
   "_auto": true,
   "theme": "italy",
+  "sight": {
+    "name": "피사의 사탑",
+    "kind": "leaning",
+    "color": "F2EFE6"
+  },
   "base": "river",
   "grade_target": 7.3,
   "level": 0.979,
@@ -91,8 +96,8 @@
   "walls": [
     {
       "around": [
-        659,
-        1653
+        789,
+        1795
       ],
       "gap_toward": [
         0.2,

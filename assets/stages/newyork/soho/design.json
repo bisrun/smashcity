@@ -2,6 +2,11 @@
   "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
   "_auto": true,
   "theme": "newyork",
+  "sight": {
+    "name": "캐스트아이언 빌딩",
+    "kind": "temple",
+    "color": "E6DCC4"
+  },
   "base": "road",
   "grade_target": 6.8,
   "level": 0.744,
@@ -99,8 +104,8 @@
   "walls": [
     {
       "around": [
-        717,
-        1331
+        952,
+        1316
       ],
       "gap_toward": [
         1.0,

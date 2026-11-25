@@ -2,6 +2,11 @@
   "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
   "_auto": true,
   "theme": "dubai",
+  "sight": {
+    "name": "아인 두바이",
+    "kind": "wheel",
+    "color": "F4F6F8"
+  },
   "base": "river",
   "grade_target": 8.1,
   "level": 0.949,

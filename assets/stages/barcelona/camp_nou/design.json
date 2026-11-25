@@ -2,6 +2,11 @@
   "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
   "_auto": true,
   "theme": "barcelona",
+  "sight": {
+    "name": "캄프 누",
+    "kind": "stadium",
+    "color": "3F6FB8"
+  },
   "base": "road",
   "grade_target": 7.5,
   "level": 1.056,
@@ -75,8 +80,8 @@
   "walls": [
     {
       "around": [
-        956,
-        2016
+        933,
+        404
       ],
       "gap_toward": [
         0.2,

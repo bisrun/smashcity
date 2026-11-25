@@ -2,6 +2,11 @@
   "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
   "_auto": true,
   "theme": "beijing",
+  "sight": {
+    "name": "냐오차오",
+    "kind": "stadium",
+    "color": "C9CED6"
+  },
   "base": "river",
   "grade_target": 3.1,
   "level": 0.233,
@@ -106,8 +111,8 @@
   "walls": [
     {
       "around": [
-        1102,
-        1452
+        811,
+        1256
       ],
       "gap_toward": [
         0.3,

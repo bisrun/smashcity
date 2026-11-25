@@ -14,6 +14,11 @@ const ModelLibraryScript := preload("res://src/render/model_library.gd")
 const SimScript := preload("res://src/sim/sim.gd")
 const FLOOR_HEIGHT := 3.2
 const LANDMARK_HEIGHT := 555.0
+## 명소 모형의 기준 높이. 모양마다 이 값의 몇 할로 선다.
+const SIGHT_HEIGHT := 300.0
+## 그릴 줄 아는 명소의 모양
+const SIGHT_KINDS := ["tower", "taper", "egg", "blob", "wedge", "needle", "lattice", "arch", "frame", "dome", "palace", "pagoda", "rotunda",
+	"stadium", "fort", "clock", "leaning", "bridge", "pyramid", "spires", "temple", "obelisk", "fountain", "wheel"]
 ## 이 높이를 넘는 부분은 눌러 그린다. 높은 건물이 통로를 가리지 않게 하려는 것.
 const SOFT_LIMIT := 60.0
 const SOFT_RATIO := 0.45
@@ -81,6 +86,8 @@ const WINDOW := Color("8CCBF2")
 const WINDOWS: Array[Color] = [Color("8CCBF2"), Color("7FD6D8"), Color("9DB8F2"), Color("6FB3E8"), Color("A9D9F5")]
 const LIT := Color("FFE9A8")
 const STONE := Color("D8D2C4")
+const CORAL_TIP := Color("F0645A")
+const GRASS_PITCH := Color("7CC46A")
 ## 숲을 두른 돌 테두리의 색, 많이 맞은 숲의 풀빛, 많이 맞은 숲의 나무에 입히는 색
 const CURB := Color("F5EFE2")
 const AUTUMN := Color("E0B45C")
@@ -144,6 +151,12 @@ var _material: StandardMaterial3D
 var _outline: Array[PackedVector2Array] = []
 var _lawn: Array[PackedVector2Array] = []
 var _is_landmark: Array[bool] = []
+## 이 스테이지의 명소. design.json 의 sight {name, kind, color}
+var _sight := {}
+var _sight_cell := -1
+var _sight_at := Vector2.INF
+## 명소 모형의 꼭대기 (지도 좌표 x, 높이, 지도 좌표 y)
+var _sight_top := Vector3.INF
 var _plinths: Array[MeshInstance3D] = []
 var _kind: Array[String] = []
 ## 지역 테마. 지붕 모양의 비율, 꽃나무의 비율, 부수지 않는 시설의 색
@@ -230,6 +243,19 @@ func build(stage: StageData, river_width: float, near_bank_y: float, design: Dic
 	for c in stage.cells:
 		boxes.append(_bounds(c["points"]))
 	_boxes = boxes
+	# 명소: 지도에 자리가 있으면 그 자리에, 없으면 목표 건물이 명소다
+	_sight = design.get("sight", {})
+	_sight_cell = -1
+	_sight_at = Vector2.INF
+	_sight_top = Vector3.INF
+	if not _sight.is_empty():
+		if not stage.sight.is_empty():
+			_sight_at = stage.sight["at"]
+			_sight_cell = _cell_at(stage, boxes, _sight_at)
+		else:
+			for i in stage.cells.size():
+				if stage.cells[i]["landmark"]:
+					_sight_cell = i
 	_build_roads(stage)
 	var real := _assign_buildings(stage, boxes)
 	object_count = 0
@@ -278,6 +304,14 @@ func build(stage: StageData, river_width: float, near_bank_y: float, design: Dic
 		tops.position.y = _body_height(ci, tier)
 		_tops.append(tops)
 		_badges.append(_add_badge(ci, tops, start_hp))
+	if not _sight.is_empty():
+		if _sight_cell < 0 and _sight_at != Vector2.INF:
+			# 길이나 물 위에 선 명소(다리 등). 판정과 무관한 구조물이다.
+			var deco := _begin()
+			_sight_top = Vector3(_sight_at.x, _add_sight(deco, _sight_at, 46.0), _sight_at.y)
+			_add_mesh(deco, true)
+		if _sight_top != Vector3.INF:
+			_add_sight_label(_tops[_sight_cell] if _sight_cell >= 0 else self)
 	_add_props(stage)
 	_build_lake_decor(stage)
 
@@ -879,7 +913,13 @@ func _furnish(st: SurfaceTool, ci: int, cell: Dictionary, lawn: PackedVector2Arr
 				if b["landmark"] and (tower.is_empty() or b["area"] > tower["area"]):
 					tower = b
 			_add_prism(st, outline, 0.0, 2.5, LANDMARK_LOT, GOLD_WALL, 0.0)
-			if not tower.is_empty():
+			if ci == _sight_cell:
+				# 목표가 명소면 그 명소의 모양으로 세운다
+				var spot: Vector2 = _sight_at if _sight_at != Vector2.INF and Geometry2D.is_point_in_polygon(_sight_at, outline) else (tower["center"] if not tower.is_empty() else _center(outline))
+				var peak := _add_sight(st, spot, clampf(sqrt(area) * 0.36, 30.0, 52.0))
+				_sight_top = Vector3(spot.x, peak, spot.y)
+				_label_at[ci] = Vector3(spot.x, peak + 170.0, spot.y)
+			elif not tower.is_empty():
 				var top := display_height(tower["levels"], true)
 				_add_bands(st, tower["points"], 2.5, top, 18, GLASS_FRAME, GLASS_DEEP, GOLD, 0.36)
 				_label_at[ci] = Vector3(tower["center"].x, top + 66.0, tower["center"].y)
@@ -898,6 +938,11 @@ func _furnish(st: SurfaceTool, ci: int, cell: Dictionary, lawn: PackedVector2Arr
 			var tile: Color = _heritage["roof"]
 			var eave := _inset(outline, 1.0)
 			_add_prism(st, eave, 0.0, 3.0, tile.lightened(0.12), tile.darkened(0.18), 0.0)
+			if ci == _sight_cell:
+				# 부서지지 않는 명소. 기와지붕 대신 그 명소의 모양을 세운다.
+				_sight_top = Vector3(_sight_at.x, _add_sight(st, _sight_at, clampf(sqrt(area) * 0.36, 30.0, 52.0), 3.0), _sight_at.y)
+				object_count += 1
+				return
 			var ring := eave
 			var top := 3.0
 			var step := clampf(sqrt(area) * 0.12, 6.0, 14.0)
@@ -1396,6 +1441,218 @@ func _move_cars(delta: float) -> void:
 
 
 ## 둥근 단면을 쌓아 올린 모양. profile의 각 점은 (반지름, 높이)다. 구간마다 colors를 차례로 쓴다.
+## 명소의 이름표. 모형 위에 늘 화면을 보고 뜬다.
+func _add_sight_label(parent: Node3D) -> void:
+	var label := Label3D.new()
+	label.text = String(_sight.get("name", ""))
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.no_depth_test = true
+	label.render_priority = 4
+	label.shaded = false
+	label.font = _badge_font()
+	label.font_size = 64
+	label.pixel_size = 0.72
+	label.outline_size = 26
+	label.modulate = Color.WHITE
+	label.outline_modulate = Color("14213D")
+	label.position = _at(Vector2(_sight_top.x, _sight_top.z), _sight_top.y + 76.0)
+	parent.add_child(label)
+
+
+## 명소의 모형을 세우고 꼭대기 높이를 돌려준다. r 은 바닥의 반지름, base 는 바닥의 높이다.
+## 모양은 design.json 의 sight.kind 로 고른다. 실제 건물을 본뜬 것이 아니라 그 종류의 건물을 단순하게 그린 것이다.
+func _add_sight(st: SurfaceTool, at: Vector2, r: float, base: float = 2.5) -> float:
+	var kind := String(_sight.get("kind", "tower"))
+	var c := Color(String(_sight.get("color", "DCEEFB")))
+	var d := c.darkened(0.2)
+	var l := c.lightened(0.25)
+	var x := Vector2.RIGHT
+	var y := Vector2.UP
+	var hh := SIGHT_HEIGHT
+	var b := base
+	# 위에서 내려다보는 화면에서는 가는 모양이 실처럼 보인다. 실제 비례보다 두 배쯤 통통하게 그린다.
+	r *= 2.0
+	match kind:
+		"needle":
+			# 가는 기둥 위에 전망대와 안테나
+			_add_lathe(st, at, [Vector2(r * 0.5, b), Vector2(r * 0.34, b + hh * 0.08), Vector2(r * 0.17, b + hh * 0.14), Vector2(r * 0.14, b + hh * 0.66),
+				Vector2(r * 0.42, b + hh * 0.7), Vector2(r * 0.46, b + hh * 0.78), Vector2(r * 0.26, b + hh * 0.84), Vector2(r * 0.08, b + hh * 0.86),
+				Vector2(r * 0.05, b + hh * 1.12), Vector2(0, b + hh * 1.16)], 12, [d, c, c, l, GLASS_DEEP, d, c, CORAL_TIP, CORAL_TIP])
+			return b + hh * 1.16
+		"lattice":
+			# 네 다리가 벌어진 철탑
+			_add_lathe(st, at, [Vector2(r * 1.05, b), Vector2(r * 0.56, b + hh * 0.24), Vector2(r * 0.62, b + hh * 0.25), Vector2(r * 0.62, b + hh * 0.29),
+				Vector2(r * 0.3, b + hh * 0.52), Vector2(r * 0.36, b + hh * 0.53), Vector2(r * 0.36, b + hh * 0.56), Vector2(r * 0.1, b + hh * 0.98),
+				Vector2(r * 0.14, b + hh * 0.99), Vector2(r * 0.14, b + hh * 1.03), Vector2(0, b + hh * 1.2)], 4, [c, d, l, c, d, l, c, d, l, c])
+			return b + hh * 1.2
+		"taper":
+			# 위로 갈수록 가늘어지는 마천루
+			_add_lathe(st, at, [Vector2(r * 0.62, b), Vector2(r * 0.56, b + hh * 0.45), Vector2(r * 0.4, b + hh * 0.85), Vector2(r * 0.16, b + hh * 1.05),
+				Vector2(r * 0.04, b + hh * 1.1), Vector2(0, b + hh * 1.32)], 4, [GLASS_DEEP, c, GLASS_DEEP, l, d])
+			return b + hh * 1.32
+		"egg":
+			# 둥글게 부푼 유리 건물
+			_add_lathe(st, at, [Vector2(r * 0.42, b), Vector2(r * 0.58, b + hh * 0.3), Vector2(r * 0.56, b + hh * 0.55), Vector2(r * 0.4, b + hh * 0.78),
+				Vector2(r * 0.16, b + hh * 0.92), Vector2(0, b + hh * 0.96)], 10, [c, GLASS_DEEP, c, GLASS_DEEP, l])
+			return b + hh * 0.96
+		"blob":
+			# 낮고 둥근 지붕
+			_add_lathe(st, at, [Vector2(r * 1.0, b), Vector2(r * 1.08, b + hh * 0.07), Vector2(r * 0.9, b + hh * 0.15), Vector2(r * 0.5, b + hh * 0.2), Vector2(0, b + hh * 0.22)], 14, [d, c, l, l])
+			return b + hh * 0.22
+		"arch", "frame":
+			# 두 기둥과 그 위의 보. frame 은 훨씬 높고 가늘다.
+			var tall := hh * (1.05 if kind == "frame" else 0.5)
+			var pier := r * (0.16 if kind == "frame" else 0.3)
+			for sx: float in [-1.0, 1.0]:
+				_add_box(st, at + x * sx * (r - pier), x, y, pier, r * 0.42, b, b + tall, l, c if sx < 0.0 else d, 0.0)
+			_add_box(st, at, x, y, r, r * 0.42, b + tall, b + tall + hh * (0.08 if kind == "frame" else 0.16), l, c, 0.0)
+			return b + tall + hh * (0.08 if kind == "frame" else 0.16)
+		"dome":
+			# 넓은 몸통 위의 북통과 둥근 지붕
+			_add_box(st, at, x, y, r, r * 0.72, b, b + hh * 0.2, l, c, 0.0)
+			_add_lathe(st, at, [Vector2(r * 0.5, b + hh * 0.2), Vector2(r * 0.5, b + hh * 0.32), Vector2(r * 0.54, b + hh * 0.33), Vector2(r * 0.48, b + hh * 0.43),
+				Vector2(r * 0.34, b + hh * 0.51), Vector2(r * 0.14, b + hh * 0.56), Vector2(r * 0.05, b + hh * 0.57), Vector2(r * 0.04, b + hh * 0.66), Vector2(0, b + hh * 0.68)],
+				12, [c, l, d, d, d, d, GOLD, GOLD])
+			return b + hh * 0.68
+		"palace":
+			# 돌 기단 위의 붉은 전각과 두 겹의 기와지붕. 넓은 면이 화면을 본다.
+			var tile := Color("7E97A6")
+			_add_box(st, at, x, y, r * 1.05, r * 0.66, b, b + hh * 0.06, STONE, STONE.darkened(0.12), 0.0)
+			_add_box(st, at, x, y, r * 0.82, r * 0.46, b + hh * 0.06, b + hh * 0.26, c.lightened(0.1), c, 0.0)
+			# 처마: 벽보다 넓게 나온 얇은 판과 그 위의 지붕
+			_add_box(st, at, x, y, r * 1.02, r * 0.62, b + hh * 0.26, b + hh * 0.285, tile.lightened(0.25), GOLD, 0.0)
+			_add_box(st, at, x, y, r * 0.9, r * 0.52, b + hh * 0.285, b + hh * 0.3, tile, tile.darkened(0.1), hh * 0.07)
+			_add_box(st, at, x, y, r * 0.5, r * 0.28, b + hh * 0.3, b + hh * 0.44, c.lightened(0.1), c, 0.0)
+			_add_box(st, at, x, y, r * 0.7, r * 0.42, b + hh * 0.44, b + hh * 0.465, tile.lightened(0.25), GOLD, 0.0)
+			_add_box(st, at, x, y, r * 0.6, r * 0.34, b + hh * 0.465, b + hh * 0.48, tile, tile.darkened(0.1), hh * 0.09)
+			return b + hh * 0.57
+		"pagoda", "rotunda":
+			# 층층이 처마가 나온 동아시아 건물. palace 는 넓고 낮게, pagoda 는 좁고 높게, rotunda 는 둥글게.
+			var tiers := 3 if kind == "rotunda" else 5
+			var sides := 16 if kind == "rotunda" else 4
+			var wide := r * 0.72
+			var step := hh * 0.15
+			var roof_c := Color("5F7480") if kind != "rotunda" else c
+			var wall_c := c if kind != "rotunda" else Color("B5483A")
+			var prof: Array = [Vector2(wide * 1.05, b), Vector2(wide * 1.05, b + hh * 0.05)]
+			var cols: Array = [STONE]
+			var top := b + hh * 0.05
+			for k in tiers:
+				var w := wide * (1.0 - 0.62 * k / tiers)
+				prof.append(Vector2(w * 0.72, top))
+				cols.append(STONE)
+				prof.append(Vector2(w * 0.72, top + step * 0.55))
+				cols.append(wall_c)
+				prof.append(Vector2(w * 1.02, top + step * 0.6))
+				cols.append(roof_c.darkened(0.15))
+				prof.append(Vector2(w * 0.5, top + step))
+				cols.append(roof_c)
+				top += step
+			prof.append(Vector2(0, top + hh * 0.07))
+			cols.append(GOLD)
+			_add_lathe(st, at, prof, sides, cols)
+			return top + hh * 0.07
+		"stadium":
+			# 가운데가 낮고 둘레가 높은 그릇
+			_add_lathe(st, at, [Vector2(0, b + hh * 0.03), Vector2(r * 0.55, b + hh * 0.03), Vector2(r * 1.05, b + hh * 0.2), Vector2(r * 1.15, b + hh * 0.2), Vector2(r * 1.15, b)],
+				18, [GRASS_PITCH, l, d, c])
+			return b + hh * 0.2
+		"fort":
+			# 둥근 성채
+			_add_lathe(st, at, [Vector2(r * 1.0, b), Vector2(r * 1.0, b + hh * 0.2), Vector2(r * 1.06, b + hh * 0.2), Vector2(r * 1.06, b + hh * 0.25), Vector2(r * 0.6, b + hh * 0.25),
+				Vector2(r * 0.6, b + hh * 0.36), Vector2(r * 0.66, b + hh * 0.36), Vector2(r * 0.66, b + hh * 0.4), Vector2(0, b + hh * 0.4)], 14, [c, d, l, l, c, d, l, l])
+			return b + hh * 0.4
+		"clock", "leaning":
+			# 네모난 탑 위에 시계 층과 뾰족지붕. leaning 은 둥근 탑이 한쪽으로 기운다.
+			if kind == "leaning":
+				var top := b
+				for k in 7:
+					var cen := at + x * (k * r * 0.07)
+					_add_lathe(st, cen, [Vector2(r * 0.4, top), Vector2(r * 0.4, top + hh * 0.1), Vector2(r * 0.44, top + hh * 0.1), Vector2(r * 0.44, top + hh * 0.115), Vector2(0, top + hh * 0.115)],
+						12, [c, d, l, l])
+					top += hh * 0.115
+				return top
+			_add_box(st, at, x, y, r * 0.36, r * 0.36, b, b + hh * 0.72, l, c, 0.0)
+			_add_box(st, at, x, y, r * 0.42, r * 0.42, b + hh * 0.72, b + hh * 0.86, l, Color("FFF6DC"), 0.0)
+			_add_box(st, at, x, y, r * 0.3, r * 0.3, b + hh * 0.86, b + hh * 0.9, d, d, hh * 0.24)
+			return b + hh * 1.14
+		"bridge":
+			# 두 탑과 그 사이의 다리
+			for sx: float in [-1.0, 1.0]:
+				_add_box(st, at + x * sx * r * 0.8, x, y, r * 0.2, r * 0.26, b, b + hh * 0.5, c, c if sx < 0.0 else d, hh * 0.12)
+			_add_box(st, at, x, y, r * 1.6, r * 0.2, b + hh * 0.08, b + hh * 0.12, l, d, 0.0)
+			_add_box(st, at, x, y, r * 0.8, r * 0.12, b + hh * 0.36, b + hh * 0.4, l, c, 0.0)
+			return b + hh * 0.62
+		"pyramid":
+			_add_box(st, at, x, y, r * 0.95, r * 0.95, b, b + 1.0, c, c, hh * 0.34)
+			return b + hh * 0.34
+		"spires":
+			# 몸통 위로 솟은 여러 개의 뾰족탑
+			_add_box(st, at, x, y, r * 0.9, r * 0.6, b, b + hh * 0.28, l, c, hh * 0.1)
+			var spots: Array = [Vector2(-0.55, -0.3), Vector2(0.55, -0.3), Vector2(-0.2, 0.3), Vector2(0.2, 0.3)]
+			for k in spots.size():
+				var tall := hh * (0.78 if k < 2 else 1.0)
+				_add_lathe(st, at + Vector2(spots[k].x, spots[k].y) * r, [Vector2(r * 0.2, b), Vector2(r * 0.17, b + tall * 0.62), Vector2(r * 0.08, b + tall * 0.9), Vector2(0, b + tall)], 8, [c, d, l])
+			return b + hh
+		"temple":
+			# 기둥이 늘어선 고전 양식 건물
+			_add_box(st, at, x, y, r * 1.05, r * 0.7, b, b + hh * 0.04, STONE, STONE.darkened(0.1), 0.0)
+			_add_box(st, at + y * r * 0.12, x, y, r * 0.86, r * 0.46, b + hh * 0.04, b + hh * 0.24, l, c, 0.0)
+			for k in 6:
+				_add_box(st, at + x * (-0.85 + 0.34 * k) * r - y * r * 0.48, x, y, r * 0.06, r * 0.06, b + hh * 0.04, b + hh * 0.24, l, l, 0.0)
+			_add_box(st, at, x, y, r * 1.0, r * 0.64, b + hh * 0.24, b + hh * 0.28, l, d, hh * 0.1)
+			return b + hh * 0.38
+		"obelisk":
+			_add_box(st, at, x, y, r * 0.5, r * 0.5, b, b + hh * 0.06, STONE, STONE.darkened(0.12), 0.0)
+			_add_lathe(st, at, [Vector2(r * 0.2, b + hh * 0.06), Vector2(r * 0.13, b + hh * 0.56), Vector2(r * 0.2, b + hh * 0.57), Vector2(r * 0.2, b + hh * 0.6), Vector2(0, b + hh * 0.72)], 4, [c, l, d, GOLD])
+			return b + hh * 0.72
+		"fountain":
+			_add_lathe(st, at, [Vector2(r * 1.0, b), Vector2(r * 1.0, b + hh * 0.04), Vector2(r * 0.88, b + hh * 0.04), Vector2(r * 0.88, b + hh * 0.025), Vector2(0, b + hh * 0.025)], 16, [c, l, d, WATER])
+			_add_box(st, at + y * r * 0.7, x, y, r * 0.8, r * 0.16, b, b + hh * 0.26, l, c, hh * 0.05)
+			_add_lathe(st, at, [Vector2(r * 0.2, b), Vector2(r * 0.1, b + hh * 0.12), Vector2(r * 0.3, b + hh * 0.13), Vector2(0, b + hh * 0.2)], 10, [c, l, WATER])
+			return b + hh * 0.31
+		"wheel":
+			# 서 있는 큰 바퀴. 화면을 보고 선다.
+			var cy := b + hh * 0.6
+			var ro := hh * 0.5
+			var ri := ro * 0.8
+			var n := 28
+			for k in n:
+				var a0 := TAU * k / n
+				var a1 := TAU * (k + 1) / n
+				var o0 := _at(at + x * cos(a0) * ro, cy + sin(a0) * ro)
+				var o1 := _at(at + x * cos(a1) * ro, cy + sin(a1) * ro)
+				var i0 := _at(at + x * cos(a0) * ri, cy + sin(a0) * ri)
+				var i1 := _at(at + x * cos(a1) * ri, cy + sin(a1) * ri)
+				st.set_color(c if k % 2 == 0 else CORAL_TIP)
+				for v: Vector3 in [o0, o1, i1, o0, i1, i0]:
+					st.add_vertex(v)
+				if k % 2 == 0:
+					# 바퀴살
+					var hub0 := _at(at + x * cos(a0 + 0.03) * 4.0, cy + sin(a0 + 0.03) * 4.0)
+					var hub1 := _at(at + x * cos(a0 - 0.03) * 4.0, cy + sin(a0 - 0.03) * 4.0)
+					var rim0 := _at(at + x * cos(a0 + 0.03) * ri, cy + sin(a0 + 0.03) * ri)
+					var rim1 := _at(at + x * cos(a0 - 0.03) * ri, cy + sin(a0 - 0.03) * ri)
+					st.set_color(d)
+					for v: Vector3 in [hub0, rim0, rim1, hub0, rim1, hub1]:
+						st.add_vertex(v)
+			for sx: float in [-1.0, 1.0]:
+				_add_box(st, at + x * sx * r * 0.5 + y * r * 0.2, x, y, r * 0.08, r * 0.08, b, cy, d, d, 0.0)
+			return cy + ro
+		"wedge":
+			# 세모난 땅에 선 건물
+			var tri := PackedVector2Array([at + x * r * 0.9 - y * r * 0.2, at - x * r * 0.7 + y * r * 0.5, at - x * r * 0.7 - y * r * 0.5])
+			_add_prism(st, tri, b, b + hh * 0.75, l, c, 0.0)
+			_add_prism(st, _inset(tri, -3.0), b + hh * 0.75, b + hh * 0.79, d, d, 0.0)
+			return b + hh * 0.79
+	# tower: 반듯한 고층 건물
+	_add_box(st, at, x, y, r * 0.55, r * 0.5, b, b + hh * 0.9, l, c, 0.0)
+	_add_box(st, at, x, y, r * 0.58, r * 0.53, b + hh * 0.3, b + hh * 0.33, GLASS_DEEP, GLASS_DEEP, 0.0)
+	_add_box(st, at, x, y, r * 0.58, r * 0.53, b + hh * 0.6, b + hh * 0.63, GLASS_DEEP, GLASS_DEEP, 0.0)
+	_add_box(st, at, x, y, r * 0.4, r * 0.36, b + hh * 0.9, b + hh * 0.97, d, d, 0.0)
+	return b + hh * 0.97
+
+
 func _add_lathe(st: SurfaceTool, center: Vector2, profile: Array, sides: int, colors: Array) -> void:
 	for i in profile.size() - 1:
 		var p0: Vector2 = profile[i]

@@ -2,6 +2,11 @@
   "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
   "_auto": true,
   "theme": "italy",
+  "sight": {
+    "name": "산타 마리아 인 트라스테베레",
+    "kind": "clock",
+    "color": "D9A05B"
+  },
   "base": "river",
   "grade_target": 4.6,
   "level": 0.613,

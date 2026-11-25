@@ -2,6 +2,11 @@
   "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
   "_auto": true,
   "theme": "amsterdam",
+  "sight": {
+    "name": "카레 극장",
+    "kind": "temple",
+    "color": "F2EFE6"
+  },
   "base": "river",
   "grade_target": 7.6,
   "level": 0.733,
@@ -99,8 +104,8 @@
   "walls": [
     {
       "around": [
-        665,
-        1874
+        952,
+        1032
       ],
       "gap_toward": [
         -1.0,

@@ -2,6 +2,11 @@
   "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
   "_auto": true,
   "theme": "italy",
+  "sight": {
+    "name": "피렌체 두오모",
+    "kind": "dome",
+    "color": "C0553C"
+  },
   "base": "river",
   "grade_target": 6.8,
   "level": 0.338,
@@ -123,8 +128,8 @@
   "walls": [
     {
       "around": [
-        844,
-        1506
+        747,
+        1602
       ],
       "gap_toward": [
         0.3,

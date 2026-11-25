@@ -2,6 +2,11 @@
   "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
   "_auto": true,
   "theme": "tokyo",
+  "sight": {
+    "name": "도쿄도청",
+    "kind": "tower",
+    "color": "B9B4AC"
+  },
   "base": "road",
   "grade_target": 5.2,
   "level": 0.454,

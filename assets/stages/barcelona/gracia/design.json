@@ -2,6 +2,11 @@
   "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
   "_auto": true,
   "theme": "barcelona",
+  "sight": {
+    "name": "카사 비센스",
+    "kind": "tower",
+    "color": "3DA66B"
+  },
   "base": "road",
   "grade_target": 6.2,
   "level": 0.878,
@@ -91,8 +96,8 @@
   "walls": [
     {
       "around": [
-        1210,
-        1860
+        278,
+        1400
       ],
       "gap_toward": [
         0.2,

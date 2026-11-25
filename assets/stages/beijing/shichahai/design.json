@@ -2,6 +2,11 @@
   "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
   "_auto": true,
   "theme": "hutong",
+  "sight": {
+    "name": "고루",
+    "kind": "palace",
+    "color": "B5483A"
+  },
   "base": "river",
   "grade_target": 4.5,
   "level": 0.282,
@@ -106,8 +111,8 @@
   "walls": [
     {
       "around": [
-        569,
-        1294
+        750,
+        1614
       ],
       "gap_toward": [
         0.3,

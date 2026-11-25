@@ -27,7 +27,7 @@ func _init() -> void:
 		_test_fever_chains_to_neighbors, _test_wall_blocks_but_gap_lets_through, _test_bolt_finishes_the_last_cells,
 		_test_pressure_builds_over_time, _test_narrow_item_hurts, _test_models_load, _test_save_data_ranks_scores, _test_stage_list_is_valid, _test_sim_is_deterministic, _test_jamsil_plays,
 		_test_secret_gesture_opens_dev_room, _test_settings_are_kept, _test_account_is_kept, _test_screens_build,
-		_test_start_gear, _test_progression_and_profile, _test_more_screens_build,
+		_test_start_gear, _test_progression_and_profile, _test_more_screens_build, _test_sight_shapes_build,
 	]:
 		t.call()
 	print("%d개 확인, 실패 %d개" % [_checks, _failures])
@@ -967,6 +967,21 @@ func _test_more_screens_build() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
+func _test_sight_shapes_build() -> void:
+	var s: StageData = StageDataScript.load_file(JAMSIL)
+	if s == null:
+		return
+	for kind: String in BoardViewScript.SIGHT_KINDS:
+		var view: BoardView = BoardViewScript.new()
+		view.build(s, 760.0, -690.0, {"sight": {"name": kind, "kind": kind, "color": "E8E2D4"}})
+		_check(view._sight_top != Vector3.INF and view._sight_top.y > 20.0, "명소 모양 %s 이 선다 (높이 %d)" % [kind, int(view._sight_top.y)])
+		view.free()
+	var plain: BoardView = BoardViewScript.new()
+	plain.build(s, 760.0, -690.0)
+	_check(plain._sight_top == Vector3.INF, "명소가 없는 판은 전처럼 그린다")
+	plain.free()
+
+
 ## 선처럼 삐져나온 가지의 수. 길이가 40 넘는 두 변이 3도 안쪽으로 접혀 있으면 가지로 본다.
 func _spikes(stage: StageData) -> int:
 	var n := 0
@@ -1000,6 +1015,18 @@ func _test_stage_list_is_valid() -> void:
 					goals += 1
 					_check(not c["solid"], "목표 건물은 부술 수 있다 (%s)" % s["id"])
 			_check(goals == 1 and stage.cells.size() >= 40, "스테이지에 목표 건물이 하나 있고 셀이 넉넉하다 (%s)" % s["id"])
+			# 명소: 스테이지마다 이름과 그릴 줄 아는 모양이 있고, 지도의 자리가 판정과 맞는다
+			var sight: Dictionary = BalanceScript.load_file(dir + "design.json").get("sight", {})
+			_check(String(sight.get("name", "")) != "" and BoardViewScript.SIGHT_KINDS.has(sight.get("kind", "")), "스테이지에 명소의 이름과 모양이 있다 (%s)" % s["id"])
+			if not stage.sight.is_empty():
+				var under := -1
+				for ci in stage.cells.size():
+					if Geometry2D.is_point_in_polygon(stage.sight["at"], stage.cells[ci]["points"]):
+						under = ci
+				if stage.sight["target"]:
+					_check(under >= 0 and stage.cells[under]["landmark"], "목표인 명소는 목표 셀 위에 있다 (%s)" % s["id"])
+				if stage.sight["solid"]:
+					_check(under >= 0 and stage.cells[under]["solid"] and not stage.cells[under]["landmark"], "부서지지 않는 명소는 보호 시설 셀 위에 있다 (%s)" % s["id"])
 			_check(_spikes(stage) == 0, "셀 옆으로 선처럼 삐져나온 가지가 없다 (%s: %d개)" % [s["id"], _spikes(stage)])
 	_check(ready >= 1, "플레이할 수 있는 스테이지가 하나 이상 있다")
 

@@ -2,6 +2,11 @@
   "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
   "_auto": true,
   "theme": "tokyo",
+  "sight": {
+    "name": "아키하바라 UDX",
+    "kind": "tower",
+    "color": "9FB4C8"
+  },
   "base": "river",
   "grade_target": 2.5,
   "level": 0.327,
@@ -122,8 +127,8 @@
   "walls": [
     {
       "around": [
-        299,
-        1153
+        793,
+        1406
       ],
       "gap_toward": [
         0.3,

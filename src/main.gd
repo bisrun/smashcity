@@ -145,6 +145,9 @@ func _ready() -> void:
 		if _stage.cells[i]["landmark"]:
 			_landmark = i
 	_setup_light()
+	if OS.has_environment("SMASHCITY_SIGHT"):
+		# 화면 확인용: 명소의 모양을 바꿔 띄운다
+		design["sight"] = {"name": OS.get_environment("SMASHCITY_SIGHT"), "kind": OS.get_environment("SMASHCITY_SIGHT"), "color": "E8E2D4"}
 	_board = BoardViewScript.new()
 	if OS.has_environment("SMASHCITY_BADGE"):
 		_board.badge_style = OS.get_environment("SMASHCITY_BADGE")  # 비교용: rim, plain, none

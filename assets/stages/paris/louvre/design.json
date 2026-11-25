@@ -2,6 +2,11 @@
   "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
   "_auto": true,
   "theme": "paris",
+  "sight": {
+    "name": "루브르 피라미드",
+    "kind": "pyramid",
+    "color": "BFE6F2"
+  },
   "base": "river",
   "grade_target": 5.0,
   "level": 0.145,

@@ -2,6 +2,11 @@
   "_comment": "스테이지의 수작업 기획. map.json 과 달리 손으로 고친다. 지금은 도구가 만든 초안이다.",
   "_auto": true,
   "theme": "london",
+  "sight": {
+    "name": "버킹엄 궁전",
+    "kind": "temple",
+    "color": "E6DCC4"
+  },
   "base": "river",
   "grade_target": 7.0,
   "level": 0.667,
