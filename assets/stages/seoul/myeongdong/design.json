@@ -9,20 +9,20 @@
   },
   "base": "road",
   "grade_target": 3.7,
-  "level": -0.066,
+  "level": 0.234,
   "balance": {
-    "ball_speed": 1000,
-    "paddle_width": 280,
-    "landmark_hp": 12,
+    "ball_speed": 1098,
+    "paddle_width": 257,
+    "landmark_hp": 17,
     "cell_hp_bonus": 0,
-    "drop_interval_start": 14.0,
-    "drop_interval_end": 6.0,
+    "drop_interval_start": 15.9,
+    "drop_interval_end": 7.2,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 3.0
+      "narrow": 3.7
     }
   },
   "items": [
@@ -107,5 +107,21 @@
       "from": "열기구 (상상)"
     }
   ],
-  "walls": []
+  "walls": [
+    {
+      "around": [
+        874,
+        710
+      ],
+      "gap_toward": [
+        0.3,
+        -1.0
+      ],
+      "gap_width": 181,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
 }

@@ -9,20 +9,20 @@
   },
   "base": "river",
   "grade_target": 5.9,
-  "level": 0.244,
+  "level": 0.564,
   "balance": {
-    "ball_speed": 1102,
-    "paddle_width": 256,
-    "landmark_hp": 17,
-    "cell_hp_bonus": 0,
-    "drop_interval_start": 16.0,
-    "drop_interval_end": 7.2,
+    "ball_speed": 1237,
+    "paddle_width": 224,
+    "landmark_hp": 24,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 18.5,
+    "drop_interval_end": 8.8,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 3.7,
+      "narrow": 4.7,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -86,22 +86,6 @@
     },
     {
       "at": [
-        1137,
-        1628
-      ],
-      "type": "wide",
-      "from": "주차장 Parcheggio Parlamentari"
-    },
-    {
-      "at": [
-        650,
-        1797
-      ],
-      "type": "fire",
-      "from": "주유소 IP"
-    },
-    {
-      "at": [
         375,
         525
       ],
@@ -131,6 +115,22 @@
       ],
       "type": "multi",
       "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        774,
+        590
+      ],
+      "type": "wide",
+      "from": "임시 배치 (상상)"
+    },
+    {
+      "at": [
+        721,
+        1551
+      ],
+      "type": "wide",
+      "from": "임시 배치 (상상)"
     }
   ],
   "walls": [
@@ -140,10 +140,10 @@
         1281
       ],
       "gap_toward": [
-        0.3,
-        -1.0
+        1.0,
+        -0.2
       ],
-      "gap_width": 180,
+      "gap_width": 155,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

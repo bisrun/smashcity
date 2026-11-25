@@ -9,20 +9,20 @@
   },
   "base": "river",
   "grade_target": 6.8,
-  "level": 0.338,
+  "level": 0.658,
   "balance": {
-    "ball_speed": 1142,
-    "paddle_width": 246,
-    "landmark_hp": 19,
-    "cell_hp_bonus": 0,
-    "drop_interval_start": 16.7,
-    "drop_interval_end": 7.7,
+    "ball_speed": 1276,
+    "paddle_width": 214,
+    "landmark_hp": 26,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 19.3,
+    "drop_interval_end": 9.3,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.0,
+      "narrow": 5.0,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -78,22 +78,6 @@
     },
     {
       "at": [
-        1270,
-        1213
-      ],
-      "type": "wreck",
-      "from": "은행 BNL"
-    },
-    {
-      "at": [
-        1112,
-        1265
-      ],
-      "type": "wide",
-      "from": "주차장 Garage del Bargello"
-    },
-    {
-      "at": [
         359,
         646
       ],
@@ -115,14 +99,6 @@
       ],
       "type": "multi",
       "from": "열기구 (상상)"
-    },
-    {
-      "at": [
-        1050,
-        2273
-      ],
-      "type": "multi",
-      "from": "열기구 (상상)"
     }
   ],
   "walls": [
@@ -132,10 +108,10 @@
         1506
       ],
       "gap_toward": [
-        0.3,
-        -1.0
+        1.0,
+        -0.2
       ],
-      "gap_width": 173,
+      "gap_width": 147,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

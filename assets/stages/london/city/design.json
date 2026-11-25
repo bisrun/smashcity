@@ -9,20 +9,20 @@
   },
   "base": "river",
   "grade_target": 6.1,
-  "level": 0.781,
+  "level": 0.681,
   "balance": {
-    "ball_speed": 1328,
-    "paddle_width": 202,
-    "landmark_hp": 29,
+    "ball_speed": 1286,
+    "paddle_width": 212,
+    "landmark_hp": 27,
     "cell_hp_bonus": 1,
-    "drop_interval_start": 20.2,
-    "drop_interval_end": 9.9,
+    "drop_interval_start": 19.4,
+    "drop_interval_end": 9.4,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 5.3,
+      "narrow": 5.0,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -70,6 +70,14 @@
     },
     {
       "at": [
+        923,
+        933
+      ],
+      "type": "wreck",
+      "from": "은행 Santander"
+    },
+    {
+      "at": [
         281,
         519
       ],
@@ -100,10 +108,10 @@
         1421
       ],
       "gap_toward": [
-        0.2,
-        1.0
+        -1.0,
+        -0.2
       ],
-      "gap_width": 138,
+      "gap_width": 146,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

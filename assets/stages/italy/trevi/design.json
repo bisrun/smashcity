@@ -9,20 +9,20 @@
   },
   "base": "road",
   "grade_target": 5.5,
-  "level": 0.387,
+  "level": 0.64,
   "balance": {
-    "ball_speed": 1163,
-    "paddle_width": 241,
-    "landmark_hp": 21,
-    "cell_hp_bonus": 0,
-    "drop_interval_start": 17.1,
-    "drop_interval_end": 7.9,
+    "ball_speed": 1269,
+    "paddle_width": 216,
+    "landmark_hp": 26,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 19.1,
+    "drop_interval_end": 9.2,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.2,
+      "narrow": 4.9,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -78,22 +78,6 @@
     },
     {
       "at": [
-        249,
-        633
-      ],
-      "type": "life",
-      "from": "약국 Farmacia"
-    },
-    {
-      "at": [
-        331,
-        641
-      ],
-      "type": "wreck",
-      "from": "은행 Monte dei Paschi di Siena"
-    },
-    {
-      "at": [
         389,
         678
       ],
@@ -112,14 +96,6 @@
       "at": [
         458,
         1723
-      ],
-      "type": "multi",
-      "from": "열기구 (상상)"
-    },
-    {
-      "at": [
-        1137,
-        2185
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -148,10 +124,10 @@
         1410
       ],
       "gap_toward": [
-        0.3,
-        -1.0
+        -1.0,
+        -0.2
       ],
-      "gap_width": 169,
+      "gap_width": 149,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

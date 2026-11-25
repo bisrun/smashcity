@@ -9,20 +9,20 @@
   },
   "base": "river",
   "grade_target": 5.5,
-  "level": 0.733,
+  "level": 0.846,
   "balance": {
-    "ball_speed": 1308,
-    "paddle_width": 207,
-    "landmark_hp": 28,
+    "ball_speed": 1355,
+    "paddle_width": 195,
+    "landmark_hp": 31,
     "cell_hp_bonus": 1,
-    "drop_interval_start": 19.9,
-    "drop_interval_end": 9.7,
+    "drop_interval_start": 20.8,
+    "drop_interval_end": 10.2,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 5.2,
+      "narrow": 5.5,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -70,14 +70,6 @@
     },
     {
       "at": [
-        484,
-        1355
-      ],
-      "type": "shield",
-      "from": "경찰서 Police judiciaire - Brigade criminelle - Brigade des stupéfiants"
-    },
-    {
-      "at": [
         446,
         686
       ],
@@ -108,10 +100,10 @@
         1082
       ],
       "gap_toward": [
-        -1.0,
-        -0.2
+        0.2,
+        1.0
       ],
-      "gap_width": 141,
+      "gap_width": 132,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

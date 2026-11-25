@@ -9,20 +9,20 @@
   },
   "base": "river",
   "grade_target": 4.3,
-  "level": 0.474,
+  "level": 0.554,
   "balance": {
-    "ball_speed": 1199,
-    "paddle_width": 233,
-    "landmark_hp": 22,
+    "ball_speed": 1233,
+    "paddle_width": 225,
+    "landmark_hp": 24,
     "cell_hp_bonus": 1,
-    "drop_interval_start": 17.8,
-    "drop_interval_end": 8.4,
+    "drop_interval_start": 18.4,
+    "drop_interval_end": 8.8,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.4,
+      "narrow": 4.7,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -127,7 +127,7 @@
         -1.0,
         -0.2
       ],
-      "gap_width": 162,
+      "gap_width": 156,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

@@ -9,20 +9,20 @@
   },
   "base": "river",
   "grade_target": 4.0,
-  "level": 0.333,
+  "level": 0.44,
   "balance": {
-    "ball_speed": 1140,
-    "paddle_width": 247,
-    "landmark_hp": 19,
+    "ball_speed": 1185,
+    "paddle_width": 236,
+    "landmark_hp": 22,
     "cell_hp_bonus": 0,
-    "drop_interval_start": 16.7,
-    "drop_interval_end": 7.7,
+    "drop_interval_start": 17.5,
+    "drop_interval_end": 8.2,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.0,
+      "narrow": 4.3,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -86,14 +86,6 @@
     },
     {
       "at": [
-        536,
-        691
-      ],
-      "type": "shield",
-      "from": "경찰서 Hoofdbureau van Politie"
-    },
-    {
-      "at": [
         380,
         609
       ],
@@ -135,7 +127,7 @@
         0.3,
         -1.0
       ],
-      "gap_width": 173,
+      "gap_width": 165,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

@@ -9,20 +9,20 @@
   },
   "base": "river",
   "grade_target": 7.4,
-  "level": 0.864,
+  "level": 1.224,
   "balance": {
-    "ball_speed": 1363,
-    "paddle_width": 194,
-    "landmark_hp": 31,
+    "ball_speed": 1514,
+    "paddle_width": 158,
+    "landmark_hp": 39,
     "cell_hp_bonus": 2,
-    "drop_interval_start": 20.9,
-    "drop_interval_end": 10.3,
+    "drop_interval_start": 23.8,
+    "drop_interval_end": 12.1,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 5.6,
+      "narrow": 6.7,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -62,14 +62,6 @@
     },
     {
       "at": [
-        507,
-        776
-      ],
-      "type": "wreck",
-      "from": "은행 Lloyds Bank"
-    },
-    {
-      "at": [
         408,
         639
       ],
@@ -80,14 +72,6 @@
       "at": [
         1082,
         1139
-      ],
-      "type": "multi",
-      "from": "열기구 (상상)"
-    },
-    {
-      "at": [
-        390,
-        1704
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -103,7 +87,7 @@
         0.2,
         1.0
       ],
-      "gap_width": 131,
+      "gap_width": 120,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

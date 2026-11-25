@@ -9,20 +9,20 @@
   },
   "base": "river",
   "grade_target": 5.0,
-  "level": 0.145,
+  "level": 0.605,
   "balance": {
-    "ball_speed": 1061,
-    "paddle_width": 266,
-    "landmark_hp": 15,
-    "cell_hp_bonus": 0,
-    "drop_interval_start": 15.2,
-    "drop_interval_end": 6.7,
+    "ball_speed": 1254,
+    "paddle_width": 220,
+    "landmark_hp": 25,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 18.8,
+    "drop_interval_end": 9.0,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 3.4,
+      "narrow": 4.8,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -78,30 +78,6 @@
     },
     {
       "at": [
-        404,
-        387
-      ],
-      "type": "wide",
-      "from": "주차장 Saint-Germain des Prés"
-    },
-    {
-      "at": [
-        1289,
-        523
-      ],
-      "type": "shield",
-      "from": "경찰서 Police judiciaire - Brigade criminelle - Brigade des stupéfiants"
-    },
-    {
-      "at": [
-        1132,
-        1159
-      ],
-      "type": "fire",
-      "from": "주유소 Oil France"
-    },
-    {
-      "at": [
         379,
         702
       ],
@@ -123,15 +99,23 @@
       ],
       "type": "multi",
       "from": "열기구 (상상)"
-    },
-    {
-      "at": [
-        1078,
-        2250
-      ],
-      "type": "multi",
-      "from": "열기구 (상상)"
     }
   ],
-  "walls": []
+  "walls": [
+    {
+      "around": [
+        678,
+        1171
+      ],
+      "gap_toward": [
+        1.0,
+        -0.2
+      ],
+      "gap_width": 152,
+      "offset": 10,
+      "thickness": 12,
+      "radius": 240,
+      "_note": "목표를 두른 깨지지 않는 벽"
+    }
+  ]
 }

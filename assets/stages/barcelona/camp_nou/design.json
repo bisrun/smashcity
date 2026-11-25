@@ -9,20 +9,20 @@
   },
   "base": "road",
   "grade_target": 7.5,
-  "level": 1.056,
+  "level": 0.87,
   "balance": {
-    "ball_speed": 1444,
-    "paddle_width": 174,
-    "landmark_hp": 35,
+    "ball_speed": 1365,
+    "paddle_width": 193,
+    "landmark_hp": 31,
     "cell_hp_bonus": 2,
-    "drop_interval_start": 22.4,
-    "drop_interval_end": 11.3,
+    "drop_interval_start": 21.0,
+    "drop_interval_end": 10.3,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 6.2,
+      "narrow": 5.6,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -62,6 +62,14 @@
     },
     {
       "at": [
+        493,
+        661
+      ],
+      "type": "life",
+      "from": "약국 Farmàcia Rodas"
+    },
+    {
+      "at": [
         399,
         687
       ],
@@ -72,6 +80,14 @@
       "at": [
         1149,
         1178
+      ],
+      "type": "multi",
+      "from": "열기구 (상상)"
+    },
+    {
+      "at": [
+        413,
+        1713
       ],
       "type": "multi",
       "from": "열기구 (상상)"
@@ -87,7 +103,7 @@
         0.2,
         1.0
       ],
-      "gap_width": 120,
+      "gap_width": 130,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

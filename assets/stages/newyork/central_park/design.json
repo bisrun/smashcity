@@ -9,20 +9,20 @@
   },
   "base": "river",
   "grade_target": 8.7,
-  "level": 0.682,
+  "level": 1.122,
   "balance": {
-    "ball_speed": 1286,
-    "paddle_width": 212,
-    "landmark_hp": 27,
-    "cell_hp_bonus": 1,
-    "drop_interval_start": 19.5,
-    "drop_interval_end": 9.4,
+    "ball_speed": 1471,
+    "paddle_width": 168,
+    "landmark_hp": 37,
+    "cell_hp_bonus": 2,
+    "drop_interval_start": 23.0,
+    "drop_interval_end": 11.6,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 5.0,
+      "narrow": 6.4,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -62,22 +62,6 @@
     },
     {
       "at": [
-        440,
-        723
-      ],
-      "type": "life",
-      "from": "약국 Duane Reade"
-    },
-    {
-      "at": [
-        498,
-        724
-      ],
-      "type": "wide",
-      "from": "주차장"
-    },
-    {
-      "at": [
         383,
         702
       ],
@@ -91,14 +75,6 @@
       ],
       "type": "multi",
       "from": "열기구 (상상)"
-    },
-    {
-      "at": [
-        311,
-        1693
-      ],
-      "type": "multi",
-      "from": "열기구 (상상)"
     }
   ],
   "walls": [
@@ -108,10 +84,10 @@
         1209
       ],
       "gap_toward": [
-        1.0,
-        -0.2
+        0.2,
+        1.0
       ],
-      "gap_width": 145,
+      "gap_width": 120,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

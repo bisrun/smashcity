@@ -9,20 +9,20 @@
   },
   "base": "road",
   "grade_target": 5.6,
-  "level": 0.41,
+  "level": 0.723,
   "balance": {
-    "ball_speed": 1172,
-    "paddle_width": 239,
-    "landmark_hp": 21,
-    "cell_hp_bonus": 0,
-    "drop_interval_start": 17.3,
-    "drop_interval_end": 8.1,
+    "ball_speed": 1304,
+    "paddle_width": 208,
+    "landmark_hp": 28,
+    "cell_hp_bonus": 1,
+    "drop_interval_start": 19.8,
+    "drop_interval_end": 9.6,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.2,
+      "narrow": 5.2,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -78,22 +78,6 @@
     },
     {
       "at": [
-        1179,
-        1087
-      ],
-      "type": "wreck",
-      "from": "은행 Banca Popolare di Sondrio"
-    },
-    {
-      "at": [
-        1327,
-        1118
-      ],
-      "type": "wide",
-      "from": "주차장 Parking Labicana"
-    },
-    {
-      "at": [
         393,
         754
       ],
@@ -115,14 +99,6 @@
       ],
       "type": "multi",
       "from": "열기구 (상상)"
-    },
-    {
-      "at": [
-        1034,
-        2218
-      ],
-      "type": "multi",
-      "from": "열기구 (상상)"
     }
   ],
   "walls": [
@@ -132,10 +108,10 @@
         1245
       ],
       "gap_toward": [
-        0.3,
-        -1.0
+        -1.0,
+        -0.2
       ],
-      "gap_width": 167,
+      "gap_width": 142,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

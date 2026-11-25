@@ -9,20 +9,20 @@
   },
   "base": "river",
   "grade_target": 7.0,
-  "level": 0.667,
+  "level": 1.04,
   "balance": {
-    "ball_speed": 1280,
-    "paddle_width": 213,
-    "landmark_hp": 27,
-    "cell_hp_bonus": 1,
-    "drop_interval_start": 19.3,
-    "drop_interval_end": 9.3,
+    "ball_speed": 1437,
+    "paddle_width": 176,
+    "landmark_hp": 35,
+    "cell_hp_bonus": 2,
+    "drop_interval_start": 22.3,
+    "drop_interval_end": 11.2,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 5.0,
+      "narrow": 6.1,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -62,22 +62,6 @@
     },
     {
       "at": [
-        926,
-        484
-      ],
-      "type": "fire",
-      "from": "주유소 BP"
-    },
-    {
-      "at": [
-        1,
-        487
-      ],
-      "type": "fire",
-      "from": "주유소 Shell Victoria"
-    },
-    {
-      "at": [
         419,
         700
       ],
@@ -91,14 +75,6 @@
       ],
       "type": "multi",
       "from": "열기구 (상상)"
-    },
-    {
-      "at": [
-        542,
-        1476
-      ],
-      "type": "multi",
-      "from": "열기구 (상상)"
     }
   ],
   "walls": [
@@ -108,10 +84,10 @@
         1324
       ],
       "gap_toward": [
-        -1.0,
-        -0.2
+        0.2,
+        1.0
       ],
-      "gap_width": 147,
+      "gap_width": 120,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

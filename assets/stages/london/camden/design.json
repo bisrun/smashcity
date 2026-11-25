@@ -9,20 +9,20 @@
   },
   "base": "road",
   "grade_target": 3.4,
-  "level": 0.453,
+  "level": 0.339,
   "balance": {
-    "ball_speed": 1190,
-    "paddle_width": 235,
-    "landmark_hp": 22,
-    "cell_hp_bonus": 1,
-    "drop_interval_start": 17.6,
-    "drop_interval_end": 8.3,
+    "ball_speed": 1142,
+    "paddle_width": 246,
+    "landmark_hp": 19,
+    "cell_hp_bonus": 0,
+    "drop_interval_start": 16.7,
+    "drop_interval_end": 7.7,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 4.4,
+      "narrow": 4.0,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -116,10 +116,10 @@
         1485
       ],
       "gap_toward": [
-        -1.0,
-        -0.2
+        0.3,
+        -1.0
       ],
-      "gap_width": 164,
+      "gap_width": 173,
       "offset": 10,
       "thickness": 12,
       "radius": 240,
