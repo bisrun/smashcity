@@ -68,6 +68,26 @@ static func panel(color: Color, radius: int, pad: int) -> PanelContainer:
 	return p
 
 
+## 도톰한 단추.
+static func button(text: String, color: Color, size: int = 34, fg: Color = Color.WHITE) -> Button:
+	var b := Button.new()
+	b.text = text
+	b.focus_mode = Control.FOCUS_NONE
+	b.add_theme_font_size_override("font_size", size)
+	for state: String in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+		b.add_theme_color_override(state, fg)
+	for state: String in ["normal", "hover", "pressed", "disabled", "focus"]:
+		var sb := box(color.darkened(0.12) if state == "pressed" else color, 28)
+		sb.content_margin_left = 26
+		sb.content_margin_right = 26
+		sb.content_margin_top = 14
+		sb.content_margin_bottom = 14
+		sb.border_width_bottom = 0 if state == "pressed" else 6
+		sb.border_color = color.darkened(0.25)
+		b.add_theme_stylebox_override(state, sb)
+	return b
+
+
 ## 점수를 천 단위로 끊어 쓴다.
 static func number(n: int) -> String:
 	var s := str(absi(n))

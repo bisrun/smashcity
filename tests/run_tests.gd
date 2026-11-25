@@ -26,6 +26,7 @@ func _init() -> void:
 		_test_extra_balls_do_not_cost_a_life, _test_speed_grows_with_progress, _test_idle_ball_is_pulled_to_a_cell,
 		_test_fever_chains_to_neighbors, _test_wall_blocks_but_gap_lets_through, _test_bolt_finishes_the_last_cells,
 		_test_pressure_builds_over_time, _test_narrow_item_hurts, _test_models_load, _test_save_data_ranks_scores, _test_stage_list_is_valid, _test_sim_is_deterministic, _test_jamsil_plays,
+		_test_secret_gesture_opens_dev_room, _test_settings_are_kept, _test_account_is_kept, _test_screens_build,
 	]:
 		t.call()
 	print("%d개 확인, 실패 %d개" % [_checks, _failures])
@@ -646,6 +647,162 @@ func _test_save_data_ranks_scores() -> void:
 	_check(again.best("seoul/jamsil") == 3400 and again.top("seoul/jamsil", 5).size() == 2, "기록은 파일에 남아 다시 읽힌다")
 	_check(again.cleared.has("seoul/jamsil"), "클리어한 스테이지가 남는다")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+## 설정 화면에 숨긴 동작: 위쪽 띠를 왼쪽에서 오른쪽으로 끌고 오른쪽 위를 빠르게 열 번 두드린다.
+func _gesture_run(drag: bool, taps: int, gap: float, tap_at: Vector2) -> bool:
+	var g: SecretGesture = load("res://src/ui/secret_gesture.gd").new()
+	var size := Vector2(720, 1600)
+	var now := 10.0
+	if drag:
+		g.press(Vector2(60, 120))
+		g.release(Vector2(640, 140), size, now)
+	var opened := false
+	for i in taps:
+		now += gap
+		g.press(tap_at)
+		opened = g.release(tap_at, size, now) or opened
+	return opened
+
+
+func _test_secret_gesture_opens_dev_room() -> void:
+	var corner := Vector2(650, 100)
+	_check(_gesture_run(true, 10, 0.15, corner), "끌고 나서 오른쪽 위를 열 번 두드리면 열린다")
+	_check(not _gesture_run(true, 9, 0.15, corner), "아홉 번으로는 열리지 않는다")
+	_check(not _gesture_run(false, 10, 0.15, corner), "끌지 않고 두드리기만 하면 열리지 않는다")
+	_check(not _gesture_run(true, 10, 0.9, corner), "천천히 두드리면 열리지 않는다")
+	_check(not _gesture_run(true, 10, 0.15, Vector2(100, 100)), "왼쪽 위를 두드리면 열리지 않는다")
+	_check(not _gesture_run(true, 10, 0.15, Vector2(650, 900)), "화면 가운데를 두드리면 열리지 않는다")
+	# 오른쪽에서 왼쪽으로 끈 것은 치지 않는다
+	var g: SecretGesture = load("res://src/ui/secret_gesture.gd").new()
+	g.press(Vector2(640, 120))
+	g.release(Vector2(60, 120), Vector2(720, 1600), 1.0)
+	var opened := false
+	for i in 10:
+		g.press(corner)
+		opened = g.release(corner, Vector2(720, 1600), 1.2 + i * 0.1) or opened
+	_check(not opened, "반대로 끌면 열리지 않는다")
+
+
+func _test_settings_are_kept() -> void:
+	var Settings = load("res://src/meta/settings_data.gd")
+	var path := "user://test_settings.json"
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	var s: SettingsData = Settings.new(path)
+	_check(is_equal_approx(float(s.values["drag_gain"]), 1.25) and bool(s.values["shake"]), "처음에는 기본값이다")
+	s.put("shake", false)
+	s.put("drag_gain", 1.6)
+	var again: SettingsData = Settings.new(path)
+	_check(not bool(again.values["shake"]) and is_equal_approx(float(again.values["drag_gain"]), 1.6), "바꾼 설정은 파일에 남는다")
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	f.store_string('{"drag_gain": 99, "sound": "크게", "모르는것": 1}')
+	f.close()
+	var odd: SettingsData = Settings.new(path)
+	_check(is_equal_approx(float(odd.values["drag_gain"]), Settings.DRAG_GAIN_MAX), "범위를 벗어난 값은 범위 안으로 당긴다")
+	_check(is_equal_approx(float(odd.values["sound"]), 0.8) and not odd.values.has("모르는것"), "형이 다른 값과 모르는 항목은 버린다")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+func _test_account_is_kept() -> void:
+	var Save = load("res://src/meta/save_data.gd")
+	var path := "user://test_account.json"
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	var save: SaveData = Save.new(path)
+	_check(save.account == "", "처음에는 로그인 화면을 지나지 않은 상태다")
+	save.set_account("guest")
+	save.add_result("seoul/jamsil", 100, false, 10, "11.25 10:00")
+	var again: SaveData = Save.new(path)
+	_check(again.account == "guest" and again.best("seoul/jamsil") == 100, "게스트로 시작한 것과 기록이 함께 남는다")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+## 누를 수 있는 단추를 모은다.
+func _buttons(node: Node, out: Array) -> void:
+	if node is Button and not node.disabled:
+		out.append(node)
+	for c in node.get_children():
+		_buttons(c, out)
+
+
+func _test_screens_build() -> void:
+	var cities: Array = BalanceScript.load_file("res://assets/stages/stages.json")["cities"]
+	var cleared: Array[String] = []
+	var went: Array = []
+	var note := func(to: String, arg: String) -> void: went.append(to + ":" + arg)
+
+	var login: Control = load("res://src/ui/screens/login_screen.gd").new()
+	login.setup()
+	login.go.connect(note)
+	var found: Array = []
+	_buttons(login, found)
+	_check(found.size() == 2, "로그인 화면에 단추가 둘 있다")
+	for b: Button in found:
+		b.pressed.emit()
+	_check(went == ["login_done:guest", "login_done:guest"], "지금은 어느 단추를 눌러도 게스트로 지나간다")
+	login.free()
+
+	var menu: Control = load("res://src/ui/screens/menu_screen.gd").new()
+	menu.setup("서울 1/10 · 잠실", "GUEST")
+	went.clear()
+	menu.go.connect(note)
+	found = []
+	_buttons(menu, found)
+	for b: Button in found:
+		b.pressed.emit()
+	_check(went.has("play_next:") and went.has("regions:") and went.has("settings:"), "메인 메뉴에서 플레이, 지역 선택, 설정으로 갈 수 있다")
+	menu.free()
+
+	var regions: Control = load("res://src/ui/screens/regions_screen.gd").new()
+	regions.setup(cities, cleared)
+	went.clear()
+	regions.go.connect(note)
+	found = []
+	_buttons(regions, found)
+	_check(found.size() == 2, "처음에는 첫 지역만 열려 있다 (첫 지역과 BACK)")
+	found[0].pressed.emit()
+	_check(went == ["stage:" + String(cities[0]["stages"][0]["id"])], "지역을 고르면 그 지역의 첫 스테이지로 간다")
+	regions.free()
+	for s: Dictionary in cities[0]["stages"]:
+		cleared.append(String(s["id"]))
+	regions = load("res://src/ui/screens/regions_screen.gd").new()
+	regions.setup(cities, cleared)
+	found = []
+	_buttons(regions, found)
+	_check(found.size() == 3, "첫 지역을 다 깨면 둘째 지역이 열린다")
+	regions.free()
+
+	var path := "user://test_settings_screen.json"
+	var settings: SettingsData = load("res://src/meta/settings_data.gd").new(path)
+	var options: Control = load("res://src/ui/screens/settings_screen.gd").new()
+	options.setup(settings, "guest", "0.0.0")
+	found = []
+	_buttons(options, found)
+	var before := bool(settings.values["vibrate"])
+	for b: Button in found:
+		if b.text.begins_with("VIBRATION"):
+			b.pressed.emit()
+	_check(bool(settings.values["vibrate"]) != before, "설정 화면의 단추가 설정을 바꾼다")
+	options.free()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+	var dev: Control = load("res://src/ui/screens/dev_screen.gd").new()
+	dev.setup(cities, cleared, {})
+	went.clear()
+	dev.go.connect(note)
+	found = []
+	_buttons(dev, found)
+	var ready := 0
+	for city: Dictionary in cities:
+		for s: Dictionary in city["stages"]:
+			if bool(s["ready"]):
+				ready += 1
+	_check(found.size() == ready + 1, "개발자 창에 만들어진 스테이지가 모두 있다 (%d개)" % ready)
+	found[found.size() - 2].pressed.emit()
+	var last: Array = cities[cities.size() - 1]["stages"]
+	_check(went == ["dev_stage:" + String(last[last.size() - 1]["id"])], "스테이지를 누르면 그 스테이지로 들어간다")
+	dev.free()
 
 
 ## 선처럼 삐져나온 가지의 수. 길이가 40 넘는 두 변이 3도 안쪽으로 접혀 있으면 가지로 본다.

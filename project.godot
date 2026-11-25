@@ -9,6 +9,8 @@ config_version=5
 config/name="SmashCity"
 config/description="OSM 지도를 뼈대로 삼아 상상으로 꾸민 도시에서 하는 2.5D 벽돌깨기"
 run/main_scene="res://scenes/main.tscn"
+config/version="0.2.0"
+config/quit_on_go_back=false
 config/features=PackedStringArray("4.7", "Mobile")
 
 [display]

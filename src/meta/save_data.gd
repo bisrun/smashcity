@@ -13,6 +13,9 @@ var path := DEFAULT_PATH
 var scores := {}
 ## 클리어한 스테이지 ID들
 var cleared: Array[String] = []
+## 누구의 기록인가. "" 이면 아직 로그인 화면을 지나지 않았다. 지금은 "guest" 뿐이다.
+## TODO: 구글 계정(Google Play 게임 서비스) 연결. docs/17_account_save.md
+var account := ""
 
 
 func _init(p_path: String = DEFAULT_PATH) -> void:
@@ -23,6 +26,7 @@ func _init(p_path: String = DEFAULT_PATH) -> void:
 func load_file() -> void:
 	scores = {}
 	cleared = []
+	account = ""
 	if not FileAccess.file_exists(path):
 		return
 	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
@@ -32,6 +36,7 @@ func load_file() -> void:
 		scores[id] = parsed["scores"][id]
 	for id: String in parsed.get("cleared", []):
 		cleared.append(id)
+	account = String(parsed.get("account", ""))
 
 
 func save_file() -> void:
@@ -39,7 +44,12 @@ func save_file() -> void:
 	if f == null:
 		push_error("기록을 저장하지 못했다: %s" % path)
 		return
-	f.store_string(JSON.stringify({"scores": scores, "cleared": cleared}, "  "))
+	f.store_string(JSON.stringify({"scores": scores, "cleared": cleared, "account": account}, "  "))
+
+
+func set_account(kind: String) -> void:
+	account = kind
+	save_file()
 
 
 ## 한 판의 결과를 남기고 그 판의 순위(1부터)를 돌려준다. 남겨 두는 수 밖으로 밀려났으면 0.

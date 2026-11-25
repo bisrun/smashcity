@@ -14,6 +14,17 @@ const SaveDataScript := preload("res://src/meta/save_data.gd")
 const HudScript := preload("res://src/ui/hud.gd")
 const StageMapScript := preload("res://src/ui/stage_map.gd")
 const SfxScript := preload("res://src/audio/sfx.gd")
+const SessionScript := preload("res://src/ui/session.gd")
+const SettingsScript := preload("res://src/meta/settings_data.gd")
+const SCREENS := {
+	"login": preload("res://src/ui/screens/login_screen.gd"),
+	"menu": preload("res://src/ui/screens/menu_screen.gd"),
+	"regions": preload("res://src/ui/screens/regions_screen.gd"),
+	"settings": preload("res://src/ui/screens/settings_screen.gd"),
+	"dev": preload("res://src/ui/screens/dev_screen.gd"),
+}
+## 안드로이드의 뒤로 단추가 데려가는 곳. 없는 공간에서는 아무 일도 없다(플레이 중).
+const BACK_TO := {"settings": "menu", "regions": "menu", "map": "menu", "dev": "settings"}
 
 const STAGES_PATH := "res://assets/stages/stages.json"
 ## 카메라가 내려다보는 각도
@@ -28,7 +39,6 @@ const MAX_STEPS_PER_FRAME := 8
 const SHIP_MODEL := "watercraft/ship-ocean-liner"
 const SHIP_BEAM := 1.35
 const SHIP_HEIGHT := 0.8
-const DRAG_GAIN := 1.25
 ## 판이 끝난 뒤 스테이지 지도로 넘어가기까지의 시간 (초)
 ## 클리어하면 축하를 충분히 보여 준 뒤에 넘어간다. 게임 오버는 그보다 짧다.
 const CLEAR_PAUSE := 4.2
@@ -51,6 +61,11 @@ var _camera: Camera3D
 var _paddle: Node3D
 var _hud: Hud
 var _map: StageMapScreen
+## 스테이지 지도가 아닌 공간의 화면 (로그인, 메인 메뉴, 설정 등)
+var _screen: Control
+var _layer: CanvasLayer
+var _settings: SettingsData
+var _cities: Array = []
 var _sfx: Sfx
 var _ball_nodes := {}
 var _item_nodes := {}
@@ -98,6 +113,8 @@ func _ready() -> void:
 	# 스테이지마다 난이도 값이 다르다
 	_cfg = BalanceScript.merged(_cfg, design)
 	_save = SaveDataScript.new()
+	_settings = SettingsScript.new()
+	_apply_settings()
 	_river = float(_cfg["river_width"])
 	_sim = SimScript.new(_stage, _cfg, design)
 	_paddle_target = _sim.paddle_x
@@ -130,7 +147,9 @@ func _ready() -> void:
 func _pick_stage() -> void:
 	var data: Dictionary = BalanceScript.load_file(STAGES_PATH)
 	var done := SaveDataScript.new().cleared
-	var want := OS.get_environment("SMASHCITY_STAGE")  # 화면 확인용: 스테이지를 골라 띄운다
+	_cities = data["cities"]
+	# 고른 스테이지가 있으면 그것을 띄운다. 환경 변수는 화면 확인용이다.
+	var want := Session.stage if Session.stage != "" else OS.get_environment("SMASHCITY_STAGE")
 	_stage_index = -1
 	# 지역을 차례로 돌며 아직 못 깬 첫 스테이지를 찾는다. 다 깼으면 맨 처음으로 돌아간다.
 	for pass_ in 2:
@@ -184,8 +203,8 @@ func _process(delta: float) -> void:
 					for k in 4:
 						_board.show_debris(at + Vector2(cos(k * 1.6), sin(k * 1.6)) * 40.0, [Color("F6C53B"), Color("6FB3E8"), Color.WHITE, Color("F0645A")][k], true, 34)
 					_shake = maxf(_shake, 34.0)
-					Input.vibrate_handheld(260)
-				Input.vibrate_handheld(18)
+					_buzz(260)
+				_buzz(18)
 				# 연달아 부술수록 음이 올라간다
 				_pop_step = _pop_step + 1 if _since_pop < 1.2 else 0
 				_since_pop = 0.0
@@ -214,13 +233,13 @@ func _process(delta: float) -> void:
 			"item_caught":
 				_hud.say(ITEM_NAMES.get(e["type_of"], ""))
 				_sfx.play("bad" if e["type_of"] == "narrow" else "item")
-				Input.vibrate_handheld(30)
+				_buzz(30)
 				if e["type_of"] == "bolt":
 					# 번개: 화면 전체가 번쩍이고 어두워진 하늘 아래 건물이 차례로 무너진다
 					_hud.flash(Color("FFF7B0"), 0.6)
 					_hud.darken(float(_cfg["bolt_interval"]) * 14.0)
 					_shake = maxf(_shake, 30.0)
-					Input.vibrate_handheld(200)
+					_buzz(200)
 			"speed_up":
 				_hud.say("SPEED UP!")
 				_sfx.play("speed")
@@ -245,7 +264,7 @@ func _process(delta: float) -> void:
 				_hud.say("MISS!")
 				_sfx.play("miss")
 				_shake = maxf(_shake, 26.0)
-				Input.vibrate_handheld(120)
+				_buzz(120)
 			"cleared":
 				_sfx.play("clear")
 				_finish(true)
@@ -265,7 +284,7 @@ func _process(delta: float) -> void:
 			_sfx.play("pop", 4 + _fireworks % 5)
 	# 화면 흔들림
 	_shake = maxf(0.0, _shake - delta * 60.0)
-	_camera.position = _camera_home + Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0), 0.0) * _shake
+	_camera.position = _camera_home + Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0), 0.0) * (_shake if bool(_settings.values["shake"]) else 0.0)
 	_sync_paddle()
 	_sync_balls()
 	_sync_items()
@@ -281,10 +300,15 @@ func _finish(cleared: bool) -> void:
 	var now := Time.get_datetime_dict_from_system()
 	var at := "%02d.%02d %02d:%02d" % [now["month"], now["day"], now["hour"], now["minute"]]
 	var rank := 0
-	if not OS.has_environment("SMASHCITY_AUTOPLAY"):
+	# 개발자 창에서 들어간 판은 기록에 남기지 않는다
+	if not OS.has_environment("SMASHCITY_AUTOPLAY") and not Session.dev:
 		rank = _save.add_result(_stage_id, _sim.score, cleared, int(_sim.elapsed), at)
 	last_result = {"cleared": cleared, "score": _sim.score, "rank": rank, "stage": _stage_id}
 	_ending = CLEAR_PAUSE if cleared else OVER_PAUSE
+	# 다시 불린 장면이 보여 줄 곳. 고른 스테이지는 한 판으로 끝나고, 다음부터는 진행에 따라 고른다.
+	Session.screen = "dev" if Session.dev else "map"
+	if not Session.dev:
+		Session.stage = ""
 	_hud.celebrate("CLEAR!" if cleared else "GAME OVER", "%s점" % UiKit.number(_sim.score), cleared)
 	_fireworks = 6 if cleared else 0
 
@@ -292,9 +316,9 @@ func _finish(cleared: bool) -> void:
 func _start() -> void:
 	if _sfx != null:
 		_sfx.play("tap")
-	if _map != null:
-		_map.queue_free()
-		_map = null
+	_clear_screens()
+	Session.screen = "play"
+	_hud.visible = true
 	last_result = {}
 	_playing = true
 
@@ -304,7 +328,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _sim == null or not _playing:
 		return
 	var view_w := get_viewport().get_visible_rect().size.x
-	var per_pixel := _camera.size / view_w * DRAG_GAIN
+	var per_pixel := _camera.size / view_w * float(_settings.values["drag_gain"])
 	if event is InputEventScreenTouch or (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT):
 		if event.pressed:
 			_drag_from = event.position.x
@@ -462,10 +486,136 @@ func _setup_ui() -> void:
 	_hud = HudScript.new()
 	layer.add_child(_hud)
 	_hud.set_stage(_city_name, _stage_index + 1, _stage_list.size(), _stage_name)
+	_layer = layer
 	if OS.has_environment("SMASHCITY_AUTOPLAY"):
 		return
+	_show(_first_screen())
+
+
+## 장면이 뜨면 보여 줄 공간.
+func _first_screen() -> String:
+	if Session.screen != "":
+		return Session.screen
+	var want := OS.get_environment("SMASHCITY_SCREEN")  # 화면 확인용
+	if want != "":
+		return want
+	for hook: String in ["SMASHCITY_SHOT", "SMASHCITY_STAGE", "SMASHCITY_DEMO_CLEAR", "SMASHCITY_DEMO_RESULT"]:
+		if OS.has_environment(hook):
+			return "map"
+	# 처음 켠 사람에게만 로그인이 뜬다
+	return "login" if _save.account == "" else "menu"
+
+
+func _clear_screens() -> void:
+	if _map != null:
+		_map.queue_free()
+		_map = null
+	if _screen != null:
+		_screen.queue_free()
+		_screen = null
+
+
+## 공간을 연다. 뒤의 도시는 그대로 두고 화면만 바꾼다.
+func _show(which: String) -> void:
+	_clear_screens()
+	Session.screen = which
+	_hud.visible = which == "map" or which == "play"
+	if which == "play":
+		_start()
+		return
+	if which == "map":
+		_show_map()
+		return
+	_screen = SCREENS[which].new()
+	_layer.add_child(_screen)
+	match which:
+		"login":
+			_screen.setup()
+		"menu":
+			_screen.setup("%s %d/%d · %s" % [_city_name, _stage_index + 1, _stage_list.size(), _stage_name], "GUEST")
+		"regions":
+			_screen.setup(_cities, _save.cleared)
+		"settings":
+			_screen.setup(_settings, _save.account, String(ProjectSettings.get_setting("application/config/version", "")))
+			_screen.changed.connect(_apply_settings)
+		"dev":
+			_screen.setup(_cities, _save.cleared, _stage_info())
+	_screen.go.connect(_on_go)
+
+
+## 화면이 알려 온 일을 처리한다.
+func _on_go(to: String, arg: String) -> void:
+	if _sfx != null:
+		_sfx.play("tap")
+	match to:
+		"login_done":
+			_save.set_account(arg)
+			_show("menu")
+		"logout":
+			_save.set_account("")
+			_show("login")
+		"play_next":
+			# 고른 스테이지나 개발자 판이 떠 있으면 진행에 맞는 스테이지로 다시 부른다
+			if Session.stage != "" or Session.dev:
+				_enter("", "map", false)
+			else:
+				_show("map")
+		"stage":
+			_enter(arg, "map", false)
+		"dev_stage":
+			_enter(arg, "play", true)
+		_:
+			_show(to)
+
+
+## 스테이지를 골라 들어간다. 지금 떠 있는 스테이지면 화면만 바꾸고, 아니면 장면을 다시 부른다.
+func _enter(stage_id: String, which: String, dev: bool) -> void:
+	Session.dev = dev
+	Session.stage = stage_id
+	if stage_id == _stage_id:
+		_show(which)
+		return
+	Session.screen = which
+	get_tree().reload_current_scene()
+
+
+## 개발자 창에 보여 줄 스테이지별 정보.
+func _stage_info() -> Dictionary:
+	var info := {}
+	for city: Dictionary in _cities:
+		for s: Dictionary in city["stages"]:
+			if not bool(s["ready"]):
+				continue
+			var design: Dictionary = BalanceScript.load_file("res://assets/stages/%s/design.json" % s["id"])
+			info[String(s["id"])] = {"grade": design.get("grade_target", "?"), "base": design.get("base", "river")}
+	return info
+
+
+func _apply_settings() -> void:
+	var volume := float(_settings.values["sound"])
+	AudioServer.set_bus_mute(0, volume <= 0.01)
+	AudioServer.set_bus_volume_db(0, linear_to_db(maxf(volume, 0.01)))
+
+
+func _buzz(milliseconds: int) -> void:
+	if bool(_settings.values["vibrate"]):
+		Input.vibrate_handheld(milliseconds)
+
+
+## 안드로이드의 뒤로 단추. 한 단계 위 공간으로 간다. 메인 메뉴와 로그인에서는 게임을 끝낸다.
+func _notification(what: int) -> void:
+	if what != NOTIFICATION_WM_GO_BACK_REQUEST or _layer == null:
+		return
+	if BACK_TO.has(Session.screen):
+		_show(BACK_TO[Session.screen])
+	elif Session.screen == "menu" or Session.screen == "login":
+		get_tree().quit()
+
+
+## 스테이지 지도. 방금 끝난 판이 있으면 그 결과와 순위를 함께 보여 준다.
+func _show_map() -> void:
 	_map = StageMapScript.new()
-	layer.add_child(_map)
+	_layer.add_child(_map)
 	# 방금 끝난 판의 결과와 그 스테이지의 순위를 함께 보여 준다
 	var result := last_result
 	var cleared := _save.cleared
@@ -484,6 +634,15 @@ func _setup_ui() -> void:
 		best[_stage_id] = 61350
 	_map.setup(_city_name, _stage_list, cleared, _stage_index, best, ranking, result)
 	_map.started.connect(_start)
+	var home := UiKit.button("HOME", UiKit.INK, 24)
+	# 위쪽은 지역 이름표가, 아래 가운데는 PLAY 가 차지하므로 왼쪽 아래 구석에 둔다
+	home.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	home.offset_left = 16
+	home.offset_right = 128
+	home.offset_top = -152
+	home.offset_bottom = -84
+	home.pressed.connect(func() -> void: _on_go("menu", ""))
+	_map.add_child(home)
 
 
 func _setup_light() -> void:
