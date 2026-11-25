@@ -4,20 +4,20 @@
   "theme": "newyork",
   "base": "river",
   "grade_target": 8.6,
-  "level": 0.751,
+  "level": 0.62,
   "balance": {
-    "ball_speed": 1315,
-    "paddle_width": 205,
-    "landmark_hp": 29,
+    "ball_speed": 1260,
+    "paddle_width": 218,
+    "landmark_hp": 26,
     "cell_hp_bonus": 1,
-    "drop_interval_start": 20.0,
-    "drop_interval_end": 9.8,
+    "drop_interval_start": 19.0,
+    "drop_interval_end": 9.1,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 5.3,
+      "narrow": 4.9,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -65,6 +65,14 @@
     },
     {
       "at": [
+        593,
+        1117
+      ],
+      "type": "wide",
+      "from": "주차장 MPG Manhattan Parking: MP Hudson"
+    },
+    {
+      "at": [
         407,
         647
       ],
@@ -86,22 +94,6 @@
       ],
       "type": "multi",
       "from": "열기구 (상상)"
-    },
-    {
-      "at": [
-        697,
-        482
-      ],
-      "type": "wide",
-      "from": "임시 배치 (상상)"
-    },
-    {
-      "at": [
-        652,
-        1562
-      ],
-      "type": "wide",
-      "from": "임시 배치 (상상)"
     }
   ],
   "walls": [
@@ -111,10 +103,10 @@
         1261
       ],
       "gap_toward": [
-        0.2,
-        1.0
+        1.0,
+        -0.2
       ],
-      "gap_width": 140,
+      "gap_width": 150,
       "offset": 10,
       "thickness": 12,
       "radius": 240,

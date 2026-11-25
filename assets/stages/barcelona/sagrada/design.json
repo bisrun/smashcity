@@ -4,20 +4,20 @@
   "theme": "barcelona",
   "base": "road",
   "grade_target": 9.2,
-  "level": 0.821,
+  "level": 0.62,
   "balance": {
-    "ball_speed": 1345,
-    "paddle_width": 198,
-    "landmark_hp": 30,
+    "ball_speed": 1260,
+    "paddle_width": 218,
+    "landmark_hp": 26,
     "cell_hp_bonus": 1,
-    "drop_interval_start": 20.6,
-    "drop_interval_end": 10.1,
+    "drop_interval_start": 19.0,
+    "drop_interval_end": 9.1,
     "sky_items": {
       "multi": 3.0,
       "wide": 2.0,
       "fire": 2.0,
       "life": 0.5,
-      "narrow": 5.5,
+      "narrow": 4.9,
       "shield": 1.5,
       "wreck": 1.5
     }
@@ -65,6 +65,14 @@
     },
     {
       "at": [
+        1177,
+        1130
+      ],
+      "type": "fire",
+      "from": "주유소 Repsol"
+    },
+    {
+      "at": [
         324,
         680
       ],
@@ -95,10 +103,10 @@
         2406
       ],
       "gap_toward": [
-        0.2,
-        1.0
+        1.0,
+        -0.2
       ],
-      "gap_width": 134,
+      "gap_width": 150,
       "offset": 10,
       "thickness": 12,
       "radius": 240,
